@@ -7,44 +7,97 @@
  * 생활연령(N세 N개월, 총 N개월)을 자동 계산하여 표시합니다.
  */
 
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { useChildInfoStore } from '../model/store';
 import { childInfoSchema, type ChildInfoFormData } from '../model/schema';
 import { formatAgeResult } from '../lib/calculate-age';
 
 /**
- * 날짜를 YYYY-MM-DD 형식 문자열로 변환
+ * 8자리 숫자(YYYYMMDD)를 Date 객체로 파싱
  */
-function formatDateForInput(date: Date | undefined): string {
-  if (!date) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function parseYYYYMMDD(str: string): Date | undefined {
+  if (!str) return undefined;
+  const clean = str.replace(/\D/g, '');
+  if (clean.length !== 8) return undefined;
+
+  const y = +clean.slice(0, 4);
+  const m = +clean.slice(4, 6);
+  const d = +clean.slice(6, 8);
+
+  const date = new Date(y, m - 1, d);
+  // 유효한 날짜인지 검증
+  if (date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d) {
+    return date;
+  }
+  return undefined;
 }
 
 /**
- * YYYY-MM-DD 문자열을 Date 객체로 변환
+ * Date 객체를 YYYYMMDD 형식 문자열로 변환
  */
-function parseDateFromInput(dateString: string): Date | undefined {
-  if (!dateString) return undefined;
-  const [year, month, day] = dateString.split('-').map(Number);
-  return new Date(year, month - 1, day);
+function formatToYYYYMMDD(date: Date | undefined): string {
+  if (!date) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}${m}${d}`;
+}
+
+/**
+ * 성별 선택 버튼 컴포넌트
+ */
+function GenderButton({
+  value,
+  selected,
+  onClick,
+  children,
+}: {
+  value: string;
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        flex-1 py-3 px-6 text-lg font-medium rounded-lg transition-all
+        border-2 min-h-[52px]
+        ${
+          selected
+            ? 'bg-primary text-primary-foreground border-primary'
+            : 'bg-background hover:bg-muted border-input hover:border-primary/50'
+        }
+      `}
+    >
+      {children}
+    </button>
+  );
 }
 
 export function ChildInfoForm() {
   const { setChildInfo, ageResult, childInfo } = useChildInfoStore();
 
+  // 8자리 숫자 입력 상태 (YYYYMMDD)
+  const [birthDateStr, setBirthDateStr] = useState(() =>
+    formatToYYYYMMDD(childInfo?.birthDate)
+  );
+  const [testDateStr, setTestDateStr] = useState(() =>
+    formatToYYYYMMDD(childInfo?.testDate ?? new Date())
+  );
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isValid },
   } = useForm<ChildInfoFormData>({
     resolver: zodResolver(childInfoSchema),
@@ -56,6 +109,20 @@ export function ChildInfoForm() {
     },
     mode: 'onChange',
   });
+
+  const handleBirthDateChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    setBirthDateStr(cleaned);
+    const date = parseYYYYMMDD(cleaned);
+    setValue('birthDate', date as Date, { shouldValidate: true });
+  };
+
+  const handleTestDateChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    setTestDateStr(cleaned);
+    const date = parseYYYYMMDD(cleaned);
+    setValue('testDate', date as Date, { shouldValidate: true });
+  };
 
   const onSubmit = (data: ChildInfoFormData) => {
     setChildInfo({
@@ -95,24 +162,22 @@ export function ChildInfoForm() {
               name="gender"
               control={control}
               render={({ field }) => (
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="male" />
-                    <Label htmlFor="male" className="font-normal cursor-pointer">
-                      남
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="female" />
-                    <Label htmlFor="female" className="font-normal cursor-pointer">
-                      여
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <div className="flex gap-3">
+                  <GenderButton
+                    value="male"
+                    selected={field.value === 'male'}
+                    onClick={() => field.onChange('male')}
+                  >
+                    남
+                  </GenderButton>
+                  <GenderButton
+                    value="female"
+                    selected={field.value === 'female'}
+                    onClick={() => field.onChange('female')}
+                  >
+                    여
+                  </GenderButton>
+                </div>
               )}
             />
             {errors.gender && (
@@ -123,22 +188,15 @@ export function ChildInfoForm() {
           {/* 생년월일 */}
           <div className="space-y-2">
             <Label htmlFor="birthDate">생년월일 *</Label>
-            <Controller
-              name="birthDate"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  id="birthDate"
-                  type="date"
-                  value={formatDateForInput(field.value)}
-                  onChange={(e) => {
-                    const date = parseDateFromInput(e.target.value);
-                    field.onChange(date);
-                  }}
-                  aria-invalid={!!errors.birthDate}
-                  className="block"
-                />
-              )}
+            <Input
+              id="birthDate"
+              type="text"
+              inputMode="numeric"
+              placeholder="YYYYMMDD (예: 20200115)"
+              maxLength={8}
+              value={birthDateStr}
+              onChange={(e) => handleBirthDateChange(e.target.value)}
+              aria-invalid={!!errors.birthDate}
             />
             {errors.birthDate && (
               <p className="text-sm text-destructive">{errors.birthDate.message}</p>
@@ -148,22 +206,15 @@ export function ChildInfoForm() {
           {/* 평가일 */}
           <div className="space-y-2">
             <Label htmlFor="testDate">평가일 *</Label>
-            <Controller
-              name="testDate"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  id="testDate"
-                  type="date"
-                  value={formatDateForInput(field.value)}
-                  onChange={(e) => {
-                    const date = parseDateFromInput(e.target.value);
-                    field.onChange(date);
-                  }}
-                  aria-invalid={!!errors.testDate}
-                  className="block"
-                />
-              )}
+            <Input
+              id="testDate"
+              type="text"
+              inputMode="numeric"
+              placeholder="YYYYMMDD (예: 20260212)"
+              maxLength={8}
+              value={testDateStr}
+              onChange={(e) => handleTestDateChange(e.target.value)}
+              aria-invalid={!!errors.testDate}
             />
             {errors.testDate && (
               <p className="text-sm text-destructive">{errors.testDate.message}</p>
