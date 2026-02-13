@@ -67,15 +67,11 @@ function GenderButton({
     <button
       type="button"
       onClick={onClick}
-      className={`
-        flex-1 py-3 px-6 text-lg font-medium rounded-lg transition-all
-        border-2 min-h-[52px]
-        ${
-          selected
-            ? 'bg-primary text-primary-foreground border-primary'
-            : 'bg-background hover:bg-muted border-input hover:border-primary/50'
-        }
-      `}
+      className={`min-h-[52px] flex-1 rounded-lg border-2 px-6 py-3 text-lg font-medium transition-all ${
+        selected
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background hover:bg-muted border-input hover:border-primary/50'
+      } `}
     >
       {children}
     </button>
@@ -86,9 +82,7 @@ export function ChildInfoForm() {
   const { setChildInfo, ageResult, childInfo } = useChildInfoStore();
 
   // 8자리 숫자 입력 상태 (YYYYMMDD)
-  const [birthDateStr, setBirthDateStr] = useState(() =>
-    formatToYYYYMMDD(childInfo?.birthDate)
-  );
+  const [birthDateStr, setBirthDateStr] = useState(() => formatToYYYYMMDD(childInfo?.birthDate));
   const [testDateStr, setTestDateStr] = useState(() =>
     formatToYYYYMMDD(childInfo?.testDate ?? new Date())
   );
@@ -150,9 +144,7 @@ export function ChildInfoForm() {
               {...register('name')}
               aria-invalid={!!errors.name}
             />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
 
           {/* 성별 */}
@@ -180,9 +172,7 @@ export function ChildInfoForm() {
                 </div>
               )}
             />
-            {errors.gender && (
-              <p className="text-sm text-destructive">{errors.gender.message}</p>
-            )}
+            {errors.gender && <p className="text-destructive text-sm">{errors.gender.message}</p>}
           </div>
 
           {/* 생년월일 */}
@@ -199,7 +189,7 @@ export function ChildInfoForm() {
               aria-invalid={!!errors.birthDate}
             />
             {errors.birthDate && (
-              <p className="text-sm text-destructive">{errors.birthDate.message}</p>
+              <p className="text-destructive text-sm">{errors.birthDate.message}</p>
             )}
           </div>
 
@@ -217,7 +207,7 @@ export function ChildInfoForm() {
               aria-invalid={!!errors.testDate}
             />
             {errors.testDate && (
-              <p className="text-sm text-destructive">{errors.testDate.message}</p>
+              <p className="text-destructive text-sm">{errors.testDate.message}</p>
             )}
           </div>
 
@@ -228,8 +218,8 @@ export function ChildInfoForm() {
 
           {/* 연령 계산 결과 */}
           {ageResult && (
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-sm text-muted-foreground mb-1">생활연령</p>
+            <div className="bg-muted rounded-lg p-4 text-center">
+              <p className="text-muted-foreground mb-1 text-sm">생활연령</p>
               <p className="text-lg font-semibold">{formatAgeResult(ageResult)}</p>
             </div>
           )}
