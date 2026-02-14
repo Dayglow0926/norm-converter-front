@@ -109,7 +109,9 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
       });
 
       // TODO: 결과 페이지로 이동 (현재는 알림으로 확인)
-      alert(`API 호출 성공!\n수용: ${receptiveResult.equivalentAge}개월\n표현: ${expressiveResult.equivalentAge}개월\n통합: ${combinedResult.equivalentAge}개월`);
+      alert(
+        `API 호출 성공!\n수용: ${receptiveResult.equivalentAge}개월\n표현: ${expressiveResult.equivalentAge}개월\n통합: ${combinedResult.equivalentAge}개월`
+      );
     } catch (err) {
       console.error('API 호출 실패:', err);
       setApiError(err instanceof Error ? err.message : 'API 호출 중 오류가 발생했습니다');

@@ -63,12 +63,6 @@ export function ApiKeyGate({ children }: ApiKeyGateProps) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">SLP 규준변환기</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            서비스를 이용하려면 API 키를 입력해주세요
-          </p>
-        </CardHeader>
         <CardContent className="space-y-4">
           <Input
             type="password"
@@ -83,7 +77,7 @@ export function ApiKeyGate({ children }: ApiKeyGateProps) {
           <Button
             onClick={handleVerify}
             disabled={isVerifying || !inputKey.trim()}
-            className="w-full min-h-[48px]"
+            className="min-h-[48px] w-full"
           >
             {isVerifying ? '확인 중...' : '인증'}
           </Button>
