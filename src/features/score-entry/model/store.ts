@@ -3,6 +3,7 @@
  */
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface SelsiScores {
   receptive: number | null;
@@ -32,7 +33,9 @@ interface ScoreEntryState {
   clearScores: () => void;
 }
 
-export const useScoreEntryStore = create<ScoreEntryState>((set) => ({
+export const useScoreEntryStore = create<ScoreEntryState>()(
+  persist(
+    (set) => ({
   selsiScores: {
     receptive: null,
     expressive: null,
@@ -73,4 +76,21 @@ export const useScoreEntryStore = create<ScoreEntryState>((set) => ({
       error: null,
     });
   },
-}));
+}),
+    {
+      name: 'norm-converter-score-entry',
+      storage: {
+        getItem: (name) => {
+          const str = sessionStorage.getItem(name);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          sessionStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          sessionStorage.removeItem(name);
+        },
+      },
+    }
+  )
+);

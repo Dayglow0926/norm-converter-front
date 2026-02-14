@@ -229,11 +229,7 @@ export function ChildInfoForm() {
 
         {/* 다음 버튼 (연령 계산 완료 시 표시) */}
         {ageResult && (
-          <Button 
-            type="button" 
-            className="w-full mt-4" 
-            onClick={handleNext}
-          >
+          <Button type="button" className="mt-4 w-full" onClick={handleNext}>
             평가도구 선택 →
           </Button>
         )}

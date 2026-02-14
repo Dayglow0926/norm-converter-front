@@ -67,27 +67,22 @@ export function AssessmentToolCard({
           handleClick();
         }
       }}
-      className={`
-        cursor-pointer transition-all select-none
-        ${selected ? 'ring-2 ring-primary border-primary' : ''}
-        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary/50 hover:shadow-md'}
-        ${!active ? 'bg-muted/30' : ''}
-      `}
+      className={`cursor-pointer transition-all select-none ${selected ? 'ring-primary border-primary ring-2' : ''} ${isDisabled ? 'cursor-not-allowed opacity-50' : 'hover:border-primary/50 hover:shadow-md'} ${!active ? 'bg-muted/30' : ''} `}
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-lg">
           <span>{meta.name}</span>
-          <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
+          <span className="text-muted-foreground bg-muted rounded px-2 py-1 text-xs font-normal">
             {meta.category}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-2">{meta.description}</p>
+        <p className="text-muted-foreground mb-2 text-sm">{meta.description}</p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">적용 연령: {ageRange}</span>
+          <span className="text-muted-foreground text-xs">적용 연령: {ageRange}</span>
           {disabledReason && (
-            <span className="text-xs text-destructive font-medium">{disabledReason}</span>
+            <span className="text-destructive text-xs font-medium">{disabledReason}</span>
           )}
         </div>
       </CardContent>

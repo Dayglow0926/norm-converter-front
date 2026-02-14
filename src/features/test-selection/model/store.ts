@@ -3,6 +3,7 @@
  */
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { AssessmentToolId } from '@/entities/assessment-tool';
 
 interface TestSelectionState {
@@ -15,7 +16,9 @@ interface TestSelectionState {
   isSelected: (toolId: AssessmentToolId) => boolean;
 }
 
-export const useTestSelectionStore = create<TestSelectionState>((set, get) => ({
+export const useTestSelectionStore = create<TestSelectionState>()(
+  persist(
+    (set, get) => ({
   selectedTools: [],
 
   toggleTool: (toolId: AssessmentToolId) => {
@@ -36,4 +39,21 @@ export const useTestSelectionStore = create<TestSelectionState>((set, get) => ({
   isSelected: (toolId: AssessmentToolId) => {
     return get().selectedTools.includes(toolId);
   },
-}));
+}),
+    {
+      name: 'norm-converter-test-selection',
+      storage: {
+        getItem: (name) => {
+          const str = sessionStorage.getItem(name);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          sessionStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          sessionStorage.removeItem(name);
+        },
+      },
+    }
+  )
+);

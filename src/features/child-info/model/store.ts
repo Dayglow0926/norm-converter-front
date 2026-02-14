@@ -3,6 +3,7 @@
  */
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { ChildInfo, AgeResult } from '@/entities/child';
 import { calculateAge } from '../lib/calculate-age';
 
@@ -19,7 +20,9 @@ interface ChildInfoState {
   updateTestDate: (date: Date) => void;
 }
 
-export const useChildInfoStore = create<ChildInfoState>((set, get) => ({
+export const useChildInfoStore = create<ChildInfoState>()(
+  persist(
+    (set, get) => ({
   // 초기 상태
   childInfo: null,
   ageResult: null,
@@ -67,4 +70,30 @@ export const useChildInfoStore = create<ChildInfoState>((set, get) => ({
       get().setChildInfo({ ...current, testDate: date });
     }
   },
-}));
+}),
+    {
+      name: 'norm-converter-child-info',
+      // Date 객체를 문자열로 저장/복원
+      storage: {
+        getItem: (name) => {
+          const str = sessionStorage.getItem(name);
+          if (!str) return null;
+          const parsed = JSON.parse(str);
+          // Date 복원
+          if (parsed?.state?.childInfo) {
+            const ci = parsed.state.childInfo;
+            if (ci.birthDate) ci.birthDate = new Date(ci.birthDate);
+            if (ci.testDate) ci.testDate = new Date(ci.testDate);
+          }
+          return parsed;
+        },
+        setItem: (name, value) => {
+          sessionStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          sessionStorage.removeItem(name);
+        },
+      },
+    }
+  )
+);

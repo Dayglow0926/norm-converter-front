@@ -22,11 +22,11 @@ export function TestSelectionGrid({ ageMonths }: TestSelectionGridProps) {
 
   return (
     <section className="w-full">
-      <h2 className="text-xl font-semibold mb-2">평가도구 선택</h2>
-      <p className="text-sm text-muted-foreground mb-4">
+      <h2 className="mb-2 text-xl font-semibold">평가도구 선택</h2>
+      <p className="text-muted-foreground mb-4 text-sm">
         실시할 평가도구를 선택하세요 (복수 선택 가능)
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ALL_TOOL_IDS.map((toolId) => (
           <AssessmentToolCard
             key={toolId}

@@ -43,29 +43,33 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
     <div className="bg-background min-h-screen">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        {/* 아동 정보 + 선택된 도구 요약 */}
-        <Card className="mb-8 max-w-2xl mx-auto">
-          <CardContent className="pt-6">
+        {/* 상단 정보 바: 아동 정보 + 네비게이션 */}
+        <Card className="mx-auto mb-8 max-w-xl sticky top-4 z-10 shadow-lg">
+          <CardContent className="py-4">
             <div className="flex items-center justify-between">
+              {/* 아동 정보 */}
               <div>
-                <p className="text-sm text-muted-foreground">아동 정보</p>
                 <p className="text-lg font-semibold">
                   {childInfo.name} ({childInfo.gender === 'male' ? '남' : '여'})
                 </p>
-                <p className="text-muted-foreground">
-                  {formatAgeResult(ageResult)}
-                </p>
+                <p className="text-muted-foreground text-sm">{formatAgeResult(ageResult)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">평가도구</p>
-                <p className="text-lg font-semibold">{toolMeta.name}</p>
-                <Button 
-                  variant="outline" 
+              
+              {/* 네비게이션 버튼 */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
                   size="sm"
-                  className="mt-2"
                   onClick={() => router.push('/select-tool')}
                 >
-                  도구 변경
+                  ← 도구 변경
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push('/')}
+                >
+                  처음으로
                 </Button>
               </div>
             </div>
@@ -73,22 +77,10 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
         </Card>
 
         {/* 점수 입력 폼 */}
-        <div className="max-w-xl mx-auto">
-          {toolId === 'selsi' && (
-            <SelsiScoreForm ageMonths={ageMonths} gender={childInfo.gender} />
-          )}
+        <div className="mx-auto max-w-xl">
+          {toolId === 'selsi' && <SelsiScoreForm ageMonths={ageMonths} gender={childInfo.gender} />}
           {/* 향후 다른 도구 추가 */}
           {/* {toolId === 'pres' && <PresScoreForm ... />} */}
-        </div>
-
-        {/* 네비게이션 */}
-        <div className="max-w-xl mx-auto mt-8 flex justify-between">
-          <Button variant="outline" onClick={() => router.push('/select-tool')}>
-            ← 도구 선택
-          </Button>
-          <Button variant="outline" onClick={() => router.push('/')}>
-            처음으로
-          </Button>
         </div>
       </main>
     </div>
