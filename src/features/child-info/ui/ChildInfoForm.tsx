@@ -53,12 +53,10 @@ function formatToYYYYMMDD(date: Date | undefined): string {
  * 성별 선택 버튼 컴포넌트
  */
 function GenderButton({
-  value,
   selected,
   onClick,
   children,
 }: {
-  value: string;
   selected: boolean;
   onClick: () => void;
   children: React.ReactNode;
@@ -156,14 +154,12 @@ export function ChildInfoForm() {
               render={({ field }) => (
                 <div className="flex gap-3">
                   <GenderButton
-                    value="male"
                     selected={field.value === 'male'}
                     onClick={() => field.onChange('male')}
                   >
                     남
                   </GenderButton>
                   <GenderButton
-                    value="female"
                     selected={field.value === 'female'}
                     onClick={() => field.onChange('female')}
                   >
