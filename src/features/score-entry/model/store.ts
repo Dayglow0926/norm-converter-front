@@ -36,47 +36,47 @@ interface ScoreEntryState {
 export const useScoreEntryStore = create<ScoreEntryState>()(
   persist(
     (set) => ({
-  selsiScores: {
-    receptive: null,
-    expressive: null,
-  },
-  selsiResults: {
-    receptive: null,
-    expressive: null,
-    combined: null,
-  },
-  loading: false,
-  error: null,
-
-  setSelsiScore: (subtest, score) => {
-    set((state) => ({
       selsiScores: {
-        ...state.selsiScores,
-        [subtest]: score,
+        receptive: null,
+        expressive: null,
       },
-    }));
-  },
-
-  setSelsiResults: (results) => {
-    set({ selsiResults: results, error: null });
-  },
-
-  setLoading: (loading) => {
-    set({ loading });
-  },
-
-  setError: (error) => {
-    set({ error, loading: false });
-  },
-
-  clearScores: () => {
-    set({
-      selsiScores: { receptive: null, expressive: null },
-      selsiResults: { receptive: null, expressive: null, combined: null },
+      selsiResults: {
+        receptive: null,
+        expressive: null,
+        combined: null,
+      },
+      loading: false,
       error: null,
-    });
-  },
-}),
+
+      setSelsiScore: (subtest, score) => {
+        set((state) => ({
+          selsiScores: {
+            ...state.selsiScores,
+            [subtest]: score,
+          },
+        }));
+      },
+
+      setSelsiResults: (results) => {
+        set({ selsiResults: results, error: null });
+      },
+
+      setLoading: (loading) => {
+        set({ loading });
+      },
+
+      setError: (error) => {
+        set({ error, loading: false });
+      },
+
+      clearScores: () => {
+        set({
+          selsiScores: { receptive: null, expressive: null },
+          selsiResults: { receptive: null, expressive: null, combined: null },
+          error: null,
+        });
+      },
+    }),
     {
       name: 'norm-converter-score-entry',
       storage: {

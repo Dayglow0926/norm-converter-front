@@ -11,19 +11,23 @@ import { Button } from '@/components/ui/button';
 
 export default function SelectToolPage() {
   const router = useRouter();
-  const { childInfo, ageResult } = useChildInfoStore();
+  const { childInfo, ageResult, _hasHydrated } = useChildInfoStore();
   const { selectedTools } = useTestSelectionStore();
 
-  // 라우팅 가드: 아동 정보가 없으면 홈으로 리다이렉트
+  // 라우팅 가드: hydration 완료 후 아동 정보가 없으면 홈으로 리다이렉트
   useEffect(() => {
-    if (!childInfo || !ageResult) {
+    if (_hasHydrated && (!childInfo || !ageResult)) {
       router.replace('/');
     }
-  }, [childInfo, ageResult, router]);
+  }, [childInfo, ageResult, _hasHydrated, router]);
 
-  // 아동 정보가 없으면 로딩 또는 빈 화면
-  if (!childInfo || !ageResult) {
-    return null;
+  // hydration 완료 전 또는 아동 정보가 없으면 로딩
+  if (!_hasHydrated || !childInfo || !ageResult) {
+    return (
+      <div className="bg-background flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">로딩 중...</p>
+      </div>
+    );
   }
 
   const ageMonths = ageResult.totalMonths;

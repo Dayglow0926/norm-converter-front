@@ -12,65 +12,72 @@ interface ChildInfoState {
   childInfo: ChildInfo | null;
   ageResult: AgeResult | null;
   isValid: boolean;
+  _hasHydrated: boolean;
 
   // 액션
   setChildInfo: (info: ChildInfo) => void;
   clearChildInfo: () => void;
   updateBirthDate: (date: Date) => void;
   updateTestDate: (date: Date) => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useChildInfoStore = create<ChildInfoState>()(
   persist(
     (set, get) => ({
-  // 초기 상태
-  childInfo: null,
-  ageResult: null,
-  isValid: false,
-
-  // 아동 정보 설정 및 연령 계산
-  setChildInfo: (info: ChildInfo) => {
-    try {
-      const ageResult = calculateAge(info.birthDate, info.testDate);
-      set({
-        childInfo: info,
-        ageResult,
-        isValid: true,
-      });
-    } catch {
-      set({
-        childInfo: info,
-        ageResult: null,
-        isValid: false,
-      });
-    }
-  },
-
-  // 아동 정보 초기화
-  clearChildInfo: () => {
-    set({
+      // 초기 상태
       childInfo: null,
       ageResult: null,
       isValid: false,
-    });
-  },
+      _hasHydrated: false,
 
-  // 생년월일만 업데이트
-  updateBirthDate: (date: Date) => {
-    const current = get().childInfo;
-    if (current) {
-      get().setChildInfo({ ...current, birthDate: date });
-    }
-  },
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
+      },
 
-  // 평가일만 업데이트
-  updateTestDate: (date: Date) => {
-    const current = get().childInfo;
-    if (current) {
-      get().setChildInfo({ ...current, testDate: date });
-    }
-  },
-}),
+      // 아동 정보 설정 및 연령 계산
+      setChildInfo: (info: ChildInfo) => {
+        try {
+          const ageResult = calculateAge(info.birthDate, info.testDate);
+          set({
+            childInfo: info,
+            ageResult,
+            isValid: true,
+          });
+        } catch {
+          set({
+            childInfo: info,
+            ageResult: null,
+            isValid: false,
+          });
+        }
+      },
+
+      // 아동 정보 초기화
+      clearChildInfo: () => {
+        set({
+          childInfo: null,
+          ageResult: null,
+          isValid: false,
+        });
+      },
+
+      // 생년월일만 업데이트
+      updateBirthDate: (date: Date) => {
+        const current = get().childInfo;
+        if (current) {
+          get().setChildInfo({ ...current, birthDate: date });
+        }
+      },
+
+      // 평가일만 업데이트
+      updateTestDate: (date: Date) => {
+        const current = get().childInfo;
+        if (current) {
+          get().setChildInfo({ ...current, testDate: date });
+        }
+      },
+    }),
     {
       name: 'norm-converter-child-info',
       // Date 객체를 문자열로 저장/복원
@@ -93,6 +100,9 @@ export const useChildInfoStore = create<ChildInfoState>()(
         removeItem: (name) => {
           sessionStorage.removeItem(name);
         },
+      },
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
       },
     }
   )

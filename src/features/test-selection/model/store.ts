@@ -19,27 +19,27 @@ interface TestSelectionState {
 export const useTestSelectionStore = create<TestSelectionState>()(
   persist(
     (set, get) => ({
-  selectedTools: [],
+      selectedTools: [],
 
-  toggleTool: (toolId: AssessmentToolId) => {
-    const current = get().selectedTools;
-    if (current.includes(toolId)) {
-      // 이미 선택됨 -> 선택 해제
-      set({ selectedTools: current.filter((id) => id !== toolId) });
-    } else {
-      // 선택 추가
-      set({ selectedTools: [...current, toolId] });
-    }
-  },
+      toggleTool: (toolId: AssessmentToolId) => {
+        const current = get().selectedTools;
+        if (current.includes(toolId)) {
+          // 이미 선택됨 -> 선택 해제
+          set({ selectedTools: current.filter((id) => id !== toolId) });
+        } else {
+          // 선택 추가
+          set({ selectedTools: [...current, toolId] });
+        }
+      },
 
-  clearSelection: () => {
-    set({ selectedTools: [] });
-  },
+      clearSelection: () => {
+        set({ selectedTools: [] });
+      },
 
-  isSelected: (toolId: AssessmentToolId) => {
-    return get().selectedTools.includes(toolId);
-  },
-}),
+      isSelected: (toolId: AssessmentToolId) => {
+        return get().selectedTools.includes(toolId);
+      },
+    }),
     {
       name: 'norm-converter-test-selection',
       storage: {
