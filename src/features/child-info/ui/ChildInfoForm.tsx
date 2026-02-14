@@ -125,7 +125,9 @@ export function ChildInfoForm() {
       birthDate: data.birthDate,
       testDate: data.testDate,
     });
-    // 연령 계산 완료 후 평가도구 선택 페이지로 이동
+  };
+
+  const handleNext = () => {
     router.push('/select-tool');
   };
 
@@ -224,6 +226,17 @@ export function ChildInfoForm() {
             </div>
           )}
         </form>
+
+        {/* 다음 버튼 (연령 계산 완료 시 표시) */}
+        {ageResult && (
+          <Button 
+            type="button" 
+            className="w-full mt-4" 
+            onClick={handleNext}
+          >
+            평가도구 선택 →
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
