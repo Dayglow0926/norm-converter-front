@@ -2,8 +2,9 @@
  * 규준 변환 API 클라이언트
  */
 
+import { useAuthStore } from '@/features/auth';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
 
 interface RequestOptions {
   method?: 'GET' | 'POST';
@@ -12,13 +13,14 @@ interface RequestOptions {
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body } = options;
+  const apiKey = useAuthStore.getState().apiKey;
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
 
-  if (API_KEY) {
-    headers['Authorization'] = `Bearer ${API_KEY}`;
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -26,6 +28,11 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
+  if (response.status === 401) {
+    useAuthStore.getState().clearApiKey();
+    throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+  }
 
   if (!response.ok) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
