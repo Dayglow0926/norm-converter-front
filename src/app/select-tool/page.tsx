@@ -6,13 +6,15 @@ import { Header } from '@/widgets/header';
 import { TestSelectionGrid, useTestSelectionStore } from '@/features/test-selection';
 import { useChildInfoStore } from '@/features/child-info';
 import { formatAgeResult } from '@/features/child-info';
+import { useScoreEntryStore } from '@/features/score-entry';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function SelectToolPage() {
   const router = useRouter();
-  const { childInfo, ageResult, _hasHydrated } = useChildInfoStore();
-  const { selectedTools } = useTestSelectionStore();
+  const { childInfo, ageResult, _hasHydrated, clearChildInfo } = useChildInfoStore();
+  const { selectedTools, clearSelection } = useTestSelectionStore();
+  const { clearScores } = useScoreEntryStore();
 
   // 라우팅 가드: hydration 완료 후 아동 정보가 없으면 홈으로 리다이렉트
   useEffect(() => {
@@ -29,6 +31,14 @@ export default function SelectToolPage() {
       </div>
     );
   }
+
+  // 아동 정보 수정: 모든 정보 초기화 후 홈으로
+  const handleEditChildInfo = () => {
+    clearScores();
+    clearSelection();
+    clearChildInfo();
+    router.push('/');
+  };
 
   const ageMonths = ageResult.totalMonths;
   const hasSelection = selectedTools.length > 0;
@@ -57,7 +67,7 @@ export default function SelectToolPage() {
                   </p>
                   <p className="text-muted-foreground text-sm">{formatAgeResult(ageResult)}</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => router.push('/')}>
+                <Button variant="outline" size="sm" onClick={handleEditChildInfo}>
                   수정
                 </Button>
               </div>
