@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,6 +78,7 @@ function GenderButton({
 }
 
 export function ChildInfoForm() {
+  const router = useRouter();
   const { setChildInfo, ageResult, childInfo } = useChildInfoStore();
 
   // 8자리 숫자 입력 상태 (YYYYMMDD)
@@ -123,6 +125,8 @@ export function ChildInfoForm() {
       birthDate: data.birthDate,
       testDate: data.testDate,
     });
+    // 연령 계산 완료 후 평가도구 선택 페이지로 이동
+    router.push('/select-tool');
   };
 
   return (
