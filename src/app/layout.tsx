@@ -14,8 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SLP Norm Converter | 언어재활사 규준변환기",
-  description: "아동언어평가 규준변환기 - 원점수를 규준점수로 자동 변환",
+  title: "계산기",
   robots: {
     index: false,
     follow: false,
