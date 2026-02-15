@@ -3,3 +3,10 @@
 
 export { SelsiScoreForm } from './ui/SelsiScoreForm';
 export { useScoreEntryStore } from './model/store';
+export type {
+  SubtestInput,
+  SelsiScores,
+  SelsiInputs,
+  SelsiResults,
+  SelsiApiResult,
+} from './model/store';

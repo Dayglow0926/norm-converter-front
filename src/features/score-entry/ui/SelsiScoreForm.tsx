@@ -2,7 +2,7 @@
 
 /**
  * SELSI 점수 입력 폼 컴포넌트
- * 수용/표현 원점수 입력 (API 호출은 결과 요청 시 수행)
+ * 수용/표현 원점수 + 정반응/오반응 번호 입력
  */
 
 import { useState } from 'react';
@@ -32,7 +32,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
   // ageMonths, gender는 향후 결과 요청 시 사용
   void _ageMonths;
   void _gender;
-  const { selsiScores, setSelsiScore } = useScoreEntryStore();
+  const { selsiScores, selsiInputs, setSelsiScore, setSelsiInput } = useScoreEntryStore();
 
   // 입력값 유효성 에러
   const [inputErrors, setInputErrors] = useState<{
@@ -40,7 +40,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
     expressive?: string;
   }>({});
 
-  // 입력 핸들러
+  // 원점수 핸들러
   const handleScoreChange = (subtest: 'receptive' | 'expressive', value: string) => {
     const limits = SCORE_LIMITS[subtest];
 
@@ -74,6 +74,15 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
     setSelsiScore(subtest, num);
   };
 
+  // 정반응/오반응 번호 핸들러
+  const handleItemsChange = (
+    subtest: 'receptive' | 'expressive',
+    field: 'correctItems' | 'wrongItems',
+    value: string
+  ) => {
+    setSelsiInput(subtest, { [field]: value });
+  };
+
   // 통합 점수 계산
   const combinedScore =
     selsiScores.receptive !== null && selsiScores.expressive !== null
@@ -93,6 +102,8 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
               <tr className="border-b">
                 <th className="px-2 py-3 text-left font-medium">하위검사</th>
                 <th className="px-2 py-3 text-center font-medium">원점수</th>
+                <th className="px-2 py-3 text-center font-medium">정반응 번호</th>
+                <th className="px-2 py-3 text-center font-medium">오반응 번호</th>
               </tr>
             </thead>
             <tbody>
@@ -106,7 +117,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="0-54"
-                      className={`w-24 text-center ${inputErrors.receptive ? 'border-destructive' : ''}`}
+                      className={`w-20 text-center ${inputErrors.receptive ? 'border-destructive' : ''}`}
                       value={selsiScores.receptive ?? ''}
                       onChange={(e) => handleScoreChange('receptive', e.target.value)}
                       aria-invalid={!!inputErrors.receptive}
@@ -115,6 +126,24 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                       <span className="text-destructive mt-1 text-xs">{inputErrors.receptive}</span>
                     )}
                   </div>
+                </td>
+                <td className="px-2 py-3">
+                  <Input
+                    type="text"
+                    placeholder="1, 2, 3-6"
+                    className="w-full text-center text-sm"
+                    value={selsiInputs.receptive.correctItems}
+                    onChange={(e) => handleItemsChange('receptive', 'correctItems', e.target.value)}
+                  />
+                </td>
+                <td className="px-2 py-3">
+                  <Input
+                    type="text"
+                    placeholder="7, 8, 9-12"
+                    className="w-full text-center text-sm"
+                    value={selsiInputs.receptive.wrongItems}
+                    onChange={(e) => handleItemsChange('receptive', 'wrongItems', e.target.value)}
+                  />
                 </td>
               </tr>
 
@@ -128,7 +157,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="0-54"
-                      className={`w-24 text-center ${inputErrors.expressive ? 'border-destructive' : ''}`}
+                      className={`w-20 text-center ${inputErrors.expressive ? 'border-destructive' : ''}`}
                       value={selsiScores.expressive ?? ''}
                       onChange={(e) => handleScoreChange('expressive', e.target.value)}
                       aria-invalid={!!inputErrors.expressive}
@@ -140,6 +169,24 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     )}
                   </div>
                 </td>
+                <td className="px-2 py-3">
+                  <Input
+                    type="text"
+                    placeholder="1, 2, 3-6"
+                    className="w-full text-center text-sm"
+                    value={selsiInputs.expressive.correctItems}
+                    onChange={(e) => handleItemsChange('expressive', 'correctItems', e.target.value)}
+                  />
+                </td>
+                <td className="px-2 py-3">
+                  <Input
+                    type="text"
+                    placeholder="7, 8, 9-12"
+                    className="w-full text-center text-sm"
+                    value={selsiInputs.expressive.wrongItems}
+                    onChange={(e) => handleItemsChange('expressive', 'wrongItems', e.target.value)}
+                  />
+                </td>
               </tr>
 
               {/* 통합 (자동 계산) */}
@@ -148,15 +195,22 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {combinedScore ?? '-'}
                 </td>
+                <td className="px-2 py-3 text-center text-muted-foreground">-</td>
+                <td className="px-2 py-3 text-center text-muted-foreground">-</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         {/* 안내 문구 */}
-        <p className="text-muted-foreground mt-4 text-xs">
-          * 원점수 범위: 수용/표현 각 0-54점, 통합 0-108점
-        </p>
+        <div className="mt-4 space-y-1">
+          <p className="text-muted-foreground text-xs">
+            * 원점수 범위: 수용/표현 각 0-54점, 통합 0-108점
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6, 10)
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

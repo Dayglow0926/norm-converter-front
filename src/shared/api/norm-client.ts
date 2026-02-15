@@ -43,10 +43,19 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
 export const normClient = {
   /**
-   * 규준 변환 요청
+   * 규준 변환 요청 (개별 도구)
    */
   convert: <T>(tool: string, data: unknown) =>
     request<T>(`/api/norm/${tool}/convert`, {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * 통합 변환 요청 (모든 도구 한 번에)
+   */
+  convertUnified: <T>(data: unknown) =>
+    request<T>(`/api/norm/convert`, {
       method: 'POST',
       body: data,
     }),

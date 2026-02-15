@@ -4,12 +4,32 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/widgets/header';
 import { SelsiScoreForm, useScoreEntryStore } from '@/features/score-entry';
+import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
 import { useTestSelectionStore } from '@/features/test-selection';
 import { TOOL_METADATA, isToolActive, type AssessmentToolId } from '@/entities/assessment-tool';
 import { normClient } from '@/shared/api/norm-client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+
+// 통합 API 응답 타입
+interface UnifiedConvertResponse {
+  results: {
+    selsi?: {
+      resultText: string;
+      responseText: string;
+      data: {
+        receptiveRawScore?: number;
+        receptiveAge?: number;
+        expressiveRawScore?: number;
+        expressiveAge?: number;
+        combinedAge?: number;
+        totalScore?: number;
+      };
+    };
+  };
+  integratedSummary: string;
+}
 
 interface ScoreEntryContentProps {
   tool: string;
@@ -18,7 +38,16 @@ interface ScoreEntryContentProps {
 export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
   const router = useRouter();
   const { childInfo, ageResult, _hasHydrated, clearChildInfo } = useChildInfoStore();
-  const { selsiScores, setSelsiResults, clearScores } = useScoreEntryStore();
+  const {
+    selsiScores,
+    selsiInputs,
+    selsiApiResult,
+    integratedSummary,
+    setSelsiResults,
+    setSelsiApiResult,
+    setIntegratedSummary,
+    clearScores,
+  } = useScoreEntryStore();
   const { clearSelection } = useTestSelectionStore();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -69,7 +98,7 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
     router.push('/');
   };
 
-  // 결과 요청: API 호출
+  // 결과 요청: 통합 API 호출
   const handleRequestResult = async () => {
     if (!isSelsiComplete || !childInfo || !ageResult) return;
 
@@ -77,41 +106,42 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
     setApiError(null);
 
     try {
-      // 수용언어 변환
-      const receptiveResult = await normClient.convert<{ equivalentAge: number }>('selsi', {
-        subtest: 'receptive',
-        rawScore: selsiScores.receptive,
-        ageMonths: ageResult.totalMonths,
-        gender: childInfo.gender,
-      });
-
-      // 표현언어 변환
-      const expressiveResult = await normClient.convert<{ equivalentAge: number }>('selsi', {
-        subtest: 'expressive',
-        rawScore: selsiScores.expressive,
-        ageMonths: ageResult.totalMonths,
-        gender: childInfo.gender,
-      });
-
-      // 통합 변환
-      const combinedResult = await normClient.convert<{ equivalentAge: number }>('selsi', {
-        subtest: 'combined',
-        rawScore: (selsiScores.receptive ?? 0) + (selsiScores.expressive ?? 0),
-        ageMonths: ageResult.totalMonths,
-        gender: childInfo.gender,
+      // 통합 API 호출 (한 번에 모든 도구 변환)
+      const response = await normClient.convertUnified<UnifiedConvertResponse>({
+        childInfo: {
+          name: childInfo.name,
+          gender: childInfo.gender,
+          ageYears: ageResult.years,
+          ageMonths: ageResult.totalMonths,
+          ageRemainingMonths: ageResult.months,
+        },
+        tools: {
+          selsi: {
+            receptive: {
+              rawScore: selsiScores.receptive!,
+              correctItems: selsiInputs.receptive.correctItems,
+              wrongItems: selsiInputs.receptive.wrongItems,
+            },
+            expressive: {
+              rawScore: selsiScores.expressive!,
+              correctItems: selsiInputs.expressive.correctItems,
+              wrongItems: selsiInputs.expressive.wrongItems,
+            },
+          },
+        },
       });
 
       // 결과 저장
-      setSelsiResults({
-        receptive: receptiveResult.equivalentAge,
-        expressive: expressiveResult.equivalentAge,
-        combined: combinedResult.equivalentAge,
-      });
-
-      // TODO: 결과 페이지로 이동 (현재는 알림으로 확인)
-      alert(
-        `API 호출 성공!\n수용: ${receptiveResult.equivalentAge}개월\n표현: ${expressiveResult.equivalentAge}개월\n통합: ${combinedResult.equivalentAge}개월`
-      );
+      if (response.results.selsi) {
+        const selsiData = response.results.selsi.data;
+        setSelsiResults({
+          receptive: selsiData.receptiveAge ?? null,
+          expressive: selsiData.expressiveAge ?? null,
+          combined: selsiData.combinedAge ?? null,
+        });
+        setSelsiApiResult(response.results.selsi);
+      }
+      setIntegratedSummary(response.integratedSummary);
     } catch (err) {
       console.error('API 호출 실패:', err);
       setApiError(err instanceof Error ? err.message : 'API 호출 중 오류가 발생했습니다');
@@ -155,6 +185,18 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
           {/* 향후 다른 도구 추가 */}
           {/* {toolId === 'pres' && <PresScoreForm ... />} */}
         </div>
+
+        {/* 검사 결과 섹션 (결과가 있을 때만 표시) */}
+        {selsiApiResult && (
+          <div className="mx-auto max-w-xl">
+            <ResultSection
+              childInfo={childInfo}
+              ageResult={ageResult}
+              results={{ selsi: selsiApiResult }}
+              integratedSummary={integratedSummary}
+            />
+          </div>
+        )}
 
         {/* 결과 요청 버튼 */}
         <div className="mx-auto mt-8 max-w-xl">
