@@ -63,6 +63,5 @@ export const normClient = {
   /**
    * 평가도구 메타데이터 조회
    */
-  getMetadata: <T>(tool: string) =>
-    request<T>(`/api/norm/${tool}/metadata`),
+  getMetadata: <T>(tool: string) => request<T>(`/api/norm/${tool}/metadata`),
 };

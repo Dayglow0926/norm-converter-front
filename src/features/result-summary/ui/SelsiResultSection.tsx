@@ -138,16 +138,20 @@ export function SelsiResultSection({
       <CardContent>
         {/* 통합 요약 (맨 위) */}
         {integratedSummary && (
-          <div className="mb-6 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-950/20">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">통합 요약</h4>
-                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{integratedSummary}</p>
+                <h4 className="mb-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
+                  통합 요약
+                </h4>
+                <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                  {integratedSummary}
+                </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs shrink-0"
+                className="h-7 shrink-0 px-2 text-xs"
                 onClick={() => copyToClipboard(integratedSummary, '통합 요약 복사 완료')}
               >
                 복사
@@ -158,23 +162,29 @@ export function SelsiResultSection({
 
         {/* SELSI 결과 (타이틀 + 결과 문장 + 응답 문장) */}
         {apiResult && (
-          <div className="mb-6 bg-white/50 dark:bg-gray-900/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
+          <div className="mb-6 rounded-lg border border-green-200 bg-white/50 p-4 dark:border-green-800 dark:bg-gray-900/30">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 space-y-3">
-                <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">SELSI 결과</h4>
+                <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">
+                  SELSI 결과
+                </h4>
                 <div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{apiResult.resultText}</p>
+                  <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                    {apiResult.resultText}
+                  </p>
                 </div>
                 {apiResult.responseText && (
                   <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{apiResult.responseText}</p>
+                    <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                      {apiResult.responseText}
+                    </p>
                   </div>
                 )}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs shrink-0"
+                className="h-7 shrink-0 px-2 text-xs"
                 onClick={() => {
                   const text = apiResult.responseText
                     ? `${apiResult.resultText}\n\n${apiResult.responseText}`

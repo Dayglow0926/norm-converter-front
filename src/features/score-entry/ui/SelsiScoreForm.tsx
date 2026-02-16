@@ -175,7 +175,9 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     placeholder="1, 2, 3-6"
                     className="w-full text-center text-sm"
                     value={selsiInputs.expressive.correctItems}
-                    onChange={(e) => handleItemsChange('expressive', 'correctItems', e.target.value)}
+                    onChange={(e) =>
+                      handleItemsChange('expressive', 'correctItems', e.target.value)
+                    }
                   />
                 </td>
                 <td className="px-2 py-3">
@@ -195,8 +197,8 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {combinedScore ?? '-'}
                 </td>
-                <td className="px-2 py-3 text-center text-muted-foreground">-</td>
-                <td className="px-2 py-3 text-center text-muted-foreground">-</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
               </tr>
             </tbody>
           </table>
@@ -208,7 +210,8 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
             * 원점수 범위: 수용/표현 각 0-54점, 통합 0-108점
           </p>
           <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6, 10)
+            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6,
+            10)
           </p>
         </div>
       </CardContent>

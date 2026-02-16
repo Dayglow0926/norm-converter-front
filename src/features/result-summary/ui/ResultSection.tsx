@@ -21,7 +21,7 @@ const TEXT_STYLES = {
   body: 'text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300',
   // 컬러 테마별 제목 색상
   titleColor: {
-    blue: 'text-blue-800 dark:text-blue-200',   // 통합 요약용
+    blue: 'text-blue-800 dark:text-blue-200', // 통합 요약용
     green: 'text-green-800 dark:text-green-200', // 도구 결과용
   },
 } as const;
@@ -139,9 +139,7 @@ export function ResultSection({
                 <h4 className={`mb-2 ${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.blue}`}>
                   통합 요약
                 </h4>
-                <p className={TEXT_STYLES.body}>
-                  {integratedSummary}
-                </p>
+                <p className={TEXT_STYLES.body}>{integratedSummary}</p>
               </div>
               <Button
                 variant="ghost"
@@ -197,15 +195,11 @@ function ToolResultCard({ title, resultText, responseText, onCopy }: ToolResultC
         <div className="flex-1 space-y-3">
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
-            <p className={TEXT_STYLES.body}>
-              {resultText}
-            </p>
+            <p className={TEXT_STYLES.body}>{resultText}</p>
           </div>
           {responseText && (
             <div>
-              <p className={TEXT_STYLES.body}>
-                {responseText}
-              </p>
+              <p className={TEXT_STYLES.body}>{responseText}</p>
             </div>
           )}
         </div>
