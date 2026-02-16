@@ -109,7 +109,7 @@ export function SelsiResultSection({
 
     // API 결과 텍스트 추가
     if (apiResult) {
-      lines.push(``, `■ 결과 문장`, apiResult.resultText);
+      lines.push(``, `■ 결과 문장`, apiResult.text);
       if (apiResult.responseText) {
         lines.push(``, `■ 응답 문장`, apiResult.responseText);
       }
@@ -170,7 +170,7 @@ export function SelsiResultSection({
                 </h4>
                 <div>
                   <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                    {apiResult.resultText}
+                    {apiResult.text}
                   </p>
                 </div>
                 {apiResult.responseText && (
@@ -186,9 +186,7 @@ export function SelsiResultSection({
                 size="sm"
                 className="h-7 shrink-0 px-2 text-xs"
                 onClick={() => {
-                  const text = apiResult.responseText
-                    ? `${apiResult.resultText}\n\n${apiResult.responseText}`
-                    : apiResult.resultText;
+                  const text = apiResult.text;
                   copyToClipboard(text, '결과 복사 완료');
                 }}
               >
