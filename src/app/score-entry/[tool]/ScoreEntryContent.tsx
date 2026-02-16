@@ -16,8 +16,8 @@ import { Button } from '@/components/ui/button';
 interface UnifiedConvertResponse {
   results: {
     selsi?: {
-      resultText: string;
-      responseText: string;
+      text: string; // SELSI 결과 문장
+      responseText?: string; // 응답 문장
       data: {
         receptiveRawScore?: number;
         receptiveAge?: number;
@@ -25,6 +25,23 @@ interface UnifiedConvertResponse {
         expressiveAge?: number;
         combinedAge?: number;
         totalScore?: number;
+      };
+    };
+    pres?: {
+      text: string;
+      responseText?: string;
+      data: {
+        receptiveRawScore?: number;
+        receptiveDevelopmentalAgeMonths?: number | null;
+        receptiveDevelopmentalAgeText?: string;
+        receptivePercentileDisplay?: string;
+        expressiveRawScore?: number;
+        expressiveDevelopmentalAgeMonths?: number | null;
+        expressiveDevelopmentalAgeText?: string;
+        expressivePercentileDisplay?: string;
+        totalLangAgeMonths?: number;
+        totalLangAgeText?: string;
+        diagnosisLevel?: '정상발달' | '약간의 언어발달지체' | '언어장애' | null;
       };
     };
   };
@@ -139,7 +156,11 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
           expressive: selsiData.expressiveAge ?? null,
           combined: selsiData.combinedAge ?? null,
         });
-        setSelsiApiResult(response.results.selsi);
+        // resultText → text로 변경
+        setSelsiApiResult({
+          ...response.results.selsi,
+          resultText: response.results.selsi.text,
+        });
       }
       setIntegratedSummary(response.integratedSummary);
     } catch (err) {
