@@ -159,7 +159,7 @@ export function ScoreEntryContent({ tool }: ScoreEntryContentProps) {
         // resultText → text로 변경
         setSelsiApiResult({
           ...response.results.selsi,
-          resultText: response.results.selsi.text,
+          text: response.results.selsi.text,
         });
       }
       setIntegratedSummary(response.integratedSummary);

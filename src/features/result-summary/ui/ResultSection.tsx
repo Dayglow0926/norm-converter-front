@@ -100,7 +100,7 @@ export function ResultSection({
 
     // SELSI 결과
     if (results.selsi) {
-      lines.push(``, `■ SELSI 결과`, results.selsi.resultText);
+      lines.push(``, `■ SELSI 결과`, results.selsi.text);
       if (results.selsi.responseText) {
         lines.push(results.selsi.responseText);
       }
@@ -157,8 +157,7 @@ export function ResultSection({
         {results.selsi && (
           <ToolResultCard
             title="SELSI 결과"
-            resultText={results.selsi.resultText}
-            responseText={results.selsi.responseText}
+            text={results.selsi.text}
             onCopy={(text) => copyToClipboard(text, 'SELSI 결과 복사 완료')}
           />
         )}
@@ -181,13 +180,12 @@ export function ResultSection({
 // 개별 도구 결과 카드 컴포넌트
 interface ToolResultCardProps {
   title: string;
-  resultText: string;
-  responseText?: string;
+  text: string;
   onCopy: (text: string) => void;
 }
 
-function ToolResultCard({ title, resultText, responseText, onCopy }: ToolResultCardProps) {
-  const fullText = responseText ? `${resultText}\n\n${responseText}` : resultText;
+function ToolResultCard({ title, text, onCopy }: ToolResultCardProps) {
+  const fullText = text;
 
   return (
     <div className="mb-6 rounded-lg border border-green-200 bg-white/50 p-4 dark:border-green-800 dark:bg-gray-900/30">
@@ -195,13 +193,8 @@ function ToolResultCard({ title, resultText, responseText, onCopy }: ToolResultC
         <div className="flex-1 space-y-3">
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
-            <p className={TEXT_STYLES.body}>{resultText}</p>
+            <p className={TEXT_STYLES.body}>{text}</p>
           </div>
-          {responseText && (
-            <div>
-              <p className={TEXT_STYLES.body}>{responseText}</p>
-            </div>
-          )}
         </div>
         <Button
           variant="ghost"

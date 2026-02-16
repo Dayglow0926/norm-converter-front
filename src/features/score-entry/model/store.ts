@@ -30,7 +30,7 @@ interface SelsiResults {
 
 // API 응답 결과 (텍스트 포함)
 interface SelsiApiResult {
-  resultText: string; // "SELSI 결과, 수용언어 발달연령이..."
+  text: string; // "SELSI 결과, 수용언어 발달연령이..."
   responseText?: string; // "보호자 보고에 의하면..."
   data: {
     receptiveRawScore?: number;
