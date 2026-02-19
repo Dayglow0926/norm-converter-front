@@ -74,7 +74,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)

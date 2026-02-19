@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SELSI 점수 입력 폼 컴포넌트
+ * PRES 점수 입력 폼 컴포넌트
  * 수용/표현 원점수 + 정반응/오반응 번호 입력
  */
 
@@ -9,17 +9,15 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useScoreEntryStore } from '../model/store';
-import type { Gender } from '@/entities/child';
 
-interface SelsiScoreFormProps {
+interface PresScoreFormProps {
   ageMonths: number;
-  gender: Gender;
 }
 
-// SELSI 원점수 범위
+// PRES 원점수 범위
 const SCORE_LIMITS = {
-  receptive: { min: 0, max: 54 },
-  expressive: { min: 0, max: 54 },
+  receptive: { min: 1, max: 60 },
+  expressive: { min: 1, max: 60 },
 } as const;
 
 // 하위검사 라벨
@@ -28,26 +26,23 @@ const SUBTEST_LABELS = {
   expressive: '표현언어',
 } as const;
 
-export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: SelsiScoreFormProps) {
+export function PresScoreForm({ ageMonths: _ageMonths }: PresScoreFormProps) {
   void _ageMonths;
-  void _gender;
 
-  const selsi = useScoreEntryStore((state) => state.tools.selsi);
+  const pres = useScoreEntryStore((state) => state.tools.pres);
   const setScore = useScoreEntryStore((state) => state.setScore);
   const setInput = useScoreEntryStore((state) => state.setInput);
 
-  // 입력값 유효성 에러
   const [inputErrors, setInputErrors] = useState<{
     receptive?: string;
     expressive?: string;
   }>({});
 
-  // 원점수 핸들러
   const handleScoreChange = (subtest: 'receptive' | 'expressive', value: string) => {
     const limits = SCORE_LIMITS[subtest];
 
     if (value === '') {
-      setScore('selsi', subtest, null);
+      setScore('pres', subtest, null);
       setInputErrors((prev) => ({ ...prev, [subtest]: undefined }));
       return;
     }
@@ -64,35 +59,31 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
         ...prev,
         [subtest]: `${limits.min}-${limits.max} 범위만 가능`,
       }));
-      setScore('selsi', subtest, null);
+      setScore('pres', subtest, null);
       return;
     }
 
     setInputErrors((prev) => ({ ...prev, [subtest]: undefined }));
-    setScore('selsi', subtest, num);
+    setScore('pres', subtest, num);
   };
 
-  // 정반응/오반응 번호 핸들러
   const handleItemsChange = (
     subtest: 'receptive' | 'expressive',
     field: 'correctItems' | 'wrongItems',
     value: string
   ) => {
-    setInput('selsi', subtest, { [field]: value });
+    setInput('pres', subtest, { [field]: value });
   };
 
-  const receptiveScore = selsi?.inputs.receptive?.rawScore ?? null;
-  const expressiveScore = selsi?.inputs.expressive?.rawScore ?? null;
-  const combinedScore =
-    receptiveScore !== null && expressiveScore !== null ? receptiveScore + expressiveScore : null;
+  const receptiveScore = pres?.inputs.receptive?.rawScore ?? null;
+  const expressiveScore = pres?.inputs.expressive?.rawScore ?? null;
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>SELSI 점수 입력</CardTitle>
+        <CardTitle>PRES 점수 입력</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* 점수 입력 테이블 */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -113,7 +104,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      placeholder="0-54"
+                      placeholder="1-60"
                       className={`w-20 text-center ${inputErrors.receptive ? 'border-destructive' : ''}`}
                       value={receptiveScore ?? ''}
                       onChange={(e) => handleScoreChange('receptive', e.target.value)}
@@ -129,7 +120,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     type="text"
                     placeholder="1, 2, 3-6"
                     className="w-full text-center text-sm"
-                    value={selsi?.inputs.receptive?.correctItems ?? ''}
+                    value={pres?.inputs.receptive?.correctItems ?? ''}
                     onChange={(e) => handleItemsChange('receptive', 'correctItems', e.target.value)}
                   />
                 </td>
@@ -138,7 +129,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     type="text"
                     placeholder="7, 8, 9-12"
                     className="w-full text-center text-sm"
-                    value={selsi?.inputs.receptive?.wrongItems ?? ''}
+                    value={pres?.inputs.receptive?.wrongItems ?? ''}
                     onChange={(e) => handleItemsChange('receptive', 'wrongItems', e.target.value)}
                   />
                 </td>
@@ -153,7 +144,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      placeholder="0-54"
+                      placeholder="1-60"
                       className={`w-20 text-center ${inputErrors.expressive ? 'border-destructive' : ''}`}
                       value={expressiveScore ?? ''}
                       onChange={(e) => handleScoreChange('expressive', e.target.value)}
@@ -171,7 +162,7 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     type="text"
                     placeholder="1, 2, 3-6"
                     className="w-full text-center text-sm"
-                    value={selsi?.inputs.expressive?.correctItems ?? ''}
+                    value={pres?.inputs.expressive?.correctItems ?? ''}
                     onChange={(e) =>
                       handleItemsChange('expressive', 'correctItems', e.target.value)
                     }
@@ -182,20 +173,10 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
                     type="text"
                     placeholder="7, 8, 9-12"
                     className="w-full text-center text-sm"
-                    value={selsi?.inputs.expressive?.wrongItems ?? ''}
+                    value={pres?.inputs.expressive?.wrongItems ?? ''}
                     onChange={(e) => handleItemsChange('expressive', 'wrongItems', e.target.value)}
                   />
                 </td>
-              </tr>
-
-              {/* 통합 (자동 계산) */}
-              <tr className="bg-muted/30">
-                <td className="px-2 py-3 font-medium">통합</td>
-                <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
-                  {combinedScore ?? '-'}
-                </td>
-                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
-                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
               </tr>
             </tbody>
           </table>
@@ -204,11 +185,14 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
         {/* 안내 문구 */}
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">
-            * 원점수 범위: 수용/표현 각 0-54점, 통합 0-108점
+            * 원점수 범위: 수용/표현 각 1-60점
           </p>
           <p className="text-muted-foreground text-xs">
             * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6,
             10)
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * PRES는 성별 구분 없이 동일한 규준을 적용합니다
           </p>
         </div>
       </CardContent>

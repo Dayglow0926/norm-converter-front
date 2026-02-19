@@ -14,7 +14,7 @@ export default function SelectToolPage() {
   const router = useRouter();
   const { childInfo, ageResult, _hasHydrated, clearChildInfo } = useChildInfoStore();
   const { selectedTools, clearSelection } = useTestSelectionStore();
-  const { clearScores } = useScoreEntryStore();
+  const { clearAll } = useScoreEntryStore();
 
   // 라우팅 가드: hydration 완료 후 아동 정보가 없으면 홈으로 리다이렉트
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function SelectToolPage() {
 
   // 아동 정보 수정: 모든 정보 초기화 후 홈으로
   const handleEditChildInfo = () => {
-    clearScores();
+    clearAll();
     clearSelection();
     clearChildInfo();
     router.push('/');
@@ -45,8 +45,7 @@ export default function SelectToolPage() {
 
   const handleNext = () => {
     if (hasSelection) {
-      // 첫 번째 선택된 도구의 점수 입력 페이지로 이동
-      router.push(`/score-entry/${selectedTools[0]}`);
+      router.push('/score-entry');
     }
   };
 
@@ -92,7 +91,6 @@ export default function SelectToolPage() {
 
         {/* 평가도구 선택 그리드 */}
         <div className="mx-auto max-w-4xl">
-          <h2 className="mb-4 text-lg font-semibold">평가도구 선택</h2>
           <TestSelectionGrid ageMonths={ageMonths} />
         </div>
       </main>
