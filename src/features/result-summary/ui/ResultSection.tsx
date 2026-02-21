@@ -52,8 +52,7 @@ function buildToolCopyText(toolId: string, result: ToolResult): string {
         '\n\n' +
         [
           `\t원인이유\t해결추론\t단서추측\t총점`,
-          `원점수\t${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
-          `백분위\t${d.causeReasonPercentileText}\t${d.solutionInferencePercentileText}\t${d.clueGuessingPercentileText}\t${d.totalPercentileText}`,
+          `${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
         ].join('\n');
     }
   }
@@ -210,9 +209,21 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
   if (data.isUntestable) return null;
 
   const cols = [
-    { label: '원인이유', rawScore: data.causeReasonRawScore, percentile: data.causeReasonPercentileText },
-    { label: '해결추론', rawScore: data.solutionInferenceRawScore, percentile: data.solutionInferencePercentileText },
-    { label: '단서추측', rawScore: data.clueGuessingRawScore, percentile: data.clueGuessingPercentileText },
+    {
+      label: '원인이유',
+      rawScore: data.causeReasonRawScore,
+      percentile: data.causeReasonPercentileText,
+    },
+    {
+      label: '해결추론',
+      rawScore: data.solutionInferenceRawScore,
+      percentile: data.solutionInferencePercentileText,
+    },
+    {
+      label: '단서추측',
+      rawScore: data.clueGuessingRawScore,
+      percentile: data.clueGuessingPercentileText,
+    },
     { label: '총점', rawScore: data.totalRawScore, percentile: data.totalPercentileText },
   ];
 
@@ -220,29 +231,19 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
     <div className="mt-3 overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b">
-            <th className="px-2 py-2 text-left font-medium"></th>
+          <tr className="border">
             {cols.map((col) => (
-              <th key={col.label} className="px-2 py-2 text-center font-medium">
+              <th key={col.label} className="border px-2 py-2 text-center font-medium">
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <tr className="border-b">
-            <td className="px-2 py-2 font-medium">원점수</td>
+          <tr className="border">
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center">
+              <td key={col.label} className="border px-2 py-2 text-center">
                 {col.rawScore}점
-              </td>
-            ))}
-          </tr>
-          <tr className="border-b">
-            <td className="px-2 py-2 font-medium">백분위</td>
-            {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center">
-                {col.percentile}
               </td>
             ))}
           </tr>
