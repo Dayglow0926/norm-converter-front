@@ -296,18 +296,6 @@ export function ScoreEntryContent() {
           </Accordion>
         </div>
 
-        {/* 검사 결과 섹션 */}
-        {hasResults && (
-          <div className="mx-auto max-w-xl">
-            <ResultSection
-              childInfo={childInfo}
-              ageResult={ageResult}
-              results={resultsForDisplay}
-              integratedSummary={integratedSummary}
-            />
-          </div>
-        )}
-
         {/* 결과 요청 버튼 */}
         <div className="mx-auto mt-8 max-w-xl">
           {apiError && (
@@ -329,6 +317,18 @@ export function ScoreEntryContent() {
             </p>
           )}
         </div>
+
+        {/* 검사 결과 섹션 */}
+        {hasResults && (
+          <div className="mx-auto max-w-xl">
+            <ResultSection
+              childInfo={childInfo}
+              ageResult={ageResult}
+              results={resultsForDisplay}
+              integratedSummary={integratedSummary}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
