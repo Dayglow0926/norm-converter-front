@@ -11,11 +11,12 @@ import type { AssessmentToolId } from '@/entities/assessment-tool';
 // 타입 정의
 // =========================================
 
-/** 하위검사 입력 (원점수 + 정반응/오반응) */
+/** 하위검사 입력 (원점수 + 정반응/오반응 + 지시문) */
 export interface SubtestInput {
   rawScore: number | null;
   correctItems: string; // "1, 2, 3-6" 형식
   wrongItems: string; // "7, 8, 9-12" 형식
+  exampleItems?: string; // 언어문제해결력 지시문 번호 (예: "1,2,3")
 }
 
 /** 도구별 API 응답 결과 */

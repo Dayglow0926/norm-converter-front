@@ -26,6 +26,40 @@ const TEXT_STYLES = {
 // 도구별 결과 타입 (범용)
 interface ToolResult {
   text: string;
+  data?: Record<string, unknown>;
+}
+
+// 언어문제해결력 API 데이터 구조
+interface ProblemSolvingData {
+  causeReasonRawScore: number;
+  causeReasonPercentileText: string;
+  solutionInferenceRawScore: number;
+  solutionInferencePercentileText: string;
+  clueGuessingRawScore: number;
+  clueGuessingPercentileText: string;
+  totalRawScore: number;
+  totalPercentileText: string;
+  isUntestable: boolean;
+}
+
+// 도구별 복사 텍스트 생성 (테이블 포함)
+function buildToolCopyText(toolId: string, result: ToolResult): string {
+  let text = result.text;
+  if (toolId === 'problem_solving' && result.data) {
+    const d = result.data as unknown as ProblemSolvingData;
+    if (!d.isUntestable) {
+      text +=
+        '\n\n' +
+        [
+          '하위검사\t원점수\t백분위',
+          `원인이유\t${d.causeReasonRawScore}점\t${d.causeReasonPercentileText}`,
+          `해결추론\t${d.solutionInferenceRawScore}점\t${d.solutionInferencePercentileText}`,
+          `단서추측\t${d.clueGuessingRawScore}점\t${d.clueGuessingPercentileText}`,
+          `총점\t${d.totalRawScore}점\t${d.totalPercentileText}`,
+        ].join('\n');
+    }
+  }
+  return text;
 }
 
 interface ResultSectionProps {
@@ -99,7 +133,7 @@ export function ResultSection({
     // 도구별 결과 순회
     for (const [toolId, result] of Object.entries(results)) {
       const toolName = getToolName(toolId);
-      lines.push(``, `■ ${toolName} 결과`, result.text);
+      lines.push(``, `■ ${toolName} 결과`, buildToolCopyText(toolId, result));
     }
 
     // 통합 요약 추가
@@ -153,9 +187,11 @@ export function ResultSection({
           return (
             <ToolResultCard
               key={toolId}
+              toolId={toolId}
               title={`${toolName} 결과`}
               text={result.text}
-              onCopy={(text) => copyToClipboard(text, `${toolName} 결과 복사 완료`)}
+              data={result.data}
+              onCopy={(copyText) => copyToClipboard(copyText, `${toolName} 결과 복사 완료`)}
             />
           );
         })}
@@ -171,14 +207,58 @@ export function ResultSection({
   );
 }
 
+// 언어문제해결력 결과 테이블 컴포넌트
+function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
+  if (data.isUntestable) return null;
+
+  const rows = [
+    { label: '원인이유', rawScore: data.causeReasonRawScore, percentile: data.causeReasonPercentileText },
+    { label: '해결추론', rawScore: data.solutionInferenceRawScore, percentile: data.solutionInferencePercentileText },
+    { label: '단서추측', rawScore: data.clueGuessingRawScore, percentile: data.clueGuessingPercentileText },
+    { label: '총점', rawScore: data.totalRawScore, percentile: data.totalPercentileText, isTotal: true },
+  ];
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b">
+            <th className="px-2 py-2 text-left font-medium">하위검사</th>
+            <th className="px-2 py-2 text-center font-medium">원점수</th>
+            <th className="px-2 py-2 text-center font-medium">백분위</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.label}
+              className={`border-b ${row.isTotal ? 'bg-muted/30 font-semibold' : ''}`}
+            >
+              <td className="px-2 py-2">{row.label}</td>
+              <td className="px-2 py-2 text-center">{row.rawScore}점</td>
+              <td className="px-2 py-2 text-center">{row.percentile}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // 개별 도구 결과 카드 컴포넌트
 interface ToolResultCardProps {
+  toolId: string;
   title: string;
   text: string;
+  data?: Record<string, unknown>;
   onCopy: (text: string) => void;
 }
 
-function ToolResultCard({ title, text, onCopy }: ToolResultCardProps) {
+function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardProps) {
+  const handleCopy = () => {
+    onCopy(buildToolCopyText(toolId, { text, data }));
+  };
+
   return (
     <div className="mb-6 rounded-lg border border-green-200 bg-white/50 p-4 dark:border-green-800 dark:bg-gray-900/30">
       <div className="flex items-start justify-between gap-2">
@@ -186,13 +266,16 @@ function ToolResultCard({ title, text, onCopy }: ToolResultCardProps) {
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
             <p className={TEXT_STYLES.body}>{text}</p>
+            {toolId === 'problem_solving' && data && (
+              <ProblemSolvingTable data={data as unknown as ProblemSolvingData} />
+            )}
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
           className="h-7 shrink-0 px-2 text-xs"
-          onClick={() => onCopy(text)}
+          onClick={handleCopy}
         >
           복사
         </Button>

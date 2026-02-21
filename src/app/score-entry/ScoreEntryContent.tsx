@@ -6,6 +6,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { Header } from '@/widgets/header';
 import { SelsiScoreForm } from '@/features/score-entry/ui/SelsiScoreForm';
 import { PresScoreForm } from '@/features/score-entry/ui/PresScoreForm';
+import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
+import { ProblemSolvingScoreForm } from '@/features/score-entry/ui/ProblemSolvingScoreForm';
 import { useScoreEntryStore } from '@/features/score-entry';
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
@@ -42,10 +44,10 @@ interface UnifiedConvertResponse {
 const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
   selsi: ['receptive', 'expressive'],
   pres: ['receptive', 'expressive'],
+  syntax: ['total'],
+  problem_solving: ['cause_reason', 'clue_guessing', 'solution_inference'],
   // 향후 추가:
   // revt: ['receptive', 'expressive'],
-  // syntax: ['total'],
-  // problem_solving: ['cause_reason', 'clue_guessing', 'solution_inference'],
 };
 
 export function ScoreEntryContent() {
@@ -113,6 +115,14 @@ export function ScoreEntryContent() {
     const requiredSubtests = TOOL_REQUIRED_SUBTESTS[toolId];
     if (!requiredSubtests) return false;
 
+    // problem_solving: 전부 입력 OR 전부 비움(isUntestable) 모두 완료로 처리
+    if (toolId === 'problem_solving') {
+      const filled = requiredSubtests.filter(
+        (s) => toolData.inputs[s]?.rawScore !== null
+      ).length;
+      return filled === 0 || filled === requiredSubtests.length;
+    }
+
     return requiredSubtests.every((subtest) => {
       const input = toolData.inputs[subtest];
       return input && input.rawScore !== null;
@@ -155,13 +165,19 @@ export function ScoreEntryContent() {
         const toolData = tools[toolId];
         if (!toolData) continue;
 
+        // syntax: BE API가 subtest 래퍼 없이 { rawScore } 직접 기대
+        if (toolId === 'syntax') {
+          toolsPayload[toolId] = { rawScore: toolData.inputs.total?.rawScore ?? 0 };
+          continue;
+        }
+
         const subtestPayload: Record<string, unknown> = {};
         for (const [subtest, input] of Object.entries(toolData.inputs)) {
-          subtestPayload[subtest] = {
-            rawScore: input.rawScore!,
-            correctItems: input.correctItems,
-            wrongItems: input.wrongItems,
-          };
+          const entry: Record<string, unknown> = { rawScore: input.rawScore };
+          if (input.correctItems) entry.correctItems = input.correctItems;
+          if (input.wrongItems) entry.wrongItems = input.wrongItems;
+          if (input.exampleItems) entry.exampleItems = input.exampleItems;
+          subtestPayload[subtest] = entry;
         }
         toolsPayload[toolId] = subtestPayload;
       }
@@ -203,6 +219,10 @@ export function ScoreEntryContent() {
         return <SelsiScoreForm ageMonths={ageMonths} gender={childInfo.gender} />;
       case 'pres':
         return <PresScoreForm ageMonths={ageMonths} />;
+      case 'syntax':
+        return <SyntaxScoreForm ageMonths={ageMonths} />;
+      case 'problem_solving':
+        return <ProblemSolvingScoreForm ageMonths={ageMonths} />;
       default:
         return <p className="text-muted-foreground py-4">준비 중입니다.</p>;
     }
@@ -214,11 +234,11 @@ export function ScoreEntryContent() {
     .map((id) => TOOL_METADATA[id].name);
 
   // 결과 표시용 데이터 구성
-  const resultsForDisplay: Record<string, { text: string }> = {};
+  const resultsForDisplay: Record<string, { text: string; data?: Record<string, unknown> }> = {};
   for (const toolId of activeSelectedTools) {
     const apiResult = tools[toolId]?.apiResult;
     if (apiResult) {
-      resultsForDisplay[toolId] = { text: apiResult.text };
+      resultsForDisplay[toolId] = { text: apiResult.text, data: apiResult.data };
     }
   }
 

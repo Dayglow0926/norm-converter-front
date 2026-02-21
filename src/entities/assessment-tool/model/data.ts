@@ -38,9 +38,9 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     name: '구문의미이해력',
     category: '학령전기',
     minAgeMonths: 48,
-    maxAgeMonths: 107,
+    maxAgeMonths: 119,
     subtests: [],
-    description: '구문의미이해력 검사 (4-8세)',
+    description: '구문의미이해력 검사 (4-9세)',
   },
   problem_solving: {
     id: 'problem_solving',
@@ -74,7 +74,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)

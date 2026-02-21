@@ -3,5 +3,7 @@
 
 export { SelsiScoreForm } from './ui/SelsiScoreForm';
 export { PresScoreForm } from './ui/PresScoreForm';
+export { SyntaxScoreForm } from './ui/SyntaxScoreForm';
+export { ProblemSolvingScoreForm } from './ui/ProblemSolvingScoreForm';
 export { useScoreEntryStore } from './model/store';
 export type { SubtestInput, ToolApiResult, ToolScoreData } from './model/store';
