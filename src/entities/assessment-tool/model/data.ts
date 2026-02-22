@@ -55,10 +55,10 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     id: 'apac',
     name: 'APAC',
     category: '학령전기',
-    minAgeMonths: 36,
+    minAgeMonths: 30,
     maxAgeMonths: 215,
-    subtests: [],
-    description: '아동용 발음 검사 (3-16세)',
+    subtests: ['rawScore'],
+    description: '아동용 발음 검사 (30개월 이상)',
   },
   cplc: {
     id: 'cplc',
@@ -66,7 +66,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 60,
     maxAgeMonths: 143,
-    subtests: ['discourse', 'context', 'nonverbal', 'supralinguistic'],
+    subtests: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
     description: '아동 화용언어 체크리스트 (5-11세)',
   },
 };
@@ -74,7 +74,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving', 'apac', 'cplc'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)

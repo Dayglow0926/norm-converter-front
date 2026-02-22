@@ -8,6 +8,8 @@ import { SelsiScoreForm } from '@/features/score-entry/ui/SelsiScoreForm';
 import { PresScoreForm } from '@/features/score-entry/ui/PresScoreForm';
 import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
 import { ProblemSolvingScoreForm } from '@/features/score-entry/ui/ProblemSolvingScoreForm';
+import { ApacScoreForm } from '@/features/score-entry/ui/ApacScoreForm';
+import { CplcScoreForm } from '@/features/score-entry/ui/CplcScoreForm';
 import { useScoreEntryStore } from '@/features/score-entry';
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
@@ -46,6 +48,8 @@ const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
   pres: ['receptive', 'expressive'],
   syntax: ['total'],
   problem_solving: ['cause_reason', 'clue_guessing', 'solution_inference'],
+  apac: ['rawScore'],
+  cplc: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
   // 향후 추가:
   // revt: ['receptive', 'expressive'],
 };
@@ -123,6 +127,13 @@ export function ScoreEntryContent() {
       return filled === 0 || filled === requiredSubtests.length;
     }
 
+    // apac: imitationType === 'partial'이면 rawScore 없어도 완료
+    if (toolId === 'apac') {
+      const imitationType = toolData.inputs.rawScore?.correctItems ?? '';
+      if (imitationType === 'partial') return true;
+      return toolData.inputs.rawScore?.rawScore !== null;
+    }
+
     return requiredSubtests.every((subtest) => {
       const input = toolData.inputs[subtest];
       return input && input.rawScore !== null;
@@ -168,6 +179,29 @@ export function ScoreEntryContent() {
         // syntax: BE API가 subtest 래퍼 없이 { rawScore } 직접 기대
         if (toolId === 'syntax') {
           toolsPayload[toolId] = { rawScore: toolData.inputs.total?.rawScore ?? 0 };
+          continue;
+        }
+
+        // apac: { rawScore, imitationType? } 직접 기대
+        if (toolId === 'apac') {
+          const rawScore = toolData.inputs.rawScore?.rawScore ?? 0;
+          const imitationType = toolData.inputs.rawScore?.correctItems || undefined;
+          toolsPayload[toolId] = {
+            rawScore,
+            ...(imitationType ? { imitationType } : {}),
+          };
+          continue;
+        }
+
+        // cplc: { discourse_management, contextual_variation, ... } 플랫 숫자 기대
+        if (toolId === 'cplc') {
+          const cplcPayload: Record<string, unknown> = {};
+          for (const [subtest, input] of Object.entries(toolData.inputs)) {
+            if (input.rawScore !== null) {
+              cplcPayload[subtest] = input.rawScore;
+            }
+          }
+          toolsPayload[toolId] = cplcPayload;
           continue;
         }
 
@@ -223,6 +257,10 @@ export function ScoreEntryContent() {
         return <SyntaxScoreForm ageMonths={ageMonths} />;
       case 'problem_solving':
         return <ProblemSolvingScoreForm ageMonths={ageMonths} />;
+      case 'apac':
+        return <ApacScoreForm ageMonths={ageMonths} />;
+      case 'cplc':
+        return <CplcScoreForm ageMonths={ageMonths} />;
       default:
         return <p className="text-muted-foreground py-4">준비 중입니다.</p>;
     }

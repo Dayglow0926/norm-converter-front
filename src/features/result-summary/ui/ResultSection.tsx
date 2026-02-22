@@ -42,6 +42,20 @@ interface ProblemSolvingData {
   isUntestable: boolean;
 }
 
+// CPLC API 데이터 구조
+interface CplcData {
+  discourseScore: number;
+  discoursePercent: number;
+  contextualScore: number;
+  contextualPercent: number;
+  communicationScore: number;
+  communicationPercent: number;
+  nonverbalScore: number;
+  nonverbalPercent: number;
+  totalScore: number;
+  totalPercent: number;
+}
+
 // 도구별 복사 텍스트 생성 (테이블 포함)
 function buildToolCopyText(toolId: string, result: ToolResult): string {
   let text = result.text;
@@ -55,6 +69,16 @@ function buildToolCopyText(toolId: string, result: ToolResult): string {
           `${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
         ].join('\n');
     }
+  }
+  if (toolId === 'cplc' && result.data) {
+    const d = result.data as unknown as CplcData;
+    text +=
+      '\n\n' +
+      [
+        `\t담화관리\t상황조절\t의사소통의도\t비언어적\t총점`,
+        `원점수\t${d.discourseScore}점\t${d.contextualScore}점\t${d.communicationScore}점\t${d.nonverbalScore}점\t${d.totalScore}점`,
+        `백분율\t${d.discoursePercent}%\t${d.contextualPercent}%\t${d.communicationPercent}%\t${d.nonverbalPercent}%\t${d.totalPercent}%`,
+      ].join('\n');
   }
   return text;
 }
@@ -253,6 +277,52 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
   );
 }
 
+// CPLC 결과 테이블 컴포넌트
+function CplcTable({ data }: { data: CplcData }) {
+  const cols = [
+    { label: '담화관리', score: data.discourseScore, percent: data.discoursePercent },
+    { label: '상황조절', score: data.contextualScore, percent: data.contextualPercent },
+    { label: '의사소통의도', score: data.communicationScore, percent: data.communicationPercent },
+    { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
+    { label: '총점', score: data.totalScore, percent: data.totalPercent },
+  ];
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border">
+            <th className="border px-2 py-2 text-center font-medium">항목</th>
+            {cols.map((col) => (
+              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border">
+            <td className="border px-2 py-2 text-center text-xs text-gray-500">원점수</td>
+            {cols.map((col) => (
+              <td key={col.label} className="border px-2 py-2 text-center">
+                {col.score}점
+              </td>
+            ))}
+          </tr>
+          <tr className="border">
+            <td className="border px-2 py-2 text-center text-xs text-gray-500">백분율</td>
+            {cols.map((col) => (
+              <td key={col.label} className="border px-2 py-2 text-center">
+                {col.percent}%
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // 개별 도구 결과 카드 컴포넌트
 interface ToolResultCardProps {
   toolId: string;
@@ -276,6 +346,9 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
             <p className={TEXT_STYLES.body}>{text}</p>
             {toolId === 'problem_solving' && data && (
               <ProblemSolvingTable data={data as unknown as ProblemSolvingData} />
+            )}
+            {toolId === 'cplc' && data && (
+              <CplcTable data={data as unknown as CplcData} />
             )}
           </div>
         </div>
