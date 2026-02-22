@@ -75,9 +75,8 @@ function buildToolCopyText(toolId: string, result: ToolResult): string {
     text +=
       '\n\n' +
       [
-        `\t담화관리\t상황조절\t의사소통의도\t비언어적\t총점`,
-        `원점수\t${d.discourseScore}점\t${d.contextualScore}점\t${d.communicationScore}점\t${d.nonverbalScore}점\t${d.totalScore}점`,
-        `백분율\t${d.discoursePercent}%\t${d.contextualPercent}%\t${d.communicationPercent}%\t${d.nonverbalPercent}%\t${d.totalPercent}%`,
+        `담화관리\t상황조절\t의사소통의도\t비언어적\t총점`,
+        `${d.discourseScore}점\n(${d.discoursePercent}%)\t${d.contextualScore}점\n(${d.contextualPercent}%)\t${d.communicationScore}점\n(${d.communicationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
       ].join('\n');
   }
   return text;
@@ -292,7 +291,6 @@ function CplcTable({ data }: { data: CplcData }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border">
-            <th className="border px-2 py-2 text-center font-medium">항목</th>
             {cols.map((col) => (
               <th key={col.label} className="border px-2 py-2 text-center font-medium">
                 {col.label}
@@ -302,18 +300,10 @@ function CplcTable({ data }: { data: CplcData }) {
         </thead>
         <tbody>
           <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">원점수</td>
             {cols.map((col) => (
               <td key={col.label} className="border px-2 py-2 text-center">
-                {col.score}점
-              </td>
-            ))}
-          </tr>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">백분율</td>
-            {cols.map((col) => (
-              <td key={col.label} className="border px-2 py-2 text-center">
-                {col.percent}%
+                <span className="block">{col.score}점</span>
+                <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
             ))}
           </tr>

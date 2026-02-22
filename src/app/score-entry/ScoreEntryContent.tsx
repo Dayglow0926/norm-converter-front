@@ -14,11 +14,7 @@ import { useScoreEntryStore } from '@/features/score-entry';
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
 import { useTestSelectionStore } from '@/features/test-selection';
-import {
-  TOOL_METADATA,
-  isToolActive,
-  type AssessmentToolId,
-} from '@/entities/assessment-tool';
+import { TOOL_METADATA, isToolActive, type AssessmentToolId } from '@/entities/assessment-tool';
 import { normClient } from '@/shared/api/norm-client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,7 +45,12 @@ const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
   syntax: ['total'],
   problem_solving: ['cause_reason', 'clue_guessing', 'solution_inference'],
   apac: ['rawScore'],
-  cplc: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
+  cplc: [
+    'discourse_management',
+    'contextual_variation',
+    'communication_intent',
+    'nonverbal_communication',
+  ],
   // 향후 추가:
   // revt: ['receptive', 'expressive'],
 };
@@ -121,17 +122,16 @@ export function ScoreEntryContent() {
 
     // problem_solving: 전부 입력 OR 전부 비움(isUntestable) 모두 완료로 처리
     if (toolId === 'problem_solving') {
-      const filled = requiredSubtests.filter(
-        (s) => toolData.inputs[s]?.rawScore !== null
-      ).length;
+      const filled = requiredSubtests.filter((s) => toolData.inputs[s]?.rawScore !== null).length;
       return filled === 0 || filled === requiredSubtests.length;
     }
 
-    // apac: imitationType === 'partial'이면 rawScore 없어도 완료
+    // apac: 모방 유형 선택 필수. partial이면 rawScore 없어도 완료, total이면 rawScore 필요
     if (toolId === 'apac') {
       const imitationType = toolData.inputs.rawScore?.correctItems ?? '';
       if (imitationType === 'partial') return true;
-      return toolData.inputs.rawScore?.rawScore !== null;
+      if (imitationType === 'total') return toolData.inputs.rawScore?.rawScore !== null;
+      return false; // 모방 유형 미선택
     }
 
     return requiredSubtests.every((subtest) => {
@@ -288,7 +288,7 @@ export function ScoreEntryContent() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         {/* 상단 정보 바 */}
-        <Card className="sticky top-4 z-10 mx-auto mb-8 max-w-xl shadow-lg">
+        <Card className="sticky top-4 z-10 mx-auto mb-8 max-w-xl px-6 shadow-lg">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div>

@@ -3,10 +3,10 @@
 /**
  * APAC 점수 입력 폼 컴포넌트
  * rawScore = 오류 개수 (0-70, 정수). 낮을수록 정확도 높음.
- * imitationType: 표준(미선택) | 전체 모방 | 일부 모방(시행 불가)
+ * imitationType: 전체 모방(total) | 일부 모방(partial, 시행 불가)
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useScoreEntryStore } from '../model/store';
 
@@ -18,12 +18,6 @@ const MIN_SCORE = 0;
 const MAX_SCORE = 70;
 
 type ImitationType = 'total' | 'partial' | '';
-
-const IMITATION_OPTIONS: { value: ImitationType; label: string }[] = [
-  { value: '', label: '표준 (생략·대치 기준)' },
-  { value: 'total', label: '전체 모방' },
-  { value: 'partial', label: '일부 모방 (시행 불가)' },
-];
 
 export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   void _ageMonths;
@@ -37,10 +31,10 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   const currentScore = apac?.inputs.rawScore?.rawScore ?? null;
   const imitationType = (apac?.inputs.rawScore?.correctItems ?? '') as ImitationType;
   const isPartial = imitationType === 'partial';
+  const isTotal = imitationType === 'total';
 
-  const handleImitationChange = (value: ImitationType) => {
+  const handleImitationChange = (value: 'total' | 'partial') => {
     setInput('apac', 'rawScore', { correctItems: value });
-    // 시행 불가면 점수 초기화
     if (value === 'partial') {
       setScore('apac', 'rawScore', null);
     }
@@ -60,33 +54,35 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   };
 
   const scoreInvalid =
-    !isPartial && currentScore !== null && (currentScore < MIN_SCORE || currentScore > MAX_SCORE);
+    isTotal && currentScore !== null && (currentScore < MIN_SCORE || currentScore > MAX_SCORE);
+
+  const btnBase =
+    'flex-1 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none';
+  const btnActive = 'bg-primary text-primary-foreground border-primary';
+  const btnInactive = 'border-border hover:bg-muted';
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>APAC 점수 입력</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 pt-4">
         {/* 모방 유형 선택 */}
         <div>
           <p className="mb-2 text-sm font-medium">모방 유형</p>
-          <div className="flex flex-col gap-2">
-            {IMITATION_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="imitationType"
-                  value={opt.value}
-                  checked={imitationType === opt.value}
-                  onChange={() => handleImitationChange(opt.value)}
-                  className="accent-primary"
-                />
-                <span className={`text-sm ${opt.value === 'partial' ? 'text-muted-foreground' : ''}`}>
-                  {opt.label}
-                </span>
-              </label>
-            ))}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleImitationChange('total')}
+              className={`${btnBase} ${isTotal ? btnActive : btnInactive}`}
+            >
+              전체 모방
+            </button>
+            <button
+              type="button"
+              onClick={() => handleImitationChange('partial')}
+              className={`${btnBase} ${isPartial ? btnActive : btnInactive}`}
+            >
+              일부 모방
+              <span className="ml-1 text-xs font-normal opacity-70">(시행 불가)</span>
+            </button>
           </div>
         </div>
 
@@ -99,8 +95,8 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
           </div>
         )}
 
-        {/* 원점수 입력 */}
-        {!isPartial && (
+        {/* 원점수 입력 (전체 모방 선택 시) */}
+        {isTotal && (
           <div>
             <p className="mb-2 text-sm font-medium">오류 개수 (원점수)</p>
             <div className="flex items-center gap-3">
@@ -117,14 +113,20 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
               <span className="text-muted-foreground text-sm">/ 70점</span>
             </div>
             {scoreInvalid && (
-              <p className="text-destructive mt-1 text-xs">{MIN_SCORE}-{MAX_SCORE} 범위만 가능</p>
+              <p className="text-destructive mt-1 text-xs">
+                {MIN_SCORE}-{MAX_SCORE} 범위만 가능
+              </p>
             )}
           </div>
         )}
 
         <div className="space-y-1">
-          <p className="text-muted-foreground text-xs">* 원점수 = 오류 개수 (낮을수록 정확도 높음, 0-70)</p>
-          <p className="text-muted-foreground text-xs">* 연령 범위: 30개월 이상 (78개월 이상은 최고 연령 규준 적용)</p>
+          <p className="text-muted-foreground text-xs">
+            * 원점수 = 오류 개수 (낮을수록 정확도 높음, 0-70)
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * 연령 범위: 30개월 이상 (78개월 이상은 최고 연령 규준 적용)
+          </p>
         </div>
       </CardContent>
     </Card>
