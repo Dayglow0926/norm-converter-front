@@ -88,9 +88,6 @@ export function SelsiScoreForm({ ageMonths: _ageMonths, gender: _gender }: Selsi
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>SELSI 점수 입력</CardTitle>
-      </CardHeader>
       <CardContent>
         {/* 점수 입력 테이블 */}
         <div className="overflow-x-auto">

@@ -80,9 +80,6 @@ export function PresScoreForm({ ageMonths: _ageMonths }: PresScoreFormProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>PRES 점수 입력</CardTitle>
-      </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -184,9 +181,7 @@ export function PresScoreForm({ ageMonths: _ageMonths }: PresScoreFormProps) {
 
         {/* 안내 문구 */}
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-xs">
-            * 원점수 범위: 수용/표현 각 1-60점
-          </p>
+          <p className="text-muted-foreground text-xs">* 원점수 범위: 수용/표현 각 1-60점</p>
           <p className="text-muted-foreground text-xs">
             * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6,
             10)

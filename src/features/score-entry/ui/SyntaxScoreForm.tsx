@@ -53,9 +53,6 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>구문의미이해력 점수 입력</CardTitle>
-      </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -92,9 +89,7 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
 
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 원점수 범위: 0-63점</p>
-          <p className="text-muted-foreground text-xs">
-            * 연령 범위: 48-119개월 (4세~9세 11개월)
-          </p>
+          <p className="text-muted-foreground text-xs">* 연령 범위: 48-119개월 (4세~9세 11개월)</p>
         </div>
       </CardContent>
     </Card>

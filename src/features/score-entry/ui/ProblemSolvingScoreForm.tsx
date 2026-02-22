@@ -57,8 +57,9 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
 
   // 총점 자동 합산
   const scores = SUBTESTS.map((s) => problemSolving?.inputs[s]?.rawScore ?? null);
-  const totalScore =
-    scores.every((s) => s !== null) ? scores.reduce((sum, s) => sum! + s!, 0) : null;
+  const totalScore = scores.every((s) => s !== null)
+    ? scores.reduce((sum, s) => sum! + s!, 0)
+    : null;
 
   // 부분 입력 경고 (1~2개만 입력)
   const filledCount = scores.filter((s) => s !== null).length;
@@ -66,9 +67,6 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>언어문제해결력 점수 입력</CardTitle>
-      </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -100,9 +98,7 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
                           onChange={(e) => handleScoreChange(subtest, e.target.value)}
                           aria-invalid={!!error}
                         />
-                        {error && (
-                          <span className="text-destructive mt-1 text-xs">{error}</span>
-                        )}
+                        {error && <span className="text-destructive mt-1 text-xs">{error}</span>}
                       </div>
                     </td>
                     <td className="px-2 py-3">
@@ -146,9 +142,7 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
           <p className="text-muted-foreground text-xs">
             * 지시문 번호: 쉼표로 구분 (예: 1,2,3) — 선택 사항
           </p>
-          <p className="text-muted-foreground text-xs">
-            * 연령 범위: 60-143개월 (5세~11세 11개월)
-          </p>
+          <p className="text-muted-foreground text-xs">* 연령 범위: 60-143개월 (5세~11세 11개월)</p>
         </div>
       </CardContent>
     </Card>

@@ -70,9 +70,6 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>CPLC 점수 입력</CardTitle>
-      </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -151,7 +148,8 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 4개 영역 모두 입력 후 결과 확인 가능</p>
           <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 (예: 1, 2, 3-6) — 선택 사항
+            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 (예: 1, 2, 3-6) — 선택
+            사항
           </p>
           <p className="text-muted-foreground text-xs">* 연령 범위: 60-143개월 (5세~11세 11개월)</p>
         </div>
