@@ -5,7 +5,7 @@
  * 4개 영역 원점수 + 정반응/오반응 번호 입력 → 영역별/총점 백분율 (규준 변환 아님)
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useScoreEntryStore } from '../model/store';
 
@@ -23,16 +23,49 @@ interface CplcSubtestMeta {
   key: CplcSubtest;
   label: string;
   maxScore: number;
+  itemMin: number;
+  itemMax: number;
 }
 
 const CPLC_SUBTESTS: CplcSubtestMeta[] = [
-  { key: 'discourse_management', label: '담화관리', maxScore: 33 },
-  { key: 'contextual_variation', label: '상황에 따른 조절 및 적응', maxScore: 39 },
-  { key: 'communication_intent', label: '의사소통 의도 사용', maxScore: 45 },
-  { key: 'nonverbal_communication', label: '비언어적 의사소통', maxScore: 24 },
+  { key: 'discourse_management', label: '담화관리', maxScore: 33, itemMin: 1, itemMax: 11 },
+  { key: 'contextual_variation', label: '상황에 따른 조절 및 적응', maxScore: 39, itemMin: 12, itemMax: 24 },
+  { key: 'communication_intent', label: '의사소통 의도 사용', maxScore: 45, itemMin: 25, itemMax: 39 },
+  { key: 'nonverbal_communication', label: '비언어적 의사소통', maxScore: 24, itemMin: 40, itemMax: 47 },
 ];
 
 const CPLC_TOTAL_MAX = 141;
+
+/**
+ * "1, 2, 3-6" 형식 문자열을 숫자 배열로 파싱
+ */
+function parseNumberArray(str: string): number[] {
+  if (!str.trim()) return [];
+  const result: number[] = [];
+  for (const part of str.split(',')) {
+    const trimmed = part.trim();
+    const range = trimmed.match(/^(\d+)-(\d+)$/);
+    if (range) {
+      const start = parseInt(range[1], 10);
+      const end = parseInt(range[2], 10);
+      for (let i = start; i <= end; i++) result.push(i);
+    } else {
+      const num = parseInt(trimmed, 10);
+      if (!isNaN(num)) result.push(num);
+    }
+  }
+  return result;
+}
+
+/**
+ * 문자열의 모든 번호가 [min, max] 범위 안에 있는지 확인
+ * 빈 문자열이면 항상 유효
+ */
+function isItemRangeValid(str: string, min: number, max: number): boolean {
+  if (!str.trim()) return true;
+  const nums = parseNumberArray(str);
+  return nums.every((n) => n >= min && n <= max);
+}
 
 export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
   void _ageMonths;
@@ -83,10 +116,14 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
               </tr>
             </thead>
             <tbody>
-              {CPLC_SUBTESTS.map(({ key, label, maxScore }) => {
+              {CPLC_SUBTESTS.map(({ key, label, maxScore, itemMin, itemMax }) => {
                 const currentScore = cplc?.inputs[key]?.rawScore ?? null;
                 const isInvalid =
                   currentScore !== null && (currentScore < 0 || currentScore > maxScore);
+                const correctItemsVal = cplc?.inputs[key]?.correctItems ?? '';
+                const wrongItemsVal = cplc?.inputs[key]?.wrongItems ?? '';
+                const correctRangeError = !isItemRangeValid(correctItemsVal, itemMin, itemMax);
+                const wrongRangeError = !isItemRangeValid(wrongItemsVal, itemMin, itemMax);
 
                 return (
                   <tr key={key} className="border-b">
@@ -110,22 +147,38 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
                       </div>
                     </td>
                     <td className="px-2 py-3">
-                      <Input
-                        type="text"
-                        placeholder="1, 2, 3-6"
-                        className="w-full text-center text-sm"
-                        value={cplc?.inputs[key]?.correctItems ?? ''}
-                        onChange={(e) => handleItemsChange(key, 'correctItems', e.target.value)}
-                      />
+                      <div className="flex flex-col">
+                        <Input
+                          type="text"
+                          placeholder={`${itemMin}-${itemMax}`}
+                          className={`w-full text-center text-sm ${correctRangeError ? 'border-destructive' : ''}`}
+                          value={correctItemsVal}
+                          onChange={(e) => handleItemsChange(key, 'correctItems', e.target.value)}
+                          aria-invalid={correctRangeError}
+                        />
+                        {correctRangeError && (
+                          <span className="text-destructive mt-1 text-xs">
+                            {itemMin}-{itemMax}번만 입력 가능
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-2 py-3">
-                      <Input
-                        type="text"
-                        placeholder="7, 8, 9-12"
-                        className="w-full text-center text-sm"
-                        value={cplc?.inputs[key]?.wrongItems ?? ''}
-                        onChange={(e) => handleItemsChange(key, 'wrongItems', e.target.value)}
-                      />
+                      <div className="flex flex-col">
+                        <Input
+                          type="text"
+                          placeholder={`${itemMin}-${itemMax}`}
+                          className={`w-full text-center text-sm ${wrongRangeError ? 'border-destructive' : ''}`}
+                          value={wrongItemsVal}
+                          onChange={(e) => handleItemsChange(key, 'wrongItems', e.target.value)}
+                          aria-invalid={wrongRangeError}
+                        />
+                        {wrongRangeError && (
+                          <span className="text-destructive mt-1 text-xs">
+                            {itemMin}-{itemMax}번만 입력 가능
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -148,8 +201,8 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 4개 영역 모두 입력 후 결과 확인 가능</p>
           <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 (예: 1, 2, 3-6) — 선택
-            사항
+            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 — 각 영역에 해당하는
+            번호만 입력 가능 (선택 사항)
           </p>
           <p className="text-muted-foreground text-xs">* 연령 범위: 60-143개월 (5세~11세 11개월)</p>
         </div>
