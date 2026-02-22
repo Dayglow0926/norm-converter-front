@@ -2,7 +2,7 @@
 
 /**
  * CPLC 점수 입력 폼 컴포넌트
- * 4개 영역 원점수 입력 → 영역별/총점 백분율 (규준 변환 아님)
+ * 4개 영역 원점수 + 정반응/오반응 번호 입력 → 영역별/총점 백분율 (규준 변환 아님)
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +39,7 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
 
   const cplc = useScoreEntryStore((state) => state.tools.cplc);
   const setScore = useScoreEntryStore((state) => state.setScore);
+  const setInput = useScoreEntryStore((state) => state.setInput);
 
   const handleScoreChange = (subtest: CplcSubtest, maxScore: number, value: string) => {
     if (value === '') {
@@ -51,6 +52,14 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
       return;
     }
     setScore('cplc', subtest, num);
+  };
+
+  const handleItemsChange = (
+    subtest: CplcSubtest,
+    field: 'correctItems' | 'wrongItems',
+    value: string
+  ) => {
+    setInput('cplc', subtest, { [field]: value });
   };
 
   // 총점 자동 합산
@@ -72,6 +81,8 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
                 <th className="px-2 py-3 text-left font-medium">영역</th>
                 <th className="px-2 py-3 text-center font-medium">만점</th>
                 <th className="px-2 py-3 text-center font-medium">원점수</th>
+                <th className="px-2 py-3 text-center font-medium">정반응 번호</th>
+                <th className="px-2 py-3 text-center font-medium">오반응 번호</th>
               </tr>
             </thead>
             <tbody>
@@ -101,6 +112,24 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
                         )}
                       </div>
                     </td>
+                    <td className="px-2 py-3">
+                      <Input
+                        type="text"
+                        placeholder="1, 2, 3-6"
+                        className="w-full text-center text-sm"
+                        value={cplc?.inputs[key]?.correctItems ?? ''}
+                        onChange={(e) => handleItemsChange(key, 'correctItems', e.target.value)}
+                      />
+                    </td>
+                    <td className="px-2 py-3">
+                      <Input
+                        type="text"
+                        placeholder="7, 8, 9-12"
+                        className="w-full text-center text-sm"
+                        value={cplc?.inputs[key]?.wrongItems ?? ''}
+                        onChange={(e) => handleItemsChange(key, 'wrongItems', e.target.value)}
+                      />
+                    </td>
                   </tr>
                 );
               })}
@@ -112,6 +141,8 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {totalScore ?? '-'}
                 </td>
+                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">-</td>
               </tr>
             </tbody>
           </table>
@@ -119,7 +150,9 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
 
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 4개 영역 모두 입력 후 결과 확인 가능</p>
-          <p className="text-muted-foreground text-xs">* 결과: 원점수 → 영역별/총점 백분율(%)</p>
+          <p className="text-muted-foreground text-xs">
+            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 (예: 1, 2, 3-6) — 선택 사항
+          </p>
           <p className="text-muted-foreground text-xs">* 연령 범위: 60-143개월 (5세~11세 11개월)</p>
         </div>
       </CardContent>
