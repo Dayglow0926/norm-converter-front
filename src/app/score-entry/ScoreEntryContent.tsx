@@ -193,12 +193,15 @@ export function ScoreEntryContent() {
           continue;
         }
 
-        // cplc: { discourse_management, contextual_variation, ... } 플랫 숫자 기대
+        // cplc: 영역별 { rawScore, correctItems?, wrongItems? } 객체
         if (toolId === 'cplc') {
           const cplcPayload: Record<string, unknown> = {};
           for (const [subtest, input] of Object.entries(toolData.inputs)) {
             if (input.rawScore !== null) {
-              cplcPayload[subtest] = input.rawScore;
+              const areaPayload: Record<string, unknown> = { rawScore: input.rawScore };
+              if (input.correctItems) areaPayload.correctItems = input.correctItems;
+              if (input.wrongItems) areaPayload.wrongItems = input.wrongItems;
+              cplcPayload[subtest] = areaPayload;
             }
           }
           toolsPayload[toolId] = cplcPayload;
