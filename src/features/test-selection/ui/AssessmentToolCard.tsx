@@ -77,7 +77,7 @@ export function AssessmentToolCard({
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6">
         <p className="text-muted-foreground mb-2 text-sm">{meta.description}</p>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-xs">적용 연령: {ageRange}</span>

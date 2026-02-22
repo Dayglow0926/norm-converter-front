@@ -54,7 +54,7 @@ export default function SelectToolPage() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         {/* 아동 정보 + 선택 상태 (상단 고정) */}
-        <Card className="sticky top-4 z-10 mx-auto mb-8 max-w-4xl shadow-lg">
+        <Card className="sticky top-4 z-10 mx-auto mb-8 max-w-4xl px-6 shadow-lg">
           <CardContent>
             <div className="flex items-center justify-between gap-4">
               {/* 아동 정보 */}
