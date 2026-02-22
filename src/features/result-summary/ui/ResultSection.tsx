@@ -157,10 +157,26 @@ export function ResultSection({
   const copyToClipboard = useCallback(
     async (text: string, feedbackMsg: string) => {
       try {
-        await navigator.clipboard.writeText(text);
+        const escaped = text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        const html = `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'text/html': new Blob([html], { type: 'text/html' }),
+          }),
+        ]);
         showCopyFeedback(feedbackMsg);
       } catch {
-        showCopyFeedback('복사 실패');
+        // ClipboardItem 미지원 시 plain text fallback
+        try {
+          await navigator.clipboard.writeText(text);
+          showCopyFeedback(feedbackMsg);
+        } catch {
+          showCopyFeedback('복사 실패');
+        }
       }
     },
     [showCopyFeedback]
