@@ -69,12 +69,21 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     subtests: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
     description: '아동 화용언어 체크리스트 (5-11세)',
   },
+  language_analysis: {
+    id: 'language_analysis',
+    name: '언어분석',
+    category: '전 연령',
+    minAgeMonths: 0,
+    maxAgeMonths: 9999,
+    subtests: [],
+    description: '행동관찰 / 자발화 / 대화분석',
+  },
 };
 
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving', 'apac', 'cplc'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving', 'apac', 'cplc', 'language_analysis'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)
@@ -87,6 +96,7 @@ export const ALL_TOOL_IDS: AssessmentToolId[] = [
   'problem_solving',
   'apac',
   'cplc',
+  'language_analysis',
 ];
 
 /**

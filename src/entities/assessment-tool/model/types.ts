@@ -9,9 +9,10 @@ export type AssessmentToolId =
   | 'syntax'
   | 'problem_solving'
   | 'apac'
-  | 'cplc';
+  | 'cplc'
+  | 'language_analysis';
 
-export type AssessmentCategory = '영유아' | '학령전기';
+export type AssessmentCategory = '영유아' | '학령전기' | '전 연령';
 
 export interface ToolMetadata {
   id: AssessmentToolId;

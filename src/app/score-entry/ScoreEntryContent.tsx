@@ -10,7 +10,9 @@ import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
 import { ProblemSolvingScoreForm } from '@/features/score-entry/ui/ProblemSolvingScoreForm';
 import { ApacScoreForm } from '@/features/score-entry/ui/ApacScoreForm';
 import { CplcScoreForm } from '@/features/score-entry/ui/CplcScoreForm';
+import { LanguageAnalysisForm } from '@/features/score-entry/ui/LanguageAnalysisForm';
 import { useScoreEntryStore } from '@/features/score-entry';
+import { useLanguageAnalysisStore } from '@/features/score-entry/model/languageAnalysisStore';
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
 import { useTestSelectionStore } from '@/features/test-selection';
@@ -51,7 +53,7 @@ const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
     'communication_intent',
     'nonverbal_communication',
   ],
-  // 향후 추가:
+  // language_analysis는 useLanguageAnalysisStore.selectedType 기반으로 별도 처리
   // revt: ['receptive', 'expressive'],
 };
 
@@ -73,6 +75,7 @@ export function ScoreEntryContent() {
   const clearResults = useScoreEntryStore((state) => state.clearResults);
 
   const { selectedTools, clearSelection } = useTestSelectionStore();
+  const { selectedType: laSelectedType, spontaneous: laSpontaneous, clearAll: laClearAll, clearResult: laClearResult } = useLanguageAnalysisStore();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -114,6 +117,17 @@ export function ScoreEntryContent() {
 
   // 도구별 입력 완료 여부 확인
   const isToolComplete = (toolId: AssessmentToolId): boolean => {
+    // 언어분석: 유형 선택 여부로 완료 판단
+    if (toolId === 'language_analysis') {
+      if (laSelectedType === null) return false;
+      // 자발화: mluW 또는 mluMax 중 하나 이상 입력 필요
+      if (laSelectedType === 'spontaneous_speech') {
+        return laSpontaneous.mluW !== null || laSpontaneous.mluMax !== null;
+      }
+      // 대화분석/행동관찰: 유형 선택만으로 완료
+      return true;
+    }
+
     const toolData = tools[toolId];
     if (!toolData) return false;
 
@@ -149,12 +163,14 @@ export function ScoreEntryContent() {
   // 도구 변경: 점수만 초기화
   const handleToolChange = () => {
     clearAll();
+    laClearAll();
     router.push('/select-tool');
   };
 
   // 처음으로: 모든 정보 초기화
   const handleGoHome = () => {
     clearAll();
+    laClearAll();
     clearSelection();
     clearChildInfo();
     router.push('/');
@@ -167,6 +183,7 @@ export function ScoreEntryContent() {
     setIsLoading(true);
     setApiError(null);
     clearResults();
+    laClearResult();
 
     try {
       // 선택된 도구별 요청 데이터 구성
@@ -175,6 +192,20 @@ export function ScoreEntryContent() {
       for (const toolId of activeSelectedTools) {
         const toolData = tools[toolId];
         if (!toolData) continue;
+
+        // language_analysis: 유형 + 입력 데이터 구성
+        if (toolId === 'language_analysis') {
+          if (!laSelectedType) continue;
+          const laPayload: Record<string, unknown> = { analysisType: laSelectedType };
+          if (laSelectedType === 'spontaneous_speech') {
+            const spontaneousData: Record<string, number> = {};
+            if (laSpontaneous.mluW !== null) spontaneousData.mluW = laSpontaneous.mluW;
+            if (laSpontaneous.mluMax !== null) spontaneousData.mluMax = laSpontaneous.mluMax;
+            if (Object.keys(spontaneousData).length > 0) laPayload.spontaneous = spontaneousData;
+          }
+          toolsPayload[toolId] = laPayload;
+          continue;
+        }
 
         // syntax: BE API가 subtest 래퍼 없이 { rawScore } 직접 기대
         if (toolId === 'syntax') {
@@ -264,6 +295,8 @@ export function ScoreEntryContent() {
         return <ApacScoreForm ageMonths={ageMonths} />;
       case 'cplc':
         return <CplcScoreForm ageMonths={ageMonths} />;
+      case 'language_analysis':
+        return <LanguageAnalysisForm />;
       default:
         return <p className="text-muted-foreground py-4">준비 중입니다.</p>;
     }
