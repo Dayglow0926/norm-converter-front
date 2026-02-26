@@ -9,7 +9,7 @@
  * 섹션 5: 화용/담화 체크리스트 + 발화 예시
  * 섹션 6: 주제 관리 체크리스트
  * 섹션 7: 상황별 관찰 동적 추가/삭제
- * 섹션 8: 공동주의/활동/호명 체크리스트
+ * 섹션 8: 공동활동/호명 체크리스트
  */
 
 import { useState, useRef, type KeyboardEvent } from 'react';
@@ -68,8 +68,7 @@ function SyntaxMeasuresSection() {
         <tbody>
           <tr className="border-b">
             <td className="py-2">
-              <span>MLU-w</span>
-              <span className="text-muted-foreground ml-1 text-xs">(평균어절길이)</span>
+              <span>평균어절길이</span>
             </td>
             <td className="py-2 text-center">
               <Input
@@ -85,8 +84,7 @@ function SyntaxMeasuresSection() {
           </tr>
           <tr className="border-b">
             <td className="py-2">
-              <span>MLU-max</span>
-              <span className="text-muted-foreground ml-1 text-xs">(최장발화길이)</span>
+              <span>최장어절길이</span>
             </td>
             <td className="py-2 text-center">
               <Input
@@ -108,9 +106,7 @@ function SyntaxMeasuresSection() {
           <Input
             placeholder="가장 긴 발화 텍스트를 입력하세요"
             value={spontaneous.longestUtterance ?? ''}
-            onChange={(e) =>
-              setSpontaneousField('longestUtterance', e.target.value || null)
-            }
+            onChange={(e) => setSpontaneousField('longestUtterance', e.target.value || null)}
             className="mt-1 h-8 text-sm"
           />
         </div>
@@ -119,9 +115,7 @@ function SyntaxMeasuresSection() {
           <Input
             placeholder="예: 놀이 상황, 그림책 보기"
             value={spontaneous.speakingSituation ?? ''}
-            onChange={(e) =>
-              setSpontaneousField('speakingSituation', e.target.value || null)
-            }
+            onChange={(e) => setSpontaneousField('speakingSituation', e.target.value || null)}
             className="mt-1 h-8 text-sm"
           />
         </div>
@@ -141,9 +135,7 @@ function CommunicationFunctionsSection() {
 
   const toggleItem = (category: string, item: string) => {
     const current = spontaneous.communicationFunctions[category] ?? [];
-    const updated = current.includes(item)
-      ? current.filter((i) => i !== item)
-      : [...current, item];
+    const updated = current.includes(item) ? current.filter((i) => i !== item) : [...current, item];
     setSpontaneousField('communicationFunctions', {
       ...spontaneous.communicationFunctions,
       [category]: updated,
@@ -341,10 +333,7 @@ function MorphemeTagsSection() {
 
   return (
     <div>
-      <SectionHeader
-        title="섹션 3: 문법형태소"
-        subtitle="Enter로 태그 추가, ×로 삭제"
-      />
+      <SectionHeader title="섹션 3: 문법형태소" subtitle="Enter로 태그 추가, ×로 삭제" />
       <div className="space-y-2">
         <div>
           <label className="text-xs font-medium">조사</label>
@@ -585,7 +574,10 @@ function SituationalObservationsSection() {
 
   return (
     <div>
-      <SectionHeader title="섹션 7: 상황별 관찰" subtitle="각 상황의 관찰 내용과 발화 예시를 입력하세요" />
+      <SectionHeader
+        title="섹션 7: 상황별 관찰"
+        subtitle="각 상황의 관찰 내용과 발화 예시를 입력하세요"
+      />
       <div className="space-y-3">
         {situationalObservations.map((obs, index) => (
           <div key={`${obs.situation}-${index}`} className="rounded-md border p-3">
@@ -647,7 +639,7 @@ function SituationalObservationsSection() {
 }
 
 // =========================================
-// 섹션 8: 공동주의/활동/호명
+// 섹션 8: 공동활동/호명
 // =========================================
 
 function JointAttentionSection() {
@@ -661,7 +653,7 @@ function JointAttentionSection() {
 
   return (
     <div>
-      <SectionHeader title="섹션 8: 공동주의/활동/호명" subtitle="선택 사항" />
+      <SectionHeader title="섹션 8: 공동활동/호명" subtitle="선택 사항" />
       <div className="rounded-md border px-3">
         {jointAttention.map((item, index) => (
           <ChecklistRow

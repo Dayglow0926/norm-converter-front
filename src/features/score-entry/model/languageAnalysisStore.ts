@@ -11,10 +11,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 // 타입 정의
 // =========================================
 
-export type LanguageAnalysisType =
-  | 'spontaneous_speech'
-  | 'conversation'
-  | 'behavioral_observation';
+export type LanguageAnalysisType = 'spontaneous_speech' | 'conversation' | 'behavioral_observation';
 
 export const LANGUAGE_ANALYSIS_TYPE_LABELS: Record<LanguageAnalysisType, string> = {
   spontaneous_speech: '자발화',
@@ -38,9 +35,9 @@ export interface SituationalObservation {
 
 // 문법형태소 태그
 export interface MorphemeTags {
-  particles: string[];    // 조사
+  particles: string[]; // 조사
   conjunctions: string[]; // 연결어미
-  endings: string[];      // 종결어미
+  endings: string[]; // 종결어미
 }
 
 export interface SpontaneousInput {
@@ -74,7 +71,7 @@ export interface SpontaneousInput {
   // 섹션 7: 상황별 관찰
   situationalObservations: SituationalObservation[];
 
-  // 섹션 8: 공동주의/활동/호명
+  // 섹션 8: 공동활동/호명
   jointAttention: ChecklistItem[];
 }
 
@@ -108,7 +105,6 @@ export const DEFAULT_SITUATIONS: SituationalObservation[] = [
 // 기본 공동주의/활동/호명 항목
 export const DEFAULT_JOINT_ATTENTION_ITEMS: ChecklistItem[] = [
   { label: '눈 맞춤', value: null },
-  { label: '공동주의', value: null },
   { label: '공동활동', value: null },
   { label: '호명반응', value: null },
   { label: '사회적 미소', value: null },
@@ -121,7 +117,7 @@ export const COMMUNICATION_FUNCTION_CATEGORIES: Array<{
 }> = [
   {
     category: '요구/요청',
-    items: ['물건 요구하기', '행동 요구하기', '허가 요구하기', '정보 요구하기'],
+    items: ['물건 요구하기', '행동 요구하기', '허락 요구하기', '정보 요구하기'],
   },
   {
     category: '사회적 기능',
@@ -130,10 +126,6 @@ export const COMMUNICATION_FUNCTION_CATEGORIES: Array<{
   {
     category: '정보 제공',
     items: ['명명하기', '설명하기', '이야기하기', '대답하기'],
-  },
-  {
-    category: '공동주의',
-    items: ['시선 공유하기', '가리키기', '보여주기', '주의 끌기'],
   },
 ];
 
@@ -168,7 +160,10 @@ interface LanguageAnalysisState {
 
   setSelectedType: (type: LanguageAnalysisType | null) => void;
   setSpontaneous: (input: Partial<SpontaneousInput>) => void;
-  setSpontaneousField: <K extends keyof SpontaneousInput>(field: K, value: SpontaneousInput[K]) => void;
+  setSpontaneousField: <K extends keyof SpontaneousInput>(
+    field: K,
+    value: SpontaneousInput[K]
+  ) => void;
   setStep1Result: (result: LanguageAnalysisStep1Result | null) => void;
   setStep2Text: (text: string | null) => void;
   clearAll: () => void;
