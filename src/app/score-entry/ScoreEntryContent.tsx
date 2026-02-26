@@ -119,13 +119,8 @@ export function ScoreEntryContent() {
   const isToolComplete = (toolId: AssessmentToolId): boolean => {
     // 언어분석: 유형 선택 여부로 완료 판단
     if (toolId === 'language_analysis') {
-      if (laSelectedType === null) return false;
-      // 자발화: mluW 또는 mluMax 중 하나 이상 입력 필요
-      if (laSelectedType === 'spontaneous_speech') {
-        return laSpontaneous.mluW !== null || laSpontaneous.mluMax !== null;
-      }
-      // 대화분석/행동관찰: 유형 선택만으로 완료
-      return true;
+      // 모든 섹션 선택사항 → 유형 선택만으로 완료
+      return laSelectedType !== null;
     }
 
     const toolData = tools[toolId];

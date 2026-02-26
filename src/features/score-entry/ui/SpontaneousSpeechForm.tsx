@@ -102,11 +102,6 @@ function SyntaxMeasuresSection() {
           </tr>
         </tbody>
       </table>
-      {spontaneous.mluW === null && spontaneous.mluMax === null && (
-        <p className="text-muted-foreground mt-1 text-xs">
-          MLU-w 또는 MLU-max 중 하나 이상 입력해주세요
-        </p>
-      )}
       <div className="mt-3 space-y-2">
         <div>
           <label className="text-xs font-medium">가장 긴 발화</label>
