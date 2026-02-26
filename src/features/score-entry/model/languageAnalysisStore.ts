@@ -211,6 +211,13 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
     }),
     {
       name: 'norm-converter-language-analysis-session',
+      version: 1, // SCRUM-112: SpontaneousInput 구조 변경 → 이전 저장 상태 무효화
+      migrate: () => ({
+        selectedType: null,
+        spontaneous: DEFAULT_SPONTANEOUS_INPUT,
+        step1Result: null,
+        step2Text: null,
+      }),
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
