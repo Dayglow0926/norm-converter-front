@@ -198,9 +198,56 @@ export function ScoreEntryContent() {
           if (!laSelectedType) continue;
           const laPayload: Record<string, unknown> = { analysisType: laSelectedType };
           if (laSelectedType === 'spontaneous_speech') {
-            const spontaneousData: Record<string, number> = {};
-            if (laSpontaneous.mluW !== null) spontaneousData.mluW = laSpontaneous.mluW;
-            if (laSpontaneous.mluMax !== null) spontaneousData.mluMax = laSpontaneous.mluMax;
+            const sp = laSpontaneous;
+            const spontaneousData: Record<string, unknown> = {};
+            if (sp.mluW !== null) spontaneousData.mluW = sp.mluW;
+            if (sp.mluMax !== null) spontaneousData.mluMax = sp.mluMax;
+            if (sp.longestUtterance) spontaneousData.longestUtterance = sp.longestUtterance;
+            if (sp.speakingSituation) spontaneousData.speakingSituation = sp.speakingSituation;
+
+            // 의사소통 기능: 카테고리별 선택 항목을 flat array로 변환
+            const allCommFunctions = Object.values(sp.communicationFunctions).flat();
+            if (allCommFunctions.length > 0) spontaneousData.communicationFunctions = allCommFunctions;
+
+            // 문법형태소
+            const hasMorphemes =
+              sp.morphemes.particles.length > 0 ||
+              sp.morphemes.conjunctions.length > 0 ||
+              sp.morphemes.endings.length > 0;
+            if (hasMorphemes) spontaneousData.morphemes = sp.morphemes;
+
+            // 의미/문법 오류
+            if (sp.semanticErrors.enabled && sp.semanticErrors.examples) {
+              spontaneousData.semanticErrors = sp.semanticErrors.examples;
+            }
+
+            // 화용/담화: 선택된 항목 (positive/negative 각각)
+            const pragmaticSelected = sp.pragmatic.items
+              .filter((item) => item.value !== null)
+              .map((item) => `${item.label}(${item.value === 'positive' ? '예' : '아니오'})`);
+            if (pragmaticSelected.length > 0) {
+              spontaneousData.pragmatic = pragmaticSelected;
+            }
+            if (sp.pragmatic.examples) spontaneousData.pragmaticExamples = sp.pragmatic.examples;
+
+            // 주제 관리: 선택된 항목
+            const topicSelected = sp.topicManagement
+              .filter((item) => item.value !== null)
+              .map((item) => `${item.label}(${item.value === 'positive' ? '예' : '아니오'})`);
+            if (topicSelected.length > 0) spontaneousData.topicManagement = topicSelected;
+
+            // 상황별 관찰: 내용이 있는 항목만
+            const observations = sp.situationalObservations.filter(
+              (obs) => obs.observation || obs.example
+            );
+            if (observations.length > 0) spontaneousData.situationalObservations = observations;
+
+            // 공동주의/활동/호명
+            const jointSelected = sp.jointAttention
+              .filter((item) => item.value !== null)
+              .map((item) => `${item.label}(${item.value === 'positive' ? '예' : '아니오'})`);
+            if (jointSelected.length > 0) spontaneousData.jointAttention = jointSelected;
+
             if (Object.keys(spontaneousData).length > 0) laPayload.spontaneous = spontaneousData;
           }
           toolsPayload[toolId] = laPayload;

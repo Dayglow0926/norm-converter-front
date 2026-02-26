@@ -8,6 +8,7 @@ export { ProblemSolvingScoreForm } from './ui/ProblemSolvingScoreForm';
 export { ApacScoreForm } from './ui/ApacScoreForm';
 export { CplcScoreForm } from './ui/CplcScoreForm';
 export { LanguageAnalysisForm } from './ui/LanguageAnalysisForm';
+export { SpontaneousSpeechForm } from './ui/SpontaneousSpeechForm';
 export { useScoreEntryStore } from './model/store';
 export type { SubtestInput, ToolApiResult, ToolScoreData } from './model/store';
 export { useLanguageAnalysisStore, useLanguageAnalysisCustomItemsStore } from './model/languageAnalysisStore';
