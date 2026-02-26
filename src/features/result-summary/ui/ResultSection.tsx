@@ -68,19 +68,6 @@ interface CplcData {
   totalPercent: number;
 }
 
-// 언어분석 API 데이터 구조
-interface MluEntry {
-  value: number;
-  ageRangeText: string;
-  peerComparisonText: string;
-}
-interface LanguageAnalysisData {
-  analysisType: string;
-  mlu?: {
-    mluW?: MluEntry;
-    mluMax?: MluEntry;
-  };
-}
 
 // 도구별 복사 텍스트 생성 (테이블 포함)
 function buildToolCopyText(toolId: string, result: ToolResult): string {
@@ -450,42 +437,6 @@ function CplcTable({ data }: { data: CplcData }) {
   );
 }
 
-// 언어분석 MLU 결과 테이블 컴포넌트
-function LanguageAnalysisMluTable({ data }: { data: LanguageAnalysisData }) {
-  const { mlu } = data;
-  if (!mlu || (!mlu.mluW && !mlu.mluMax)) return null;
-
-  const rows = [
-    mlu.mluW ? { label: '평균어절길이', ...mlu.mluW } : null,
-    mlu.mluMax ? { label: '최장어절길이', ...mlu.mluMax } : null,
-  ].filter((r): r is NonNullable<typeof r> => r !== null);
-
-  return (
-    <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border">
-            <th className="border px-2 py-2 text-center font-medium"></th>
-            <th className="border px-2 py-2 text-center font-medium">값</th>
-            <th className="border px-2 py-2 text-center font-medium">연령 수준</th>
-            <th className="border px-2 py-2 text-center font-medium">또래 비교</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.label} className="border">
-              <td className="border px-2 py-2 text-center text-xs text-gray-500">{row.label}</td>
-              <td className="border px-2 py-2 text-center">{row.value.toFixed(2)}</td>
-              <td className="border px-2 py-2 text-center">{row.ageRangeText}</td>
-              <td className="border px-2 py-2 text-center">{row.peerComparisonText}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // 개별 도구 결과 카드 컴포넌트
 interface ToolResultCardProps {
   toolId: string;
@@ -515,9 +466,6 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
             )}
             {toolId === 'cplc' && data && (
               <CplcTable data={data as unknown as CplcData} />
-            )}
-            {toolId === 'language_analysis' && data && (
-              <LanguageAnalysisMluTable data={data as unknown as LanguageAnalysisData} />
             )}
           </div>
         </div>
