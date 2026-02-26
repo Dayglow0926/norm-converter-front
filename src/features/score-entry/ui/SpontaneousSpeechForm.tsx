@@ -317,6 +317,7 @@ function TagInput({
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+          if (e.nativeEvent.isComposing) return; // IME 조합 중 무시
           if (e.key === 'Enter') {
             e.preventDefault();
             addTag();
