@@ -45,6 +45,7 @@ export interface SpontaneousInput {
   mluW: number | null;
   mluMax: number | null;
   longestUtterance: string | null; // 가장 긴 발화 텍스트
+  longestUtteranceStructure: string | null; // 가장 긴 발화 문법 구조 (예: "대등접속 복문")
   speakingSituation: string | null; // 발화 상황
 
   // 섹션 2: 의사소통 기능 (카테고리 → 선택 항목 배열)
@@ -116,16 +117,49 @@ export const COMMUNICATION_FUNCTION_CATEGORIES: Array<{
   items: string[];
 }> = [
   {
-    category: '요구/요청',
-    items: ['물건 요구하기', '행동 요구하기', '허락 요구하기', '정보 요구하기'],
+    category: '요구',
+    items: [
+      '예/아니오 질문',
+      '의문사 질문',
+      '명료화 질문',
+      '확인질문',
+      '행위 요구',
+      '사물 요구',
+      '허락 요구',
+    ],
   },
   {
-    category: '사회적 기능',
-    items: ['인사하기', '부르기', '거절하기', '항의하기', '칭찬하기'],
+    category: '반응',
+    items: [
+      '예/수용',
+      '아니오/저항/부정',
+      '의문사 대답',
+      '명료화',
+      '순응',
+      '거부/저항',
+      '반복',
+      '의례적 반응',
+    ],
   },
   {
-    category: '정보 제공',
-    items: ['명명하기', '설명하기', '이야기하기', '대답하기'],
+    category: '객관적 언급',
+    items: ['사물에 주의끌기', '이름대기', '사건 상태', '고유 특성', '기능', '위치', '시간'],
+  },
+  {
+    category: '주관적 진술',
+    items: ['규칙', '평가', '내적상태', '속성', '주장', '설명'],
+  },
+  {
+    category: '메세지 수신표현',
+    items: ['수용', '승인/동의', '부인/반대'],
+  },
+  {
+    category: '구성요소',
+    items: ['의례적 인사', '부르기', '화자 선택', '동반', '감탄'],
+  },
+  {
+    category: '발전된 표현',
+    items: ['농담', '경고', '놀림'],
   },
 ];
 
@@ -133,6 +167,7 @@ const DEFAULT_SPONTANEOUS_INPUT: SpontaneousInput = {
   mluW: null,
   mluMax: null,
   longestUtterance: null,
+  longestUtteranceStructure: null,
   speakingSituation: null,
   communicationFunctions: {},
   morphemes: { particles: [], conjunctions: [], endings: [] },
@@ -206,7 +241,7 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
     }),
     {
       name: 'norm-converter-language-analysis-session',
-      version: 1, // SCRUM-112: SpontaneousInput 구조 변경 → 이전 저장 상태 무효화
+      version: 2, // SCRUM-110: longestUtteranceStructure 추가 → 이전 저장 상태 무효화
       migrate: () => ({
         selectedType: null,
         spontaneous: DEFAULT_SPONTANEOUS_INPUT,

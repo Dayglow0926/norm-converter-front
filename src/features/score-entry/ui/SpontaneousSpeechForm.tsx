@@ -111,6 +111,17 @@ function SyntaxMeasuresSection() {
           />
         </div>
         <div>
+          <label className="text-xs font-medium">문법 구조</label>
+          <Input
+            placeholder="예: 대등접속 복문, 내포절 복문"
+            value={spontaneous.longestUtteranceStructure ?? ''}
+            onChange={(e) =>
+              setSpontaneousField('longestUtteranceStructure', e.target.value || null)
+            }
+            className="mt-1 h-8 text-sm"
+          />
+        </div>
+        <div>
           <label className="text-xs font-medium">발화 상황</label>
           <Input
             placeholder="예: 놀이 상황, 그림책 보기"
@@ -601,11 +612,12 @@ function SituationalObservationsSection() {
                 rows={2}
                 className="text-sm"
               />
-              <Input
-                placeholder="발화 예시"
+              <Textarea
+                placeholder={`발화 예시 (S:/C: 형식 가능)\n예) C: 이거 뭐야?\nS: 강아지야.`}
                 value={obs.example}
                 onChange={(e) => updateObservation(index, 'example', e.target.value)}
-                className="h-8 text-sm"
+                rows={3}
+                className="text-sm"
               />
             </div>
           </div>
