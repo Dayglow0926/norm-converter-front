@@ -70,7 +70,11 @@ interface CplcData {
 
 
 // 도구별 복사 텍스트 생성 (테이블 포함)
-function buildToolCopyText(toolId: string, result: ToolResult): string {
+function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: string | null): string {
+  // 언어분석: LLM 보고서(Step 2)가 있으면 우선 사용
+  if (toolId === 'language_analysis' && step2Text) {
+    return step2Text;
+  }
   let text = result.text;
   if (toolId === 'problem_solving' && result.data) {
     const d = result.data as unknown as ProblemSolvingData;
@@ -117,6 +121,8 @@ interface ResultSectionProps {
   ageResult: AgeResult;
   results: Record<string, ToolResult>;
   integratedSummary?: string | null;
+  laStep2Text?: string | null;
+  isLLMLoading?: boolean;
 }
 
 // 날짜 포맷 (Date → "YYYY.MM.DD")
@@ -147,6 +153,8 @@ export function ResultSection({
   ageResult,
   results,
   integratedSummary,
+  laStep2Text,
+  isLLMLoading,
 }: ResultSectionProps) {
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
@@ -199,7 +207,7 @@ export function ResultSection({
     // 도구별 결과 순회
     for (const [toolId, result] of Object.entries(results)) {
       const toolName = getToolName(toolId);
-      lines.push(``, `■ ${toolName} 결과`, buildToolCopyText(toolId, result));
+      lines.push(``, `■ ${toolName} 결과`, buildToolCopyText(toolId, result, toolId === 'language_analysis' ? laStep2Text : null));
     }
 
     // 통합 요약 추가
@@ -250,6 +258,18 @@ export function ResultSection({
         {/* 도구별 결과 (범용 순회) */}
         {toolEntries.map(([toolId, result]) => {
           const toolName = getToolName(toolId);
+          if (toolId === 'language_analysis') {
+            return (
+              <LanguageAnalysisResultCard
+                key={toolId}
+                title={`${toolName} 결과`}
+                step1Text={result.text}
+                step2Text={laStep2Text}
+                isLLMLoading={isLLMLoading}
+                onCopy={(text) => copyToClipboard(text, `${toolName} 결과 복사 완료`)}
+              />
+            );
+          }
           return (
             <ToolResultCard
               key={toolId}
@@ -433,6 +453,69 @@ function CplcTable({ data }: { data: CplcData }) {
           </tr>
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// 언어분석 전용 결과 카드 (Step 1 구조화 텍스트 + Step 2 LLM 보고서)
+interface LanguageAnalysisResultCardProps {
+  title: string;
+  step1Text: string;
+  step2Text?: string | null;
+  isLLMLoading?: boolean;
+  onCopy: (text: string) => void;
+}
+
+function LanguageAnalysisResultCard({
+  title,
+  step1Text,
+  step2Text,
+  isLLMLoading,
+  onCopy,
+}: LanguageAnalysisResultCardProps) {
+  const [showStep1, setShowStep1] = useState(false);
+
+  return (
+    <div className="mb-6 rounded-lg border border-green-200 bg-white/50 p-4 dark:border-green-800 dark:bg-gray-900/30">
+      <div className="flex items-start justify-between gap-2">
+        <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 shrink-0 px-2 text-xs"
+          onClick={() => onCopy(step2Text ?? step1Text)}
+          disabled={isLLMLoading && !step2Text}
+        >
+          복사
+        </Button>
+      </div>
+
+      {/* Step 2: LLM 보고서 */}
+      <div className="mt-2">
+        {isLLMLoading && !step2Text ? (
+          <p className="text-muted-foreground text-sm">임상 보고서 생성 중...</p>
+        ) : step2Text ? (
+          <p className={TEXT_STYLES.body}>{step2Text}</p>
+        ) : (
+          <p className={TEXT_STYLES.body}>{step1Text}</p>
+        )}
+      </div>
+
+      {/* Step 1: 구조화 데이터 토글 (Step 2 있을 때만 표시) */}
+      {step2Text && (
+        <div className="mt-3 border-t pt-2">
+          <button
+            type="button"
+            onClick={() => setShowStep1((v) => !v)}
+            className="text-muted-foreground text-xs hover:underline"
+          >
+            {showStep1 ? '▲ 구조화 데이터 숨기기' : '▼ 구조화 데이터 보기'}
+          </button>
+          {showStep1 && (
+            <p className={`mt-2 ${TEXT_STYLES.body} text-xs`}>{step1Text}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

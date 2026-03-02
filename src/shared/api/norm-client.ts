@@ -64,4 +64,23 @@ export const normClient = {
    * 평가도구 메타데이터 조회
    */
   getMetadata: <T>(tool: string) => request<T>(`/api/norm/${tool}/metadata`),
+
+  /**
+   * 언어분석 LLM 보고서 생성 (Step 2)
+   */
+  generateLanguageAnalysis: (data: {
+    childInfo: {
+      name: string;
+      ageYears: number;
+      ageMonths: number;
+      ageRemainingMonths: number;
+      gender: 'male' | 'female';
+    };
+    type: string;
+    analysisResult: { text: string; data: Record<string, unknown> };
+  }) =>
+    request<{ text: string }>('/api/language-analysis/generate', {
+      method: 'POST',
+      body: data,
+    }),
 };
