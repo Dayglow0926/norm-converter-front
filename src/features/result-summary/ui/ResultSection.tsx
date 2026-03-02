@@ -122,7 +122,7 @@ interface ResultSectionProps {
   results: Record<string, ToolResult>;
   integratedSummary?: string | null;
   laStep2Text?: string | null;
-  isLLMLoading?: boolean;
+  onGenerateLLM?: () => Promise<void>;
 }
 
 // 날짜 포맷 (Date → "YYYY.MM.DD")
@@ -154,7 +154,7 @@ export function ResultSection({
   results,
   integratedSummary,
   laStep2Text,
-  isLLMLoading,
+  onGenerateLLM,
 }: ResultSectionProps) {
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
@@ -265,7 +265,7 @@ export function ResultSection({
                 title={`${toolName} 결과`}
                 step1Text={result.text}
                 step2Text={laStep2Text}
-                isLLMLoading={isLLMLoading}
+                onGenerateLLM={onGenerateLLM}
                 onCopy={(text) => copyToClipboard(text, `${toolName} 결과 복사 완료`)}
               />
             );
@@ -462,7 +462,7 @@ interface LanguageAnalysisResultCardProps {
   title: string;
   step1Text: string;
   step2Text?: string | null;
-  isLLMLoading?: boolean;
+  onGenerateLLM?: () => Promise<void>;
   onCopy: (text: string) => void;
 }
 
@@ -470,38 +470,61 @@ function LanguageAnalysisResultCard({
   title,
   step1Text,
   step2Text,
-  isLLMLoading,
+  onGenerateLLM,
   onCopy,
 }: LanguageAnalysisResultCardProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [showStep1, setShowStep1] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!onGenerateLLM) return;
+    setIsGenerating(true);
+    try {
+      await onGenerateLLM();
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="mb-6 rounded-lg border border-green-200 bg-white/50 p-4 dark:border-green-800 dark:bg-gray-900/30">
-      <div className="flex items-start justify-between gap-2">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between gap-2">
         <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 shrink-0 px-2 text-xs"
-          onClick={() => onCopy(step2Text ?? step1Text)}
-          disabled={isLLMLoading && !step2Text}
-        >
-          복사
-        </Button>
+        <div className="flex items-center gap-1">
+          {onGenerateLLM && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={handleGenerate}
+              disabled={isGenerating}
+            >
+              {isGenerating ? '생성 중...' : step2Text ? '재생성' : '보고서 생성'}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => onCopy(step2Text ?? step1Text)}
+            disabled={isGenerating}
+          >
+            복사
+          </Button>
+        </div>
       </div>
 
-      {/* Step 2: LLM 보고서 */}
+      {/* Step 2: LLM 보고서 (있으면 표시, 없으면 Step 1) */}
       <div className="mt-2">
-        {isLLMLoading && !step2Text ? (
-          <p className="text-muted-foreground text-sm">임상 보고서 생성 중...</p>
-        ) : step2Text ? (
+        {step2Text ? (
           <p className={TEXT_STYLES.body}>{step2Text}</p>
         ) : (
           <p className={TEXT_STYLES.body}>{step1Text}</p>
         )}
       </div>
 
-      {/* Step 1: 구조화 데이터 토글 (Step 2 있을 때만 표시) */}
+      {/* Step 1: 구조화 데이터 토글 (Step 2 있을 때만) */}
       {step2Text && (
         <div className="mt-3 border-t pt-2">
           <button

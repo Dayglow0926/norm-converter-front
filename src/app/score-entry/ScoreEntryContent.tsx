@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { Header } from '@/widgets/header';
@@ -84,7 +84,6 @@ export function ScoreEntryContent() {
     clearResult: laClearResult,
   } = useLanguageAnalysisStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [isLLMLoading, setIsLLMLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   // 선택된 도구 중 활성화된 것만 필터
@@ -178,6 +177,26 @@ export function ScoreEntryContent() {
     clearChildInfo();
     router.push('/');
   };
+
+  // 언어분석 LLM 보고서 생성 (Step 2) - 사용자가 버튼으로 수동 트리거
+  const handleGenerateLLM = useCallback(async () => {
+    if (!childInfo || !ageResult) return;
+    const laStep1Result = tools['language_analysis']?.apiResult;
+    if (!laStep1Result || laSelectedType !== 'spontaneous_speech') return;
+
+    const llmRes = await normClient.generateLanguageAnalysis({
+      childInfo: {
+        name: childInfo.name,
+        ageYears: ageResult.years,
+        ageMonths: ageResult.totalMonths,
+        ageRemainingMonths: ageResult.months,
+        gender: childInfo.gender,
+      },
+      type: 'spontaneous_speech',
+      analysisResult: { text: laStep1Result.text, data: laStep1Result.data },
+    });
+    laSetStep2Text(llmRes.text);
+  }, [childInfo, ageResult, tools, laSelectedType, laSetStep2Text]);
 
   // 결과 요청: 통합 API 호출
   const handleRequestResult = async () => {
@@ -323,36 +342,6 @@ export function ScoreEntryContent() {
         }
       }
       setIntegratedSummary(response.integratedSummary);
-
-      // Step 2: 언어분석 LLM 보고서 생성 (자발화만, 비동기 - UI 블로킹 없음)
-      const laStep1Result = response.results.language_analysis;
-      if (laStep1Result && laSelectedType === 'spontaneous_speech') {
-        setIsLLMLoading(true);
-        normClient
-          .generateLanguageAnalysis({
-            childInfo: {
-              name: childInfo.name,
-              ageYears: ageResult.years,
-              ageMonths: ageResult.totalMonths,
-              ageRemainingMonths: ageResult.months,
-              gender: childInfo.gender,
-            },
-            type: 'spontaneous_speech',
-            analysisResult: {
-              text: laStep1Result.text,
-              data: laStep1Result.data,
-            },
-          })
-          .then((llmRes) => {
-            laSetStep2Text(llmRes.text);
-          })
-          .catch((llmErr) => {
-            console.error('LLM 보고서 생성 실패:', llmErr);
-          })
-          .finally(() => {
-            setIsLLMLoading(false);
-          });
-      }
     } catch (err) {
       console.error('API 호출 실패:', err);
       setApiError(err instanceof Error ? err.message : 'API 호출 중 오류가 발생했습니다');
@@ -482,7 +471,7 @@ export function ScoreEntryContent() {
               results={resultsForDisplay}
               integratedSummary={integratedSummary}
               laStep2Text={laStep2Text}
-              isLLMLoading={isLLMLoading}
+              onGenerateLLM={laSelectedType === 'spontaneous_speech' ? handleGenerateLLM : undefined}
             />
           </div>
         )}
