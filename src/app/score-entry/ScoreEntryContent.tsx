@@ -86,6 +86,26 @@ export function ScoreEntryContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // 언어분석 LLM 보고서 생성 (Step 2) - 사용자가 버튼으로 수동 트리거
+  const handleGenerateLLM = useCallback(async () => {
+    if (!childInfo || !ageResult) return;
+    const laStep1Result = tools['language_analysis']?.apiResult;
+    if (!laStep1Result || laSelectedType !== 'spontaneous_speech') return;
+
+    const llmRes = await normClient.generateLanguageAnalysis({
+      childInfo: {
+        name: childInfo.name,
+        ageYears: ageResult.years,
+        ageMonths: ageResult.totalMonths,
+        ageRemainingMonths: ageResult.months,
+        gender: childInfo.gender,
+      },
+      type: 'spontaneous_speech',
+      analysisResult: { text: laStep1Result.text, data: laStep1Result.data },
+    });
+    laSetStep2Text(llmRes.text);
+  }, [childInfo, ageResult, tools, laSelectedType, laSetStep2Text]);
+
   // 선택된 도구 중 활성화된 것만 필터
   const activeSelectedTools = selectedTools.filter((id) => isToolActive(id));
 
@@ -177,26 +197,6 @@ export function ScoreEntryContent() {
     clearChildInfo();
     router.push('/');
   };
-
-  // 언어분석 LLM 보고서 생성 (Step 2) - 사용자가 버튼으로 수동 트리거
-  const handleGenerateLLM = useCallback(async () => {
-    if (!childInfo || !ageResult) return;
-    const laStep1Result = tools['language_analysis']?.apiResult;
-    if (!laStep1Result || laSelectedType !== 'spontaneous_speech') return;
-
-    const llmRes = await normClient.generateLanguageAnalysis({
-      childInfo: {
-        name: childInfo.name,
-        ageYears: ageResult.years,
-        ageMonths: ageResult.totalMonths,
-        ageRemainingMonths: ageResult.months,
-        gender: childInfo.gender,
-      },
-      type: 'spontaneous_speech',
-      analysisResult: { text: laStep1Result.text, data: laStep1Result.data },
-    });
-    laSetStep2Text(llmRes.text);
-  }, [childInfo, ageResult, tools, laSelectedType, laSetStep2Text]);
 
   // 결과 요청: 통합 API 호출
   const handleRequestResult = async () => {
