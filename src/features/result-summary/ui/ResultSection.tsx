@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TOOL_METADATA, type AssessmentToolId } from '@/entities/assessment-tool';
@@ -177,40 +178,30 @@ export function ResultSection({
   laStep2Text,
   onGenerateLLM,
 }: ResultSectionProps) {
-  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-
-  const showCopyFeedback = useCallback((message: string) => {
-    setCopyFeedback(message);
-    setTimeout(() => setCopyFeedback(null), 2000);
-  }, []);
-
-  const copyToClipboard = useCallback(
-    async (text: string, feedbackMsg: string) => {
+  const copyToClipboard = useCallback(async (text: string, feedbackMsg: string) => {
+    try {
+      const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      const html = `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/html': new Blob([html], { type: 'text/html' }),
+        }),
+      ]);
+      toast.success(feedbackMsg);
+    } catch {
+      // ClipboardItem 미지원 시 plain text fallback
       try {
-        const escaped = text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-        const html = `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/plain': new Blob([text], { type: 'text/plain' }),
-            'text/html': new Blob([html], { type: 'text/html' }),
-          }),
-        ]);
-        showCopyFeedback(feedbackMsg);
+        await navigator.clipboard.writeText(text);
+        toast.success(feedbackMsg);
       } catch {
-        // ClipboardItem 미지원 시 plain text fallback
-        try {
-          await navigator.clipboard.writeText(text);
-          showCopyFeedback(feedbackMsg);
-        } catch {
-          showCopyFeedback('복사 실패');
-        }
+        toast.error('복사 실패');
       }
-    },
-    [showCopyFeedback]
-  );
+    }
+  }, []);
 
   // 전체 복사 (아동 정보 + 모든 결과)
   const handleCopyAll = () => {
@@ -244,14 +235,7 @@ export function ResultSection({
   return (
     <Card className="mt-6 w-full border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-green-800 dark:text-green-200">검사 결과</CardTitle>
-          {copyFeedback && (
-            <span className="animate-fade-in rounded-full bg-green-600 px-3 text-sm text-white">
-              ✓ {copyFeedback}
-            </span>
-          )}
-        </div>
+        <CardTitle className="text-green-800 dark:text-green-200">검사 결과</CardTitle>
       </CardHeader>
       <CardContent>
         {/* 통합 요약 (맨 위) */}

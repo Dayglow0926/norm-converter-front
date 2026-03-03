@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import { Toaster } from 'sonner';
 import { ApiKeyGate } from '@/features/auth';
 
 interface ProvidersProps {
@@ -13,5 +14,10 @@ interface ProvidersProps {
  * - Zustand는 별도 Provider 불필요 (자동 주입)
  */
 export function Providers({ children }: ProvidersProps) {
-  return <ApiKeyGate>{children}</ApiKeyGate>;
+  return (
+    <ApiKeyGate>
+      {children}
+      <Toaster position="bottom-center" richColors />
+    </ApiKeyGate>
+  );
 }
