@@ -148,6 +148,27 @@ function getToolName(toolId: string): string {
   return meta?.name ?? toolId.toUpperCase();
 }
 
+// AI 요청용 프롬프트 생성
+function buildAIPrompt(childInfo: ChildInfo, ageResult: AgeResult, step1Text: string): string {
+  const gender = childInfo.gender === 'male' ? '남' : '여';
+  const age = formatAge(ageResult);
+
+  return `다음 자발화 분석 데이터를 임상 보고서 문체(~음 체)로 작성해주세요.
+
+[아동 정보]
+이름: ${childInfo.name} / 성별: ${gender} / 연령: 만 ${age}
+
+[작성 규칙]
+- 반드시 "~음 체"(비격식 서술체) 사용 (예: 나타남, 확인됨, 관찰되었음, 어려움을 보였음)
+- "~습니다", "~입니다" 등 합쇼체 사용 금지
+- 아동 이름 대신 "아동"으로만 표기
+- MLU 두 수치는 한 문장에 "평균어절길이가 X(연령 수준), 최장어절길이가 Y(연령 수준)로 [또래비교]" 형식으로 나열
+- 제목/번호 없이 이어지는 단락 텍스트로 작성
+
+[분석 데이터]
+${step1Text}`;
+}
+
 export function ResultSection({
   childInfo,
   ageResult,
@@ -266,6 +287,12 @@ export function ResultSection({
                 step1Text={result.text}
                 step2Text={laStep2Text}
                 onGenerateLLM={onGenerateLLM}
+                onCopyPrompt={() =>
+                  copyToClipboard(
+                    buildAIPrompt(childInfo, ageResult, result.text),
+                    'AI 프롬프트 복사 완료'
+                  )
+                }
                 onCopy={(text) => copyToClipboard(text, `${toolName} 결과 복사 완료`)}
               />
             );
@@ -457,12 +484,13 @@ function CplcTable({ data }: { data: CplcData }) {
   );
 }
 
-// 언어분석 전용 결과 카드 (Step 1 구조화 텍스트 + Step 2 LLM 보고서)
+// 언어분석 전용 결과 카드 (Step 1 구조화 텍스트 + Step 2 LLM 보고서 + AI 프롬프트 복사)
 interface LanguageAnalysisResultCardProps {
   title: string;
   step1Text: string;
   step2Text?: string | null;
   onGenerateLLM?: () => Promise<void>;
+  onCopyPrompt?: () => void;
   onCopy: (text: string) => void;
 }
 
@@ -471,6 +499,7 @@ function LanguageAnalysisResultCard({
   step1Text,
   step2Text,
   onGenerateLLM,
+  onCopyPrompt,
   onCopy,
 }: LanguageAnalysisResultCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -492,6 +521,16 @@ function LanguageAnalysisResultCard({
       <div className="flex items-center justify-between gap-2">
         <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
         <div className="flex items-center gap-1">
+          {onCopyPrompt && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs text-purple-700 border-purple-300 hover:bg-purple-50 dark:text-purple-300 dark:border-purple-700 dark:hover:bg-purple-950/30"
+              onClick={onCopyPrompt}
+            >
+              AI 요청 복사
+            </Button>
+          )}
           {onGenerateLLM && (
             <Button
               variant="outline"
