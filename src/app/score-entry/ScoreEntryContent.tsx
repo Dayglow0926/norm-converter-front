@@ -10,6 +10,8 @@ import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
 import { ProblemSolvingScoreForm } from '@/features/score-entry/ui/ProblemSolvingScoreForm';
 import { ApacScoreForm } from '@/features/score-entry/ui/ApacScoreForm';
 import { CplcScoreForm } from '@/features/score-entry/ui/CplcScoreForm';
+import { Kcelf5PpScoreForm } from '@/features/score-entry/ui/Kcelf5PpScoreForm';
+import { Kcelf5OrsScoreForm } from '@/features/score-entry/ui/Kcelf5OrsScoreForm';
 import { LanguageAnalysisForm } from '@/features/score-entry/ui/LanguageAnalysisForm';
 import { useScoreEntryStore } from '@/features/score-entry';
 import { useLanguageAnalysisStore } from '@/features/score-entry/model/languageAnalysisStore';
@@ -53,6 +55,8 @@ const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
     'communication_intent',
     'nonverbal_communication',
   ],
+  kcelf5_pp: ['conversation_skills', 'information_group', 'nonverbal_skills'],
+  kcelf5_ors: ['listening', 'speaking', 'reading', 'writing'],
   // language_analysis는 useLanguageAnalysisStore.selectedType 기반으로 별도 처리
   // revt: ['receptive', 'expressive'],
 };
@@ -294,6 +298,26 @@ export function ScoreEntryContent() {
           continue;
         }
 
+        // kcelf5_pp: 영역별 flat number { conversation_skills, information_group, nonverbal_skills }
+        if (toolId === 'kcelf5_pp') {
+          const ppPayload: Record<string, unknown> = {};
+          for (const [subtest, input] of Object.entries(toolData.inputs)) {
+            if (input.rawScore !== null) ppPayload[subtest] = input.rawScore;
+          }
+          toolsPayload[toolId] = ppPayload;
+          continue;
+        }
+
+        // kcelf5_ors: 영역별 flat number { listening, speaking, reading, writing }
+        if (toolId === 'kcelf5_ors') {
+          const orsPayload: Record<string, unknown> = {};
+          for (const [subtest, input] of Object.entries(toolData.inputs)) {
+            if (input.rawScore !== null) orsPayload[subtest] = input.rawScore;
+          }
+          toolsPayload[toolId] = orsPayload;
+          continue;
+        }
+
         // cplc: 영역별 { rawScore, correctItems?, wrongItems? } 객체
         if (toolId === 'cplc') {
           const cplcPayload: Record<string, unknown> = {};
@@ -365,6 +389,10 @@ export function ScoreEntryContent() {
         return <ApacScoreForm ageMonths={ageMonths} />;
       case 'cplc':
         return <CplcScoreForm ageMonths={ageMonths} />;
+      case 'kcelf5_pp':
+        return <Kcelf5PpScoreForm />;
+      case 'kcelf5_ors':
+        return <Kcelf5OrsScoreForm />;
       case 'language_analysis':
         return <LanguageAnalysisForm />;
       default:

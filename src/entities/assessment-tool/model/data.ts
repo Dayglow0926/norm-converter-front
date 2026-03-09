@@ -69,6 +69,24 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     subtests: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
     description: '아동 화용언어 체크리스트 (5-11세)',
   },
+  kcelf5_pp: {
+    id: 'kcelf5_pp',
+    name: 'K-CELF-5 PP',
+    category: '전 연령',
+    minAgeMonths: 0,
+    maxAgeMonths: 9999,
+    subtests: ['conversation_skills', 'information_group', 'nonverbal_skills'],
+    description: '화용프로파일 (보호자 보고)',
+  },
+  kcelf5_ors: {
+    id: 'kcelf5_ors',
+    name: 'K-CELF-5 ORS',
+    category: '전 연령',
+    minAgeMonths: 0,
+    maxAgeMonths: 9999,
+    subtests: ['listening', 'speaking', 'reading', 'writing'],
+    description: '관찰 평가척도',
+  },
   language_analysis: {
     id: 'language_analysis',
     name: '언어분석',
@@ -83,7 +101,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving', 'apac', 'cplc', 'language_analysis'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'syntax', 'problem_solving', 'apac', 'cplc', 'kcelf5_pp', 'kcelf5_ors', 'language_analysis'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)
@@ -96,6 +114,8 @@ export const ALL_TOOL_IDS: AssessmentToolId[] = [
   'problem_solving',
   'apac',
   'cplc',
+  'kcelf5_pp',
+  'kcelf5_ors',
   'language_analysis',
 ];
 

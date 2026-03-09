@@ -10,6 +10,8 @@ export type AssessmentToolId =
   | 'problem_solving'
   | 'apac'
   | 'cplc'
+  | 'kcelf5_pp'
+  | 'kcelf5_ors'
   | 'language_analysis';
 
 export type AssessmentCategory = '영유아' | '학령전기' | '전 연령';

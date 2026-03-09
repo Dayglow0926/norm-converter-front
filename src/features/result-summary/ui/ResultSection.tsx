@@ -69,6 +69,32 @@ interface CplcData {
   totalPercent: number;
 }
 
+// K-CELF-5 PP API 데이터 구조
+interface Kcelf5PpData {
+  conversationScore: number;
+  conversationPercent: number;
+  informationScore: number;
+  informationPercent: number;
+  nonverbalScore: number;
+  nonverbalPercent: number;
+  totalScore: number;
+  totalPercent: number;
+}
+
+// K-CELF-5 ORS API 데이터 구조
+interface Kcelf5OrsData {
+  listeningScore: number;
+  listeningPercent: number;
+  speakingScore: number;
+  speakingPercent: number;
+  readingScore: number;
+  readingPercent: number;
+  writingScore: number;
+  writingPercent: number;
+  totalScore: number;
+  totalPercent: number;
+}
+
 
 // 도구별 복사 텍스트 생성 (테이블 포함)
 function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: string | null): string {
@@ -112,6 +138,24 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
       [
         `담화관리\t상황조절\t의사소통의도\t비언어적\t총점`,
         `${d.discourseScore}점\n(${d.discoursePercent}%)\t${d.contextualScore}점\n(${d.contextualPercent}%)\t${d.communicationScore}점\n(${d.communicationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
+      ].join('\n');
+  }
+  if (toolId === 'kcelf5_pp' && result.data) {
+    const d = result.data as unknown as Kcelf5PpData;
+    text +=
+      '\n\n' +
+      [
+        `대화기술\t정보요청+제공+응하기\t비언어적\t총점`,
+        `${d.conversationScore}점\n(${d.conversationPercent}%)\t${d.informationScore}점\n(${d.informationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
+      ].join('\n');
+  }
+  if (toolId === 'kcelf5_ors' && result.data) {
+    const d = result.data as unknown as Kcelf5OrsData;
+    text +=
+      '\n\n' +
+      [
+        `듣기\t말하기\t읽기\t쓰기\t총점`,
+        `${d.listeningScore}점\n(${d.listeningPercent}%)\t${d.speakingScore}점\n(${d.speakingPercent}%)\t${d.readingScore}점\n(${d.readingPercent}%)\t${d.writingScore}점\n(${d.writingPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
       ].join('\n');
   }
   return text;
@@ -478,6 +522,79 @@ function CplcTable({ data }: { data: CplcData }) {
   );
 }
 
+// K-CELF-5 PP 결과 테이블 컴포넌트
+function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
+  const cols = [
+    { label: '대화기술', score: data.conversationScore, percent: data.conversationPercent },
+    { label: '정보요청+제공+응하기', score: data.informationScore, percent: data.informationPercent },
+    { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
+    { label: '총점', score: data.totalScore, percent: data.totalPercent },
+  ];
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border">
+            {cols.map((col) => (
+              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border">
+            {cols.map((col) => (
+              <td key={col.label} className="border px-2 py-2 text-center">
+                <span className="block">{col.score}점</span>
+                <span className="block text-xs text-gray-500">({col.percent}%)</span>
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// K-CELF-5 ORS 결과 테이블 컴포넌트
+function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
+  const cols = [
+    { label: '듣기', score: data.listeningScore, percent: data.listeningPercent },
+    { label: '말하기', score: data.speakingScore, percent: data.speakingPercent },
+    { label: '읽기', score: data.readingScore, percent: data.readingPercent },
+    { label: '쓰기', score: data.writingScore, percent: data.writingPercent },
+    { label: '총점', score: data.totalScore, percent: data.totalPercent },
+  ];
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border">
+            {cols.map((col) => (
+              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border">
+            {cols.map((col) => (
+              <td key={col.label} className="border px-2 py-2 text-center">
+                <span className="block">{col.score}점</span>
+                <span className="block text-xs text-gray-500">({col.percent}%)</span>
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // 언어분석 전용 결과 카드 (Step 1 구조화 텍스트 + Step 2 LLM 보고서 + AI 프롬프트 복사)
 interface LanguageAnalysisResultCardProps {
   title: string;
@@ -605,6 +722,12 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
             )}
             {toolId === 'cplc' && data && (
               <CplcTable data={data as unknown as CplcData} />
+            )}
+            {toolId === 'kcelf5_pp' && data && (
+              <Kcelf5PpTable data={data as unknown as Kcelf5PpData} />
+            )}
+            {toolId === 'kcelf5_ors' && data && (
+              <Kcelf5OrsTable data={data as unknown as Kcelf5OrsData} />
             )}
           </div>
         </div>
