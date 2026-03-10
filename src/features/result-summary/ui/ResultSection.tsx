@@ -97,14 +97,26 @@ interface Kcelf5OrsData {
 
 
 // HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
-const CELL_STYLE = 'border:1px solid black;padding:4px 8px;text-align:center;font-family:\'새굴림\',sans-serif;font-size:10pt;';
+const HEADER_BG = 'background-color:rgb(182,221,232);';
+const BASE_CELL = "border:1px solid black;padding:4px 8px;text-align:center;font-family:'새굴림',sans-serif;font-size:10pt;";
+const TH_STYLE = BASE_CELL + HEADER_BG;
+const TD_STYLE = BASE_CELL;
 
-function htmlScoreTable(cols: { label: string; score: number; percent: number }[]): string {
-  const ths = cols.map((c) => `<th style="${CELL_STYLE}">${c.label}</th>`).join('');
-  const tds = cols
-    .map((c) => `<td style="${CELL_STYLE}">${c.score}점<br>(${c.percent}%)</td>`)
-    .join('');
-  return `<table style="border-collapse:collapse;"><thead><tr>${ths}</tr></thead><tbody><tr>${tds}</tr></tbody></table>`;
+function htmlScoreTable(
+  cols: { label: string; score: number; percent: number }[],
+  leadingCol?: { header: string; cell: string }
+): string {
+  const totalCols = cols.length + (leadingCol ? 1 : 0);
+  const colWidth = `${Math.floor(100 / totalCols)}%`;
+  const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
+
+  const leadingTh = leadingCol ? `<th style="${TH_STYLE}">${leadingCol.header}</th>` : '';
+  const leadingTd = leadingCol ? `<td style="${TH_STYLE}">${leadingCol.cell}</td>` : '';
+
+  const ths = cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('');
+  const tds = cols.map((c) => `<td style="${TD_STYLE}">${c.score}점<br>(${c.percent}%)</td>`).join('');
+
+  return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${leadingTh}${ths}</tr></thead><tbody><tr>${leadingTd}${tds}</tr></tbody></table>`;
 }
 
 // 도구별 HTML 복사 내용 생성 (표가 있는 도구만, 없으면 null)
@@ -119,13 +131,16 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
 
   if (toolId === 'cplc') {
     const d = result.data as unknown as CplcData;
-    return textHtml + htmlScoreTable([
-      { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
-      { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
-      { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
-      { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
-      { label: '총점', score: d.totalScore, percent: d.totalPercent },
-    ]);
+    return textHtml + htmlScoreTable(
+      [
+        { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
+        { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
+        { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
+        { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+        { label: '총점', score: d.totalScore, percent: d.totalPercent },
+      ],
+      { header: '영역', cell: '점수' }
+    );
   }
   if (toolId === 'kcelf5_pp') {
     const d = result.data as unknown as Kcelf5PpData;
