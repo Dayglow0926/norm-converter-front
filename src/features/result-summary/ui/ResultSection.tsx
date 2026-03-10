@@ -114,11 +114,11 @@ function htmlScoreTable(
   const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
 
   const BOLD_TH_STYLE = TH_STYLE + 'font-weight:bold;';
-  const leadingTh = leadingCol ? `<th style="${BOLD_TH_STYLE}">${leadingCol.header}</th>` : '';
-  const leadingTd = leadingCol ? `<td style="${BOLD_TH_STYLE}">${leadingCol.cell}</td>` : '';
+  const leadingTh = leadingCol ? `<th valign="middle" style="${BOLD_TH_STYLE}">${leadingCol.header}</th>` : '';
+  const leadingTd = leadingCol ? `<td valign="middle" style="${BOLD_TH_STYLE}">${leadingCol.cell}</td>` : '';
 
-  const ths = cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('');
-  const tds = cols.map((c) => `<td style="${TD_STYLE}">${c.score}점<br>(${c.percent}%)</td>`).join('');
+  const ths = cols.map((c) => `<th valign="middle" style="${TH_STYLE}">${c.label}</th>`).join('');
+  const tds = cols.map((c) => `<td valign="middle" style="${TD_STYLE}">${c.score}점<br>(${c.percent}%)</td>`).join('');
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${leadingTh}${ths}</tr></thead><tbody><tr>${leadingTd}${tds}</tr></tbody></table>`;
 }
@@ -146,9 +146,9 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   const ROW2_TH = mkTh('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;font-weight:bold;';
   const ROW2_TD = mkTd('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;';
 
-  const headerRow = `<tr><th style="${TH_STYLE}"></th>${cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('')}</tr>`;
-  const rawRow = `<tr><td style="${ROW1_TH}">원점수</td>${cols.map((c) => `<td style="${ROW1_TD}">${c.rawScore}점</td>`).join('')}</tr>`;
-  const pctRow = `<tr><td style="${ROW2_TH}">백분위수</td>${cols.map((c) => `<td style="${ROW2_TD}">${c.percentile}</td>`).join('')}</tr>`;
+  const headerRow = `<tr><th valign="middle" style="${TH_STYLE}"></th>${cols.map((c) => `<th valign="middle" style="${TH_STYLE}">${c.label}</th>`).join('')}</tr>`;
+  const rawRow = `<tr><td valign="middle" style="${ROW1_TH}">원점수</td>${cols.map((c) => `<td valign="middle" style="${ROW1_TD}">${c.rawScore}점</td>`).join('')}</tr>`;
+  const pctRow = `<tr><td valign="middle" style="${ROW2_TH}">백분위수</td>${cols.map((c) => `<td valign="middle" style="${ROW2_TD}">${c.percentile}</td>`).join('')}</tr>`;
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead>${headerRow}</thead><tbody>${rawRow}${pctRow}</tbody></table>`;
 }
