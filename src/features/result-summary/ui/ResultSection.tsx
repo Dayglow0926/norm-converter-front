@@ -122,6 +122,36 @@ function htmlScoreTable(
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${leadingTh}${ths}</tr></thead><tbody><tr>${leadingTd}${tds}</tr></tbody></table>`;
 }
 
+// 언어문제해결력 전용 HTML 테이블 (원점수/백분위수 2행 구조)
+function htmlProblemSolvingTable(d: ProblemSolvingData): string {
+  const cols = [
+    { label: '원인이유', rawScore: d.causeReasonRawScore, percentile: d.causeReasonPercentileText },
+    { label: '해결추론', rawScore: d.solutionInferenceRawScore, percentile: d.solutionInferencePercentileText },
+    { label: '단서추측', rawScore: d.clueGuessingRawScore, percentile: d.clueGuessingPercentileText },
+    { label: '총점', rawScore: d.totalRawScore, percentile: d.totalPercentileText },
+  ];
+  const totalCols = cols.length + 1;
+  const colWidth = `${(100 / totalCols).toFixed(4)}%`;
+  const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
+
+  // 행별 개별 border 스타일 (원점수-백분위수 사이 가로선 0pt)
+  const mkTh = (top: string, bot: string) =>
+    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);` + BASE + HEADER_BG;
+  const mkTd = (top: string, bot: string) =>
+    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` + BASE;
+
+  const ROW1_TH = mkTh('2.25pt solid black', '0pt solid transparent');
+  const ROW1_TD = mkTd('2.25pt solid black', '0pt solid transparent');
+  const ROW2_TH = mkTh('0pt solid transparent', '2.25pt solid black');
+  const ROW2_TD = mkTd('0pt solid transparent', '2.25pt solid black');
+
+  const headerRow = `<tr><th style="${TH_STYLE}"></th>${cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('')}</tr>`;
+  const rawRow = `<tr><td style="${ROW1_TH}">원점수</td>${cols.map((c) => `<td style="${ROW1_TD}">${c.rawScore}점</td>`).join('')}</tr>`;
+  const pctRow = `<tr><td style="${ROW2_TH}">백분위수</td>${cols.map((c) => `<td style="${ROW2_TD}">${c.percentile}</td>`).join('')}</tr>`;
+
+  return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead>${headerRow}</thead><tbody>${rawRow}${pctRow}</tbody></table>`;
+}
+
 // 도구별 HTML 복사 내용 생성 (표가 있는 도구만, 없으면 null)
 function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
   if (!result.data) return null;
@@ -132,6 +162,11 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
     .replace(/\n/g, '<br>');
   const textHtml = `<p style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0 0 8px 0;">${escaped}</p>`;
 
+  if (toolId === 'problem_solving') {
+    const d = result.data as unknown as ProblemSolvingData;
+    if (d.isUntestable) return null;
+    return textHtml + htmlProblemSolvingTable(d);
+  }
   if (toolId === 'cplc') {
     const d = result.data as unknown as CplcData;
     return textHtml + htmlScoreTable(
