@@ -135,28 +135,33 @@ export function isAgeInRange(toolId: AssessmentToolId, ageMonths: number): boole
 }
 
 /**
- * 평가도구 비활성화 사유 반환
+ * 평가도구 비활성화 사유 반환 (준비 중인 도구만 차단)
  */
 export function getDisabledReason(
   toolId: AssessmentToolId,
-  ageMonths: number | null
+  _ageMonths: number | null
 ): string | null {
-  const meta = TOOL_METADATA[toolId];
-
-  // 연령이 범위 밖인 경우
-  if (ageMonths !== null) {
-    if (ageMonths < meta.minAgeMonths) {
-      return `${meta.minAgeMonths}개월 이상 적용 가능`;
-    }
-    if (ageMonths > meta.maxAgeMonths) {
-      return `${meta.maxAgeMonths}개월 이하 적용 가능`;
-    }
-  }
-
-  // 아직 구현되지 않은 도구
   if (!isToolActive(toolId)) {
     return '준비 중';
   }
+  return null;
+}
 
+/**
+ * 연령 범위 벗어남 안내 텍스트 반환 (선택 차단 없음, 표시만)
+ */
+export function getAgeWarning(
+  toolId: AssessmentToolId,
+  ageMonths: number | null
+): string | null {
+  if (ageMonths === null) return null;
+  const meta = TOOL_METADATA[toolId];
+  if (meta.maxAgeMonths >= 9999) return null;
+  if (ageMonths < meta.minAgeMonths) {
+    return `${meta.minAgeMonths}개월 이상 적용 가능`;
+  }
+  if (ageMonths > meta.maxAgeMonths) {
+    return `${meta.maxAgeMonths}개월 이하 적용 가능`;
+  }
   return null;
 }

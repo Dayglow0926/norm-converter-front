@@ -13,4 +13,5 @@ export {
   isToolActive,
   isAgeInRange,
   getDisabledReason,
+  getAgeWarning,
 } from './model/data';

@@ -11,6 +11,7 @@ import {
   TOOL_METADATA,
   isToolActive,
   getDisabledReason,
+  getAgeWarning,
 } from '@/entities/assessment-tool';
 
 interface AssessmentToolCardProps {
@@ -45,6 +46,7 @@ export function AssessmentToolCard({
   const meta = TOOL_METADATA[toolId];
   const active = isToolActive(toolId);
   const disabledReason = getDisabledReason(toolId, ageMonths);
+  const ageWarning = getAgeWarning(toolId, ageMonths);
   const isDisabled = disabledReason !== null;
   const ageRange = formatAgeRange(meta.minAgeMonths, meta.maxAgeMonths);
 
@@ -83,6 +85,9 @@ export function AssessmentToolCard({
           <span className="text-muted-foreground text-xs">적용 연령: {ageRange}</span>
           {disabledReason && (
             <span className="text-destructive text-xs font-medium">{disabledReason}</span>
+          )}
+          {ageWarning && !disabledReason && (
+            <span className="text-muted-foreground text-xs">{ageWarning}</span>
           )}
         </div>
       </CardContent>
