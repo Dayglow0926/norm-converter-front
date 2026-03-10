@@ -98,9 +98,12 @@ interface Kcelf5OrsData {
 
 // HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
 const HEADER_BG = 'background-color:rgb(182,221,232);';
-const BASE_CELL = "border-top:2.25pt solid black;border-bottom:2.25pt solid black;border-left:none;border-right:none;padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt;";
-const TH_STYLE = BASE_CELL + HEADER_BG;
-const TD_STYLE = BASE_CELL;
+const H_BORDER = 'border-top:2.25pt solid black;border-bottom:2.25pt solid black;';
+const V_HIDDEN_TH = 'border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);';
+const V_HIDDEN_TD = 'border-left:2.25pt solid white;border-right:2.25pt solid white;';
+const BASE = "padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt;";
+const TH_STYLE = H_BORDER + V_HIDDEN_TH + BASE + HEADER_BG;
+const TD_STYLE = H_BORDER + V_HIDDEN_TD + BASE;
 
 function htmlScoreTable(
   cols: { label: string; score: number; percent: number }[],
