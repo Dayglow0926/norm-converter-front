@@ -95,13 +95,14 @@ interface Kcelf5OrsData {
   totalPercent: number;
 }
 
-
 // HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
 const HEADER_BG = 'background-color:rgb(182,221,232);';
 const H_BORDER = 'border-top:2.25pt solid black;border-bottom:2.25pt solid black;';
-const V_HIDDEN_TH = 'border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);';
+const V_HIDDEN_TH =
+  'border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);';
 const V_HIDDEN_TD = 'border-left:2.25pt solid white;border-right:2.25pt solid white;';
-const BASE = "padding:4px 8px;text-align:center;vertical-align:middle;mso-vertical-align-alt:auto;font-family:'새굴림',sans-serif;font-size:10pt;";
+const BASE =
+  "padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt; ";
 const TH_STYLE = H_BORDER + V_HIDDEN_TH + BASE + HEADER_BG;
 const TD_STYLE = H_BORDER + V_HIDDEN_TD + BASE + 'font-weight:normal;';
 
@@ -113,12 +114,19 @@ function htmlScoreTable(
   const colWidth = `${(100 / totalCols).toFixed(4)}%`;
   const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
 
+  const P = `style="margin:0;padding:0;"`;
   const BOLD_TH_STYLE = TH_STYLE + 'font-weight:bold;';
-  const leadingTh = leadingCol ? `<th valign="middle" style="${BOLD_TH_STYLE}">${leadingCol.header}</th>` : '';
-  const leadingTd = leadingCol ? `<td valign="middle" style="${BOLD_TH_STYLE}">${leadingCol.cell}</td>` : '';
+  const leadingTh = leadingCol
+    ? `<th valign="middle" style="${BOLD_TH_STYLE}"><p ${P}>${leadingCol.header}</p></th>`
+    : '';
+  const leadingTd = leadingCol
+    ? `<td valign="middle" style="${BOLD_TH_STYLE}"><p ${P}>${leadingCol.cell}</p></td>`
+    : '';
 
-  const ths = cols.map((c) => `<th valign="middle" style="${TH_STYLE}">${c.label}</th>`).join('');
-  const tds = cols.map((c) => `<td valign="middle" style="${TD_STYLE}">${c.score}점<br>(${c.percent}%)</td>`).join('');
+  const ths = cols.map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`).join('');
+  const tds = cols
+    .map((c) => `<td valign="middle" style="${TD_STYLE}"><p ${P}>${c.score}점</p><p ${P}>(${c.percent}%)</p></td>`)
+    .join('');
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${leadingTh}${ths}</tr></thead><tbody><tr>${leadingTd}${tds}</tr></tbody></table>`;
 }
@@ -127,8 +135,16 @@ function htmlScoreTable(
 function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   const cols = [
     { label: '원인이유', rawScore: d.causeReasonRawScore, percentile: d.causeReasonPercentileText },
-    { label: '해결추론', rawScore: d.solutionInferenceRawScore, percentile: d.solutionInferencePercentileText },
-    { label: '단서추측', rawScore: d.clueGuessingRawScore, percentile: d.clueGuessingPercentileText },
+    {
+      label: '해결추론',
+      rawScore: d.solutionInferenceRawScore,
+      percentile: d.solutionInferencePercentileText,
+    },
+    {
+      label: '단서추측',
+      rawScore: d.clueGuessingRawScore,
+      percentile: d.clueGuessingPercentileText,
+    },
     { label: '총점', rawScore: d.totalRawScore, percentile: d.totalPercentileText },
   ];
   const totalCols = cols.length + 1;
@@ -137,18 +153,25 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
 
   // 행별 개별 border 스타일 (원점수-백분위수 사이 가로선 0pt)
   const mkTh = (top: string, bot: string) =>
-    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);` + BASE + HEADER_BG;
+    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);` +
+    BASE +
+    HEADER_BG;
   const mkTd = (top: string, bot: string) =>
-    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` + BASE + 'font-weight:normal;';
+    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` +
+    BASE +
+    'font-weight:normal;';
 
-  const ROW1_TH = mkTh('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;font-weight:bold;';
+  const ROW1_TH =
+    mkTh('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;font-weight:bold;';
   const ROW1_TD = mkTd('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;';
-  const ROW2_TH = mkTh('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;font-weight:bold;';
+  const ROW2_TH =
+    mkTh('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;font-weight:bold;';
   const ROW2_TD = mkTd('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;';
 
-  const headerRow = `<tr><th valign="middle" style="${TH_STYLE}"></th>${cols.map((c) => `<th valign="middle" style="${TH_STYLE}">${c.label}</th>`).join('')}</tr>`;
-  const rawRow = `<tr><td valign="middle" style="${ROW1_TH}">원점수</td>${cols.map((c) => `<td valign="middle" style="${ROW1_TD}">${c.rawScore}점</td>`).join('')}</tr>`;
-  const pctRow = `<tr><td valign="middle" style="${ROW2_TH}">백분위수</td>${cols.map((c) => `<td valign="middle" style="${ROW2_TD}">${c.percentile}</td>`).join('')}</tr>`;
+  const P = `style="margin:0;padding:0;"`;
+  const headerRow = `<tr><th valign="middle" style="${TH_STYLE}"><p ${P}></p></th>${cols.map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`).join('')}</tr>`;
+  const rawRow = `<tr><td valign="middle" style="${ROW1_TH}"><p ${P}>원점수</p></td>${cols.map((c) => `<td valign="middle" style="${ROW1_TD}"><p ${P}>${c.rawScore}점</p></td>`).join('')}</tr>`;
+  const pctRow = `<tr><td valign="middle" style="${ROW2_TH}"><p ${P}>백분위수</p></td>${cols.map((c) => `<td valign="middle" style="${ROW2_TD}"><p ${P}>${c.percentile}</p></td>`).join('')}</tr>`;
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead>${headerRow}</thead><tbody>${rawRow}${pctRow}</tbody></table>`;
 }
@@ -170,35 +193,44 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
   }
   if (toolId === 'cplc') {
     const d = result.data as unknown as CplcData;
-    return textHtml + htmlScoreTable(
-      [
-        { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
-        { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
-        { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
-        { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
-        { label: '총점', score: d.totalScore, percent: d.totalPercent },
-      ],
-      { header: '영역', cell: '점수' }
+    return (
+      textHtml +
+      htmlScoreTable(
+        [
+          { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
+          { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
+          { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
+          { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+          { label: '총점', score: d.totalScore, percent: d.totalPercent },
+        ],
+        { header: '영역', cell: '점수' }
+      )
     );
   }
   if (toolId === 'kcelf5_pp') {
     const d = result.data as unknown as Kcelf5PpData;
-    return textHtml + htmlScoreTable([
-      { label: '대화기술', score: d.conversationScore, percent: d.conversationPercent },
-      { label: '정보요청+제공+응하기', score: d.informationScore, percent: d.informationPercent },
-      { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
-      { label: '총점', score: d.totalScore, percent: d.totalPercent },
-    ]);
+    return (
+      textHtml +
+      htmlScoreTable([
+        { label: '대화기술', score: d.conversationScore, percent: d.conversationPercent },
+        { label: '정보요청+제공+응하기', score: d.informationScore, percent: d.informationPercent },
+        { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+        { label: '총점', score: d.totalScore, percent: d.totalPercent },
+      ])
+    );
   }
   if (toolId === 'kcelf5_ors') {
     const d = result.data as unknown as Kcelf5OrsData;
-    return textHtml + htmlScoreTable([
-      { label: '듣기', score: d.listeningScore, percent: d.listeningPercent },
-      { label: '말하기', score: d.speakingScore, percent: d.speakingPercent },
-      { label: '읽기', score: d.readingScore, percent: d.readingPercent },
-      { label: '쓰기', score: d.writingScore, percent: d.writingPercent },
-      { label: '총점', score: d.totalScore, percent: d.totalPercent },
-    ]);
+    return (
+      textHtml +
+      htmlScoreTable([
+        { label: '듣기', score: d.listeningScore, percent: d.listeningPercent },
+        { label: '말하기', score: d.speakingScore, percent: d.speakingPercent },
+        { label: '읽기', score: d.readingScore, percent: d.readingPercent },
+        { label: '쓰기', score: d.writingScore, percent: d.writingPercent },
+        { label: '총점', score: d.totalScore, percent: d.totalPercent },
+      ])
+    );
   }
   return null;
 }
@@ -225,10 +257,14 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
     const d = result.data as unknown as PresData;
     const rows: string[] = [`\t수용언어\t표현언어`];
     if (d.receptiveDevelopmentalAgeText || d.expressiveDevelopmentalAgeText) {
-      rows.push(`발달연령\t${d.receptiveDevelopmentalAgeText ?? '-'}\t${d.expressiveDevelopmentalAgeText ?? '-'}`);
+      rows.push(
+        `발달연령\t${d.receptiveDevelopmentalAgeText ?? '-'}\t${d.expressiveDevelopmentalAgeText ?? '-'}`
+      );
     }
     if (d.receptivePercentileDisplay || d.expressivePercentileDisplay) {
-      rows.push(`백분위\t${d.receptivePercentileDisplay ?? '-'}\t${d.expressivePercentileDisplay ?? '-'}`);
+      rows.push(
+        `백분위\t${d.receptivePercentileDisplay ?? '-'}\t${d.expressivePercentileDisplay ?? '-'}`
+      );
     }
     if (d.diagnosisLevel) {
       rows.push(`진단\t${d.diagnosisLevel}\t${d.diagnosisLevel}`);
@@ -339,32 +375,34 @@ export function ResultSection({
   laStep2Text,
   onGenerateLLM,
 }: ResultSectionProps) {
-  const copyToClipboard = useCallback(async (text: string, feedbackMsg: string, htmlOverride?: string) => {
-    try {
-      const html = htmlOverride ?? (() => {
-        const escaped = text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-        return `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
-      })();
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          'text/plain': new Blob([text], { type: 'text/plain' }),
-          'text/html': new Blob([html], { type: 'text/html' }),
-        }),
-      ]);
-      toast.success(feedbackMsg);
-    } catch {
-      // ClipboardItem 미지원 시 plain text fallback
+  const copyToClipboard = useCallback(
+    async (text: string, feedbackMsg: string, htmlOverride?: string) => {
       try {
-        await navigator.clipboard.writeText(text);
+        const html =
+          htmlOverride ??
+          (() => {
+            const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
+          })();
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'text/html': new Blob([html], { type: 'text/html' }),
+          }),
+        ]);
         toast.success(feedbackMsg);
       } catch {
-        toast.error('복사 실패');
+        // ClipboardItem 미지원 시 plain text fallback
+        try {
+          await navigator.clipboard.writeText(text);
+          toast.success(feedbackMsg);
+        } catch {
+          toast.error('복사 실패');
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   // 전체 복사 (아동 정보 + 모든 결과)
   const handleCopyAll = () => {
@@ -382,7 +420,11 @@ export function ResultSection({
     // 도구별 결과 순회
     for (const [toolId, result] of Object.entries(results)) {
       const toolName = getToolName(toolId);
-      lines.push(``, `■ ${toolName} 결과`, buildToolCopyText(toolId, result, toolId === 'language_analysis' ? laStep2Text : null));
+      lines.push(
+        ``,
+        `■ ${toolName} 결과`,
+        buildToolCopyText(toolId, result, toolId === 'language_analysis' ? laStep2Text : null)
+      );
     }
 
     // 통합 요약 추가
@@ -451,7 +493,9 @@ export function ResultSection({
               title={`${toolName} 결과`}
               text={result.text}
               data={result.data}
-              onCopy={(copyText, copyHtml) => copyToClipboard(copyText, `${toolName} 결과 복사 완료`, copyHtml)}
+              onCopy={(copyText, copyHtml) =>
+                copyToClipboard(copyText, `${toolName} 결과 복사 완료`, copyHtml)
+              }
             />
           );
         })}
@@ -486,9 +530,7 @@ function PresTable({ data }: { data: PresData }) {
         <thead>
           <tr className="border">
             <th className="border px-2 py-2 text-center font-medium" />
-            {hasReceptive && (
-              <th className="border px-2 py-2 text-center font-medium">수용언어</th>
-            )}
+            {hasReceptive && <th className="border px-2 py-2 text-center font-medium">수용언어</th>}
             {hasExpressive && (
               <th className="border px-2 py-2 text-center font-medium">표현언어</th>
             )}
@@ -501,28 +543,38 @@ function PresTable({ data }: { data: PresData }) {
               <td className="border px-2 py-2 text-center">{data.receptiveDevelopmentalAgeText}</td>
             )}
             {hasExpressive && (
-              <td className="border px-2 py-2 text-center">{data.expressiveDevelopmentalAgeText}</td>
+              <td className="border px-2 py-2 text-center">
+                {data.expressiveDevelopmentalAgeText}
+              </td>
             )}
           </tr>
           <tr className="border">
             <td className="border px-2 py-2 text-center text-xs text-gray-500">백분위</td>
             {hasReceptive && (
-              <td className="border px-2 py-2 text-center">{data.receptivePercentileDisplay ?? '-'}</td>
+              <td className="border px-2 py-2 text-center">
+                {data.receptivePercentileDisplay ?? '-'}
+              </td>
             )}
             {hasExpressive && (
-              <td className="border px-2 py-2 text-center">{data.expressivePercentileDisplay ?? '-'}</td>
+              <td className="border px-2 py-2 text-center">
+                {data.expressivePercentileDisplay ?? '-'}
+              </td>
             )}
           </tr>
           {data.diagnosisLevel && (
             <tr className="border">
               <td className="border px-2 py-2 text-center text-xs text-gray-500">진단</td>
               {hasReceptive && (
-                <td className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}>
+                <td
+                  className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}
+                >
                   {data.diagnosisLevel}
                 </td>
               )}
               {hasExpressive && (
-                <td className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}>
+                <td
+                  className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}
+                >
                   {data.diagnosisLevel}
                 </td>
               )}
@@ -553,9 +605,21 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
   if (data.isUntestable) return null;
 
   const cols = [
-    { label: '원인이유', rawScore: data.causeReasonRawScore, percentile: data.causeReasonPercentileText },
-    { label: '해결추론', rawScore: data.solutionInferenceRawScore, percentile: data.solutionInferencePercentileText },
-    { label: '단서추측', rawScore: data.clueGuessingRawScore, percentile: data.clueGuessingPercentileText },
+    {
+      label: '원인이유',
+      rawScore: data.causeReasonRawScore,
+      percentile: data.causeReasonPercentileText,
+    },
+    {
+      label: '해결추론',
+      rawScore: data.solutionInferenceRawScore,
+      percentile: data.solutionInferencePercentileText,
+    },
+    {
+      label: '단서추측',
+      rawScore: data.clueGuessingRawScore,
+      percentile: data.clueGuessingPercentileText,
+    },
     { label: '총점', rawScore: data.totalRawScore, percentile: data.totalPercentileText },
   ];
 
@@ -563,12 +627,22 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
+      >
         <thead>
           <tr>
-            <th className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }} />
+            <th
+              className="px-2 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            />
             {cols.map((col) => (
-              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
+              <th
+                key={col.label}
+                className="px-2 py-2 text-center align-middle font-medium"
+                style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+              >
                 {col.label}
               </th>
             ))}
@@ -576,17 +650,35 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
         </thead>
         <tbody>
           <tr>
-            <td className="px-2 pt-2 pb-0 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
+            <td
+              className="px-2 pt-2 pb-0 text-center align-middle font-bold"
+              style={{ ...TH_BG, borderTop: B }}
+            >
+              원점수
+            </td>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 pt-2 pb-0 text-center align-middle" style={{ borderTop: B }}>
+              <td
+                key={col.label}
+                className="px-2 pt-2 pb-0 text-center align-middle"
+                style={{ borderTop: B }}
+              >
                 {col.rawScore}점
               </td>
             ))}
           </tr>
           <tr>
-            <td className="px-2 pt-0 pb-2 text-center font-bold align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
+            <td
+              className="px-2 pt-0 pb-2 text-center align-middle font-bold"
+              style={{ ...TH_BG, borderBottom: B }}
+            >
+              백분위수
+            </td>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 pt-0 pb-2 text-center align-middle" style={{ borderBottom: B }}>
+              <td
+                key={col.label}
+                className="px-2 pt-0 pb-2 text-center align-middle"
+                style={{ borderBottom: B }}
+              >
                 {col.percentile}
               </td>
             ))}
@@ -610,12 +702,24 @@ function CplcTable({ data }: { data: CplcData }) {
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
+      >
         <thead>
           <tr>
-            <th className="px-2 py-2 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>영역</th>
+            <th
+              className="px-2 py-2 text-center align-middle font-bold"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              영역
+            </th>
             {cols.map((col) => (
-              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
+              <th
+                key={col.label}
+                className="px-2 py-2 text-center align-middle font-medium"
+                style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+              >
                 {col.label}
               </th>
             ))}
@@ -623,9 +727,18 @@ function CplcTable({ data }: { data: CplcData }) {
         </thead>
         <tbody>
           <tr>
-            <td className="px-2 py-2 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>점수</td>
+            <td
+              className="px-2 py-2 text-center align-middle font-bold"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              점수
+            </td>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
+              <td
+                key={col.label}
+                className="px-2 py-2 text-center align-middle"
+                style={{ borderTop: B, borderBottom: B }}
+              >
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
@@ -641,7 +754,11 @@ function CplcTable({ data }: { data: CplcData }) {
 function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
   const cols = [
     { label: '대화기술', score: data.conversationScore, percent: data.conversationPercent },
-    { label: '정보요청+제공+응하기', score: data.informationScore, percent: data.informationPercent },
+    {
+      label: '정보요청+제공+응하기',
+      score: data.informationScore,
+      percent: data.informationPercent,
+    },
     { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
     { label: '총점', score: data.totalScore, percent: data.totalPercent },
   ];
@@ -649,11 +766,18 @@ function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
+      >
         <thead>
           <tr>
             {cols.map((col) => (
-              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
+              <th
+                key={col.label}
+                className="px-2 py-2 text-center align-middle font-medium"
+                style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+              >
                 {col.label}
               </th>
             ))}
@@ -662,7 +786,11 @@ function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
         <tbody>
           <tr>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
+              <td
+                key={col.label}
+                className="px-2 py-2 text-center align-middle"
+                style={{ borderTop: B, borderBottom: B }}
+              >
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
@@ -688,11 +816,18 @@ function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
+      >
         <thead>
           <tr>
             {cols.map((col) => (
-              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
+              <th
+                key={col.label}
+                className="px-2 py-2 text-center align-middle font-medium"
+                style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+              >
                 {col.label}
               </th>
             ))}
@@ -701,7 +836,11 @@ function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
         <tbody>
           <tr>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
+              <td
+                key={col.label}
+                className="px-2 py-2 text-center align-middle"
+                style={{ borderTop: B, borderBottom: B }}
+              >
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
@@ -754,7 +893,7 @@ function LanguageAnalysisResultCard({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-xs text-purple-700 border-purple-300 hover:bg-purple-50 dark:text-purple-300 dark:border-purple-700 dark:hover:bg-purple-950/30"
+              className="h-7 border-purple-300 px-2 text-xs text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/30"
               onClick={onCopyPrompt}
             >
               AI 요청 복사
@@ -802,9 +941,7 @@ function LanguageAnalysisResultCard({
           >
             {showStep1 ? '▲ 구조화 데이터 숨기기' : '▼ 구조화 데이터 보기'}
           </button>
-          {showStep1 && (
-            <p className={`mt-2 ${TEXT_STYLES.body} text-xs`}>{step1Text}</p>
-          )}
+          {showStep1 && <p className={`mt-2 ${TEXT_STYLES.body} text-xs`}>{step1Text}</p>}
         </div>
       )}
     </div>
@@ -834,15 +971,11 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
             <p className={TEXT_STYLES.body}>{text}</p>
-            {toolId === 'pres' && data && (
-              <PresTable data={data as unknown as PresData} />
-            )}
+            {toolId === 'pres' && data && <PresTable data={data as unknown as PresData} />}
             {toolId === 'problem_solving' && data && (
               <ProblemSolvingTable data={data as unknown as ProblemSolvingData} />
             )}
-            {toolId === 'cplc' && data && (
-              <CplcTable data={data as unknown as CplcData} />
-            )}
+            {toolId === 'cplc' && data && <CplcTable data={data as unknown as CplcData} />}
             {toolId === 'kcelf5_pp' && data && (
               <Kcelf5PpTable data={data as unknown as Kcelf5PpData} />
             )}
