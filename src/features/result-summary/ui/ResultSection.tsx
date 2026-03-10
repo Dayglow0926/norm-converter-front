@@ -98,7 +98,7 @@ interface Kcelf5OrsData {
 
 // HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
 const HEADER_BG = 'background-color:rgb(182,221,232);';
-const BASE_CELL = "border:1px solid black;padding:4px 8px;text-align:center;font-family:'새굴림',sans-serif;font-size:10pt;";
+const BASE_CELL = "border-top:2.25pt solid black;border-bottom:2.25pt solid black;border-left:none;border-right:none;padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt;";
 const TH_STYLE = BASE_CELL + HEADER_BG;
 const TD_STYLE = BASE_CELL;
 
@@ -107,7 +107,7 @@ function htmlScoreTable(
   leadingCol?: { header: string; cell: string }
 ): string {
   const totalCols = cols.length + (leadingCol ? 1 : 0);
-  const colWidth = `${Math.floor(100 / totalCols)}%`;
+  const colWidth = `${(100 / totalCols).toFixed(4)}%`;
   const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
 
   const leadingTh = leadingCol ? `<th style="${TH_STYLE}">${leadingCol.header}</th>` : '';
