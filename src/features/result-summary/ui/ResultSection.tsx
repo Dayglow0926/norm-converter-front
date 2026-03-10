@@ -113,8 +113,9 @@ function htmlScoreTable(
   const colWidth = `${(100 / totalCols).toFixed(4)}%`;
   const colTags = Array(totalCols).fill(`<col style="width:${colWidth};">`).join('');
 
-  const leadingTh = leadingCol ? `<th style="${TH_STYLE}">${leadingCol.header}</th>` : '';
-  const leadingTd = leadingCol ? `<td style="${TH_STYLE}">${leadingCol.cell}</td>` : '';
+  const BOLD_TH_STYLE = TH_STYLE + 'font-weight:bold;';
+  const leadingTh = leadingCol ? `<th style="${BOLD_TH_STYLE}">${leadingCol.header}</th>` : '';
+  const leadingTd = leadingCol ? `<td style="${BOLD_TH_STYLE}">${leadingCol.cell}</td>` : '';
 
   const ths = cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('');
   const tds = cols.map((c) => `<td style="${TD_STYLE}">${c.score}점<br>(${c.percent}%)</td>`).join('');
@@ -140,10 +141,10 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   const mkTd = (top: string, bot: string) =>
     `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` + BASE;
 
-  const ROW1_TH = mkTh('2.25pt solid black', '0pt solid transparent');
-  const ROW1_TD = mkTd('2.25pt solid black', '0pt solid transparent');
-  const ROW2_TH = mkTh('0pt solid transparent', '2.25pt solid black');
-  const ROW2_TD = mkTd('0pt solid transparent', '2.25pt solid black');
+  const ROW1_TH = mkTh('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;font-weight:bold;';
+  const ROW1_TD = mkTd('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;';
+  const ROW2_TH = mkTh('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;font-weight:bold;';
+  const ROW2_TD = mkTd('0pt solid transparent', '2.25pt solid black') + 'padding-top:0;';
 
   const headerRow = `<tr><th style="${TH_STYLE}"></th>${cols.map((c) => `<th style="${TH_STYLE}">${c.label}</th>`).join('')}</tr>`;
   const rawRow = `<tr><td style="${ROW1_TH}">원점수</td>${cols.map((c) => `<td style="${ROW1_TD}">${c.rawScore}점</td>`).join('')}</tr>`;
@@ -575,7 +576,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
         </thead>
         <tbody>
           <tr>
-            <td className="px-2 pt-2 pb-0 text-center align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
+            <td className="px-2 pt-2 pb-0 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
             {cols.map((col) => (
               <td key={col.label} className="px-2 pt-2 pb-0 text-center align-middle" style={{ borderTop: B }}>
                 {col.rawScore}점
@@ -583,7 +584,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
             ))}
           </tr>
           <tr>
-            <td className="px-2 pt-0 pb-2 text-center align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
+            <td className="px-2 pt-0 pb-2 text-center font-bold align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
             {cols.map((col) => (
               <td key={col.label} className="px-2 pt-0 pb-2 text-center align-middle" style={{ borderBottom: B }}>
                 {col.percentile}
@@ -612,7 +613,7 @@ function CplcTable({ data }: { data: CplcData }) {
       <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
           <tr>
-            <th className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>영역</th>
+            <th className="px-2 py-2 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>영역</th>
             {cols.map((col) => (
               <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
                 {col.label}
@@ -622,7 +623,7 @@ function CplcTable({ data }: { data: CplcData }) {
         </thead>
         <tbody>
           <tr>
-            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>점수</td>
+            <td className="px-2 py-2 text-center font-bold align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>점수</td>
             {cols.map((col) => (
               <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
                 <span className="block">{col.score}점</span>
