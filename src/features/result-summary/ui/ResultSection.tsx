@@ -544,46 +544,49 @@ function PresTable({ data }: { data: PresData }) {
   );
 }
 
-// 언어문제해결력 결과 테이블 컴포넌트 (전치: 하위검사=열, 항목=행)
+// 공통 테이블 헤더 배경색
+const TH_BG: React.CSSProperties = { backgroundColor: 'rgb(182,221,232)' };
+
+// 언어문제해결력 결과 테이블 컴포넌트 (원점수/백분위수 2행 + 앞 컬럼)
 function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
   if (data.isUntestable) return null;
 
   const cols = [
-    {
-      label: '원인이유',
-      rawScore: data.causeReasonRawScore,
-      percentile: data.causeReasonPercentileText,
-    },
-    {
-      label: '해결추론',
-      rawScore: data.solutionInferenceRawScore,
-      percentile: data.solutionInferencePercentileText,
-    },
-    {
-      label: '단서추측',
-      rawScore: data.clueGuessingRawScore,
-      percentile: data.clueGuessingPercentileText,
-    },
+    { label: '원인이유', rawScore: data.causeReasonRawScore, percentile: data.causeReasonPercentileText },
+    { label: '해결추론', rawScore: data.solutionInferenceRawScore, percentile: data.solutionInferencePercentileText },
+    { label: '단서추측', rawScore: data.clueGuessingRawScore, percentile: data.clueGuessingPercentileText },
     { label: '총점', rawScore: data.totalRawScore, percentile: data.totalPercentileText },
   ];
 
+  const B = '2px solid black';
+
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
-          <tr className="border">
+          <tr>
+            <th className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }} />
             {cols.map((col) => (
-              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <tr className="border">
+          <tr>
+            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
             {cols.map((col) => (
-              <td key={col.label} className="border px-2 py-2 text-center">
+              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B }}>
                 {col.rawScore}점
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
+            {cols.map((col) => (
+              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderBottom: B }}>
+                {col.percentile}
               </td>
             ))}
           </tr>
@@ -602,23 +605,26 @@ function CplcTable({ data }: { data: CplcData }) {
     { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
     { label: '총점', score: data.totalScore, percent: data.totalPercent },
   ];
+  const B = '2px solid black';
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
-          <tr className="border">
+          <tr>
+            <th className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>영역</th>
             {cols.map((col) => (
-              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <tr className="border">
+          <tr>
+            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>점수</td>
             {cols.map((col) => (
-              <td key={col.label} className="border px-2 py-2 text-center">
+              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
@@ -638,23 +644,24 @@ function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
     { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
     { label: '총점', score: data.totalScore, percent: data.totalPercent },
   ];
+  const B = '2px solid black';
 
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
-          <tr className="border">
+          <tr>
             {cols.map((col) => (
-              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <tr className="border">
+          <tr>
             {cols.map((col) => (
-              <td key={col.label} className="border px-2 py-2 text-center">
+              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
@@ -676,22 +683,24 @@ function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
     { label: '총점', score: data.totalScore, percent: data.totalPercent },
   ];
 
+  const B = '2px solid black';
+
   return (
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
-          <tr className="border">
+          <tr>
             {cols.map((col) => (
-              <th key={col.label} className="border px-2 py-2 text-center font-medium">
+              <th key={col.label} className="px-2 py-2 text-center font-medium align-middle" style={{ ...TH_BG, borderTop: B, borderBottom: B }}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <tr className="border">
+          <tr>
             {cols.map((col) => (
-              <td key={col.label} className="border px-2 py-2 text-center">
+              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B, borderBottom: B }}>
                 <span className="block">{col.score}점</span>
                 <span className="block text-xs text-gray-500">({col.percent}%)</span>
               </td>
