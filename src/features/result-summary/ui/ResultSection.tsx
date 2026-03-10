@@ -101,9 +101,9 @@ const HEADER_BG = 'background-color:rgb(182,221,232);';
 const H_BORDER = 'border-top:2.25pt solid black;border-bottom:2.25pt solid black;';
 const V_HIDDEN_TH = 'border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);';
 const V_HIDDEN_TD = 'border-left:2.25pt solid white;border-right:2.25pt solid white;';
-const BASE = "padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt;font-weight:normal;";
+const BASE = "padding:4px 8px;text-align:center;vertical-align:middle;mso-vertical-align-alt:auto;font-family:'새굴림',sans-serif;font-size:10pt;";
 const TH_STYLE = H_BORDER + V_HIDDEN_TH + BASE + HEADER_BG;
-const TD_STYLE = H_BORDER + V_HIDDEN_TD + BASE;
+const TD_STYLE = H_BORDER + V_HIDDEN_TD + BASE + 'font-weight:normal;';
 
 function htmlScoreTable(
   cols: { label: string; score: number; percent: number }[],
@@ -139,7 +139,7 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   const mkTh = (top: string, bot: string) =>
     `border-top:${top};border-bottom:${bot};border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);` + BASE + HEADER_BG;
   const mkTd = (top: string, bot: string) =>
-    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` + BASE;
+    `border-top:${top};border-bottom:${bot};border-left:2.25pt solid white;border-right:2.25pt solid white;` + BASE + 'font-weight:normal;';
 
   const ROW1_TH = mkTh('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;font-weight:bold;';
   const ROW1_TD = mkTd('2.25pt solid black', '0pt solid transparent') + 'padding-bottom:0;';
