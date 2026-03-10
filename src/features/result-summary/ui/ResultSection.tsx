@@ -575,17 +575,17 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
         </thead>
         <tbody>
           <tr>
-            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
+            <td className="px-2 pt-2 pb-0 text-center align-middle" style={{ ...TH_BG, borderTop: B }}>원점수</td>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderTop: B }}>
+              <td key={col.label} className="px-2 pt-2 pb-0 text-center align-middle" style={{ borderTop: B }}>
                 {col.rawScore}점
               </td>
             ))}
           </tr>
           <tr>
-            <td className="px-2 py-2 text-center align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
+            <td className="px-2 pt-0 pb-2 text-center align-middle" style={{ ...TH_BG, borderBottom: B }}>백분위수</td>
             {cols.map((col) => (
-              <td key={col.label} className="px-2 py-2 text-center align-middle" style={{ borderBottom: B }}>
+              <td key={col.label} className="px-2 pt-0 pb-2 text-center align-middle" style={{ borderBottom: B }}>
                 {col.percentile}
               </td>
             ))}
