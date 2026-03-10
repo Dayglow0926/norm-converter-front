@@ -96,6 +96,59 @@ interface Kcelf5OrsData {
 }
 
 
+// HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
+const CELL_STYLE = 'border:1px solid black;padding:4px 8px;text-align:center;font-family:\'새굴림\',sans-serif;font-size:10pt;';
+
+function htmlScoreTable(cols: { label: string; score: number; percent: number }[]): string {
+  const ths = cols.map((c) => `<th style="${CELL_STYLE}">${c.label}</th>`).join('');
+  const tds = cols
+    .map((c) => `<td style="${CELL_STYLE}">${c.score}점<br>(${c.percent}%)</td>`)
+    .join('');
+  return `<table style="border-collapse:collapse;"><thead><tr>${ths}</tr></thead><tbody><tr>${tds}</tr></tbody></table>`;
+}
+
+// 도구별 HTML 복사 내용 생성 (표가 있는 도구만, 없으면 null)
+function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
+  if (!result.data) return null;
+  const escaped = result.text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+  const textHtml = `<p style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0 0 8px 0;">${escaped}</p>`;
+
+  if (toolId === 'cplc') {
+    const d = result.data as unknown as CplcData;
+    return textHtml + htmlScoreTable([
+      { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
+      { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
+      { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
+      { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+      { label: '총점', score: d.totalScore, percent: d.totalPercent },
+    ]);
+  }
+  if (toolId === 'kcelf5_pp') {
+    const d = result.data as unknown as Kcelf5PpData;
+    return textHtml + htmlScoreTable([
+      { label: '대화기술', score: d.conversationScore, percent: d.conversationPercent },
+      { label: '정보요청+제공+응하기', score: d.informationScore, percent: d.informationPercent },
+      { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+      { label: '총점', score: d.totalScore, percent: d.totalPercent },
+    ]);
+  }
+  if (toolId === 'kcelf5_ors') {
+    const d = result.data as unknown as Kcelf5OrsData;
+    return textHtml + htmlScoreTable([
+      { label: '듣기', score: d.listeningScore, percent: d.listeningPercent },
+      { label: '말하기', score: d.speakingScore, percent: d.speakingPercent },
+      { label: '읽기', score: d.readingScore, percent: d.readingPercent },
+      { label: '쓰기', score: d.writingScore, percent: d.writingPercent },
+      { label: '총점', score: d.totalScore, percent: d.totalPercent },
+    ]);
+  }
+  return null;
+}
+
 // 도구별 복사 텍스트 생성 (테이블 포함)
 function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: string | null): string {
   // 언어분석: LLM 보고서(Step 2)가 있으면 우선 사용
@@ -232,13 +285,15 @@ export function ResultSection({
   laStep2Text,
   onGenerateLLM,
 }: ResultSectionProps) {
-  const copyToClipboard = useCallback(async (text: string, feedbackMsg: string) => {
+  const copyToClipboard = useCallback(async (text: string, feedbackMsg: string, htmlOverride?: string) => {
     try {
-      const escaped = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      const html = `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
+      const html = htmlOverride ?? (() => {
+        const escaped = text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return `<pre style="font-family:'새굴림',sans-serif;font-size:10pt;margin:0;">${escaped}</pre>`;
+      })();
       await navigator.clipboard.write([
         new ClipboardItem({
           'text/plain': new Blob([text], { type: 'text/plain' }),
@@ -342,7 +397,7 @@ export function ResultSection({
               title={`${toolName} 결과`}
               text={result.text}
               data={result.data}
-              onCopy={(copyText) => copyToClipboard(copyText, `${toolName} 결과 복사 완료`)}
+              onCopy={(copyText, copyHtml) => copyToClipboard(copyText, `${toolName} 결과 복사 완료`, copyHtml)}
             />
           );
         })}
@@ -699,12 +754,14 @@ interface ToolResultCardProps {
   title: string;
   text: string;
   data?: Record<string, unknown>;
-  onCopy: (text: string) => void;
+  onCopy: (text: string, html?: string) => void;
 }
 
 function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardProps) {
   const handleCopy = () => {
-    onCopy(buildToolCopyText(toolId, { text, data }));
+    const plainText = buildToolCopyText(toolId, { text, data });
+    const htmlContent = buildToolCopyHtml(toolId, { text, data }) ?? undefined;
+    onCopy(plainText, htmlContent);
   };
 
   return (
