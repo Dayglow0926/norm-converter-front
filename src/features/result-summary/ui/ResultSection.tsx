@@ -102,7 +102,7 @@ const V_HIDDEN_TH =
   'border-left:2.25pt solid rgb(182,221,232);border-right:2.25pt solid rgb(182,221,232);';
 const V_HIDDEN_TD = 'border-left:2.25pt solid white;border-right:2.25pt solid white;';
 const BASE =
-  "padding:4px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt; ";
+  "padding:0px 8px;text-align:center;vertical-align:middle;font-family:'새굴림',sans-serif;font-size:10pt; ";
 const TH_STYLE = H_BORDER + V_HIDDEN_TH + BASE + HEADER_BG;
 const TD_STYLE = H_BORDER + V_HIDDEN_TD + BASE + 'font-weight:normal;';
 
@@ -123,9 +123,14 @@ function htmlScoreTable(
     ? `<td valign="middle" style="${BOLD_TH_STYLE}"><p ${P}>${leadingCol.cell}</p></td>`
     : '';
 
-  const ths = cols.map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`).join('');
+  const ths = cols
+    .map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`)
+    .join('');
   const tds = cols
-    .map((c) => `<td valign="middle" style="${TD_STYLE}"><p ${P}>${c.score}점</p><p ${P}>(${c.percent}%)</p></td>`)
+    .map(
+      (c) =>
+        `<td valign="middle" style="${TD_STYLE}"><p ${P}>${c.score}점</p><p ${P}>(${c.percent}%)</p></td>`
+    )
     .join('');
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${leadingTh}${ths}</tr></thead><tbody><tr>${leadingTd}${tds}</tr></tbody></table>`;
