@@ -20,16 +20,17 @@ import { childInfoSchema, type ChildInfoFormData } from '../model/schema';
 import { formatAgeResult } from '../lib/calculate-age';
 
 /**
- * 8자리 숫자(YYYYMMDD)를 Date 객체로 파싱
+ * 6자리 숫자(YYMMDD)를 Date 객체로 파싱
+ * 연도는 2000년대로 가정 (예: 19 → 2019)
  */
-function parseYYYYMMDD(str: string): Date | undefined {
+function parseYYMMDD(str: string): Date | undefined {
   if (!str) return undefined;
   const clean = str.replace(/\D/g, '');
-  if (clean.length !== 8) return undefined;
+  if (clean.length !== 6) return undefined;
 
-  const y = +clean.slice(0, 4);
-  const m = +clean.slice(4, 6);
-  const d = +clean.slice(6, 8);
+  const y = 2000 + +clean.slice(0, 2);
+  const m = +clean.slice(2, 4);
+  const d = +clean.slice(4, 6);
 
   const date = new Date(y, m - 1, d);
   // 유효한 날짜인지 검증
@@ -40,14 +41,14 @@ function parseYYYYMMDD(str: string): Date | undefined {
 }
 
 /**
- * Date 객체를 YYYYMMDD 형식 문자열로 변환
+ * Date 객체를 YYMMDD 형식 문자열로 변환
  */
-function formatToYYYYMMDD(date: Date | undefined): string {
+function formatToYYMMDD(date: Date | undefined): string {
   if (!date) return '';
-  const y = date.getFullYear();
+  const yy = String(date.getFullYear() % 100).padStart(2, '0');
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
-  return `${y}${m}${d}`;
+  return `${yy}${m}${d}`;
 }
 
 /**
@@ -81,10 +82,10 @@ export function ChildInfoForm() {
   const router = useRouter();
   const { setChildInfo, ageResult, childInfo } = useChildInfoStore();
 
-  // 8자리 숫자 입력 상태 (YYYYMMDD)
-  const [birthDateStr, setBirthDateStr] = useState(() => formatToYYYYMMDD(childInfo?.birthDate));
+  // 6자리 숫자 입력 상태 (YYMMDD)
+  const [birthDateStr, setBirthDateStr] = useState(() => formatToYYMMDD(childInfo?.birthDate));
   const [testDateStr, setTestDateStr] = useState(() =>
-    formatToYYYYMMDD(childInfo?.testDate ?? new Date())
+    formatToYYMMDD(childInfo?.testDate ?? new Date())
   );
 
   const {
@@ -105,16 +106,16 @@ export function ChildInfoForm() {
   });
 
   const handleBirthDateChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    const cleaned = value.replace(/\D/g, '').slice(0, 6);
     setBirthDateStr(cleaned);
-    const date = parseYYYYMMDD(cleaned);
+    const date = parseYYMMDD(cleaned);
     setValue('birthDate', date as Date, { shouldValidate: true });
   };
 
   const handleTestDateChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    const cleaned = value.replace(/\D/g, '').slice(0, 6);
     setTestDateStr(cleaned);
-    const date = parseYYYYMMDD(cleaned);
+    const date = parseYYMMDD(cleaned);
     setValue('testDate', date as Date, { shouldValidate: true });
   };
 
@@ -184,8 +185,8 @@ export function ChildInfoForm() {
               id="birthDate"
               type="text"
               inputMode="numeric"
-              placeholder="YYYYMMDD (예: 20200115)"
-              maxLength={8}
+              placeholder="YYMMDD (예: 200115)"
+              maxLength={6}
               value={birthDateStr}
               onChange={(e) => handleBirthDateChange(e.target.value)}
               aria-invalid={!!errors.birthDate}
@@ -202,8 +203,8 @@ export function ChildInfoForm() {
               id="testDate"
               type="text"
               inputMode="numeric"
-              placeholder="YYYYMMDD (예: 20260212)"
-              maxLength={8}
+              placeholder="YYMMDD (예: 260212)"
+              maxLength={6}
               value={testDateStr}
               onChange={(e) => handleTestDateChange(e.target.value)}
               aria-invalid={!!errors.testDate}
