@@ -3,6 +3,7 @@
 
 export { SelsiScoreForm } from './ui/SelsiScoreForm';
 export { PresScoreForm } from './ui/PresScoreForm';
+export { RevtScoreForm } from './ui/RevtScoreForm';
 export { SyntaxScoreForm } from './ui/SyntaxScoreForm';
 export { ProblemSolvingScoreForm } from './ui/ProblemSolvingScoreForm';
 export { ApacScoreForm } from './ui/ApacScoreForm';

@@ -43,6 +43,20 @@ interface ProblemSolvingData {
   isUntestable: boolean;
 }
 
+// REVT API 데이터 구조
+interface RevtData {
+  receptiveRawScore?: number;
+  receptiveEquivalentAge?: string;
+  receptiveEquivalentMonth?: string;
+  receptivePercentileDisplay?: string;
+  receptiveSdRange?: string;
+  expressiveRawScore?: number;
+  expressiveEquivalentAge?: string;
+  expressiveEquivalentMonth?: string;
+  expressivePercentileDisplay?: string;
+  expressiveSdRange?: string;
+}
+
 // PRES API 데이터 구조
 interface PresData {
   receptiveRawScore?: number;
@@ -257,6 +271,26 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
           `${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
         ].join('\n');
     }
+  }
+  if (toolId === 'revt' && result.data) {
+    const d = result.data as unknown as RevtData;
+    const rows: string[] = [`\t수용어휘\t표현어휘`];
+    if (d.receptiveEquivalentAge || d.expressiveEquivalentAge) {
+      rows.push(
+        `등가연령\t${d.receptiveEquivalentAge ?? '-'}\t${d.expressiveEquivalentAge ?? '-'}`
+      );
+    }
+    if (d.receptivePercentileDisplay || d.expressivePercentileDisplay) {
+      rows.push(
+        `백분위\t${d.receptivePercentileDisplay ?? '-'}\t${d.expressivePercentileDisplay ?? '-'}`
+      );
+    }
+    if (d.receptiveSdRange || d.expressiveSdRange) {
+      rows.push(
+        `SD 범위\t${d.receptiveSdRange ?? '-'}\t${d.expressiveSdRange ?? '-'}`
+      );
+    }
+    if (rows.length > 1) text += '\n\n' + rows.join('\n');
   }
   if (toolId === 'pres' && result.data) {
     const d = result.data as unknown as PresData;
@@ -522,6 +556,65 @@ function diagnosisColorClass(level?: string | null): string {
   if (level === '약간의 언어발달지체') return 'text-amber-600 dark:text-amber-400';
   if (level === '언어장애') return 'text-red-600 dark:text-red-400';
   return 'text-gray-500';
+}
+
+// REVT 결과 테이블 컴포넌트
+function RevtTable({ data }: { data: RevtData }) {
+  const hasReceptive = data.receptiveEquivalentAge !== undefined;
+  const hasExpressive = data.expressiveEquivalentAge !== undefined;
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border">
+            <th className="border px-2 py-2 text-center font-medium" />
+            {hasReceptive && <th className="border px-2 py-2 text-center font-medium">수용어휘</th>}
+            {hasExpressive && (
+              <th className="border px-2 py-2 text-center font-medium">표현어휘</th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border">
+            <td className="border px-2 py-2 text-center text-xs text-gray-500">등가연령</td>
+            {hasReceptive && (
+              <td className="border px-2 py-2 text-center">{data.receptiveEquivalentAge}</td>
+            )}
+            {hasExpressive && (
+              <td className="border px-2 py-2 text-center">{data.expressiveEquivalentAge}</td>
+            )}
+          </tr>
+          <tr className="border">
+            <td className="border px-2 py-2 text-center text-xs text-gray-500">백분위</td>
+            {hasReceptive && (
+              <td className="border px-2 py-2 text-center">
+                {data.receptivePercentileDisplay ?? '-'}
+              </td>
+            )}
+            {hasExpressive && (
+              <td className="border px-2 py-2 text-center">
+                {data.expressivePercentileDisplay ?? '-'}
+              </td>
+            )}
+          </tr>
+          <tr className="border">
+            <td className="border px-2 py-2 text-center text-xs text-gray-500">SD 범위</td>
+            {hasReceptive && (
+              <td className="border px-2 py-2 text-center">
+                {data.receptiveSdRange ?? '-'}
+              </td>
+            )}
+            {hasExpressive && (
+              <td className="border px-2 py-2 text-center">
+                {data.expressiveSdRange ?? '-'}
+              </td>
+            )}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 // PRES 결과 테이블 컴포넌트
@@ -976,6 +1069,7 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
             <p className={TEXT_STYLES.body}>{text}</p>
+            {toolId === 'revt' && data && <RevtTable data={data as unknown as RevtData} />}
             {toolId === 'pres' && data && <PresTable data={data as unknown as PresData} />}
             {toolId === 'problem_solving' && data && (
               <ProblemSolvingTable data={data as unknown as ProblemSolvingData} />

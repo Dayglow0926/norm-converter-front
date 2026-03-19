@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Header } from '@/widgets/header';
 import { SelsiScoreForm } from '@/features/score-entry/ui/SelsiScoreForm';
 import { PresScoreForm } from '@/features/score-entry/ui/PresScoreForm';
+import { RevtScoreForm } from '@/features/score-entry/ui/RevtScoreForm';
 import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
 import { ProblemSolvingScoreForm } from '@/features/score-entry/ui/ProblemSolvingScoreForm';
 import { ApacScoreForm } from '@/features/score-entry/ui/ApacScoreForm';
@@ -57,8 +58,8 @@ const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
   ],
   kcelf5_pp: ['conversation_skills', 'information_group', 'nonverbal_skills'],
   kcelf5_ors: ['listening', 'speaking', 'reading', 'writing'],
+  revt: ['receptive', 'expressive'],
   // language_analysis는 useLanguageAnalysisStore.selectedType 기반으로 별도 처리
-  // revt: ['receptive', 'expressive'],
 };
 
 export function ScoreEntryContent() {
@@ -381,6 +382,8 @@ export function ScoreEntryContent() {
         return <SelsiScoreForm ageMonths={ageMonths} gender={childInfo.gender} />;
       case 'pres':
         return <PresScoreForm ageMonths={ageMonths} />;
+      case 'revt':
+        return <RevtScoreForm ageMonths={ageMonths} />;
       case 'syntax':
         return <SyntaxScoreForm ageMonths={ageMonths} />;
       case 'problem_solving':
