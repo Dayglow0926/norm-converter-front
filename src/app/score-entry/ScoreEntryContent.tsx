@@ -207,6 +207,24 @@ export function ScoreEntryContent() {
   const handleRequestResult = async () => {
     if (!isAllComplete || !childInfo || !ageResult) return;
 
+    // REVT 범위 검증 (결과 확인 클릭 시)
+    const REVT_LIMITS = { min: 7, max: 175 };
+    if (activeSelectedTools.includes('revt')) {
+      const revtData = tools.revt;
+      const receptiveScore = revtData?.inputs.receptive?.rawScore ?? null;
+      const expressiveScore = revtData?.inputs.expressive?.rawScore ?? null;
+
+      if (receptiveScore !== null && (receptiveScore < REVT_LIMITS.min || receptiveScore > REVT_LIMITS.max)) {
+        setApiError(`수용어휘: ${REVT_LIMITS.min}-${REVT_LIMITS.max} 범위만 가능합니다`);
+        return;
+      }
+
+      if (expressiveScore !== null && (expressiveScore < REVT_LIMITS.min || expressiveScore > REVT_LIMITS.max)) {
+        setApiError(`표현어휘: ${REVT_LIMITS.min}-${REVT_LIMITS.max} 범위만 가능합니다`);
+        return;
+      }
+    }
+
     setIsLoading(true);
     setApiError(null);
     clearResults();

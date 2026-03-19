@@ -5,7 +5,6 @@
  * 수용/표현 원점수 + 정반응/오반응 번호 입력
  */
 
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useScoreEntryStore } from '../model/store';
@@ -13,12 +12,6 @@ import { useScoreEntryStore } from '../model/store';
 interface RevtScoreFormProps {
   ageMonths: number;
 }
-
-// REVT 원점수 범위
-const SCORE_LIMITS = {
-  receptive: { min: 7, max: 175 },
-  expressive: { min: 7, max: 175 },
-} as const;
 
 // 하위검사 라벨
 const SUBTEST_LABELS = {
@@ -33,38 +26,18 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
   const setScore = useScoreEntryStore((state) => state.setScore);
   const setInput = useScoreEntryStore((state) => state.setInput);
 
-  const [inputErrors, setInputErrors] = useState<{
-    receptive?: string;
-    expressive?: string;
-  }>({});
-
   const handleScoreChange = (subtest: 'receptive' | 'expressive', value: string) => {
-    const limits = SCORE_LIMITS[subtest];
-
     if (value === '') {
       setScore('revt', subtest, null);
-      setInputErrors((prev) => ({ ...prev, [subtest]: undefined }));
       return;
     }
 
     const num = parseInt(value, 10);
 
-    if (isNaN(num)) {
-      setInputErrors((prev) => ({ ...prev, [subtest]: '숫자만 입력 가능' }));
-      return;
+    // 숫자 입력만 필터링, 범위 검증은 "결과 확인" 버튼 클릭 시 수행
+    if (!isNaN(num)) {
+      setScore('revt', subtest, num);
     }
-
-    if (num < limits.min || num > limits.max) {
-      setInputErrors((prev) => ({
-        ...prev,
-        [subtest]: `${limits.min}-${limits.max} 범위만 가능`,
-      }));
-      setScore('revt', subtest, null);
-      return;
-    }
-
-    setInputErrors((prev) => ({ ...prev, [subtest]: undefined }));
-    setScore('revt', subtest, num);
   };
 
   const handleItemsChange = (
@@ -102,14 +75,10 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="7-175"
-                      className={`w-20 text-center ${inputErrors.receptive ? 'border-destructive' : ''}`}
+                      className="w-20 text-center"
                       value={receptiveScore ?? ''}
                       onChange={(e) => handleScoreChange('receptive', e.target.value)}
-                      aria-invalid={!!inputErrors.receptive}
                     />
-                    {inputErrors.receptive && (
-                      <span className="text-destructive mt-1 text-xs">{inputErrors.receptive}</span>
-                    )}
                   </div>
                 </td>
                 <td className="px-2 py-3">
@@ -142,16 +111,10 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="7-175"
-                      className={`w-20 text-center ${inputErrors.expressive ? 'border-destructive' : ''}`}
+                      className="w-20 text-center"
                       value={expressiveScore ?? ''}
                       onChange={(e) => handleScoreChange('expressive', e.target.value)}
-                      aria-invalid={!!inputErrors.expressive}
                     />
-                    {inputErrors.expressive && (
-                      <span className="text-destructive mt-1 text-xs">
-                        {inputErrors.expressive}
-                      </span>
-                    )}
                   </div>
                 </td>
                 <td className="px-2 py-3">
