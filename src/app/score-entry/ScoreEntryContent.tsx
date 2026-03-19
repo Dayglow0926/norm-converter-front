@@ -214,12 +214,18 @@ export function ScoreEntryContent() {
       const receptiveScore = revtData?.inputs.receptive?.rawScore ?? null;
       const expressiveScore = revtData?.inputs.expressive?.rawScore ?? null;
 
-      if (receptiveScore !== null && (receptiveScore < REVT_LIMITS.min || receptiveScore > REVT_LIMITS.max)) {
+      if (
+        receptiveScore !== null &&
+        (receptiveScore < REVT_LIMITS.min || receptiveScore > REVT_LIMITS.max)
+      ) {
         setApiError(`수용어휘: ${REVT_LIMITS.min}-${REVT_LIMITS.max} 범위만 가능합니다`);
         return;
       }
 
-      if (expressiveScore !== null && (expressiveScore < REVT_LIMITS.min || expressiveScore > REVT_LIMITS.max)) {
+      if (
+        expressiveScore !== null &&
+        (expressiveScore < REVT_LIMITS.min || expressiveScore > REVT_LIMITS.max)
+      ) {
         setApiError(`표현어휘: ${REVT_LIMITS.min}-${REVT_LIMITS.max} 범위만 가능합니다`);
         return;
       }
@@ -248,12 +254,14 @@ export function ScoreEntryContent() {
             if (sp.mluW !== null) spontaneousData.mluW = sp.mluW;
             if (sp.mluMax !== null) spontaneousData.mluMax = sp.mluMax;
             if (sp.longestUtterance) spontaneousData.longestUtterance = sp.longestUtterance;
-            if (sp.longestUtteranceStructure) spontaneousData.longestUtteranceStructure = sp.longestUtteranceStructure;
+            if (sp.longestUtteranceStructure)
+              spontaneousData.longestUtteranceStructure = sp.longestUtteranceStructure;
             if (sp.speakingSituation) spontaneousData.speakingSituation = sp.speakingSituation;
 
             // 의사소통 기능: 카테고리별 선택 항목을 flat array로 변환
             const allCommFunctions = Object.values(sp.communicationFunctions).flat();
-            if (allCommFunctions.length > 0) spontaneousData.communicationFunctions = allCommFunctions;
+            if (allCommFunctions.length > 0)
+              spontaneousData.communicationFunctions = allCommFunctions;
 
             // 문법형태소
             const hasMorphemes =
@@ -520,7 +528,9 @@ export function ScoreEntryContent() {
               results={resultsForDisplay}
               integratedSummary={integratedSummary}
               laStep2Text={laStep2Text}
-              onGenerateLLM={laSelectedType === 'spontaneous_speech' ? handleGenerateLLM : undefined}
+              onGenerateLLM={
+                laSelectedType === 'spontaneous_speech' ? handleGenerateLLM : undefined
+              }
             />
           </div>
         )}

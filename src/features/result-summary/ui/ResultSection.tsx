@@ -286,9 +286,7 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
       );
     }
     if (d.receptiveSdRange || d.expressiveSdRange) {
-      rows.push(
-        `SD 범위\t${d.receptiveSdRange ?? '-'}\t${d.expressiveSdRange ?? '-'}`
-      );
+      rows.push(`SD 범위\t${d.receptiveSdRange ?? '-'}\t${d.expressiveSdRange ?? '-'}`);
     }
     if (rows.length > 1) text += '\n\n' + rows.join('\n');
   }
@@ -556,143 +554,6 @@ function diagnosisColorClass(level?: string | null): string {
   if (level === '약간의 언어발달지체') return 'text-amber-600 dark:text-amber-400';
   if (level === '언어장애') return 'text-red-600 dark:text-red-400';
   return 'text-gray-500';
-}
-
-// REVT 결과 테이블 컴포넌트
-function RevtTable({ data }: { data: RevtData }) {
-  const hasReceptive = data.receptiveEquivalentAge !== undefined;
-  const hasExpressive = data.expressiveEquivalentAge !== undefined;
-
-  return (
-    <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border">
-            <th className="border px-2 py-2 text-center font-medium" />
-            {hasReceptive && <th className="border px-2 py-2 text-center font-medium">수용어휘</th>}
-            {hasExpressive && (
-              <th className="border px-2 py-2 text-center font-medium">표현어휘</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">등가연령</td>
-            {hasReceptive && (
-              <td className="border px-2 py-2 text-center">{data.receptiveEquivalentAge}</td>
-            )}
-            {hasExpressive && (
-              <td className="border px-2 py-2 text-center">{data.expressiveEquivalentAge}</td>
-            )}
-          </tr>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">백분위</td>
-            {hasReceptive && (
-              <td className="border px-2 py-2 text-center">
-                {data.receptivePercentileDisplay ?? '-'}
-              </td>
-            )}
-            {hasExpressive && (
-              <td className="border px-2 py-2 text-center">
-                {data.expressivePercentileDisplay ?? '-'}
-              </td>
-            )}
-          </tr>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">SD 범위</td>
-            {hasReceptive && (
-              <td className="border px-2 py-2 text-center">
-                {data.receptiveSdRange ?? '-'}
-              </td>
-            )}
-            {hasExpressive && (
-              <td className="border px-2 py-2 text-center">
-                {data.expressiveSdRange ?? '-'}
-              </td>
-            )}
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// PRES 결과 테이블 컴포넌트
-function PresTable({ data }: { data: PresData }) {
-  const hasReceptive = data.receptiveDevelopmentalAgeText !== undefined;
-  const hasExpressive = data.expressiveDevelopmentalAgeText !== undefined;
-
-  return (
-    <div className="mt-3 overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border">
-            <th className="border px-2 py-2 text-center font-medium" />
-            {hasReceptive && <th className="border px-2 py-2 text-center font-medium">수용언어</th>}
-            {hasExpressive && (
-              <th className="border px-2 py-2 text-center font-medium">표현언어</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">발달연령</td>
-            {hasReceptive && (
-              <td className="border px-2 py-2 text-center">{data.receptiveDevelopmentalAgeText}</td>
-            )}
-            {hasExpressive && (
-              <td className="border px-2 py-2 text-center">
-                {data.expressiveDevelopmentalAgeText}
-              </td>
-            )}
-          </tr>
-          <tr className="border">
-            <td className="border px-2 py-2 text-center text-xs text-gray-500">백분위</td>
-            {hasReceptive && (
-              <td className="border px-2 py-2 text-center">
-                {data.receptivePercentileDisplay ?? '-'}
-              </td>
-            )}
-            {hasExpressive && (
-              <td className="border px-2 py-2 text-center">
-                {data.expressivePercentileDisplay ?? '-'}
-              </td>
-            )}
-          </tr>
-          {data.diagnosisLevel && (
-            <tr className="border">
-              <td className="border px-2 py-2 text-center text-xs text-gray-500">진단</td>
-              {hasReceptive && (
-                <td
-                  className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}
-                >
-                  {data.diagnosisLevel}
-                </td>
-              )}
-              {hasExpressive && (
-                <td
-                  className={`border px-2 py-2 text-center text-xs font-medium ${diagnosisColorClass(data.diagnosisLevel)}`}
-                >
-                  {data.diagnosisLevel}
-                </td>
-              )}
-            </tr>
-          )}
-          {data.totalLangAgeText && (
-            <tr className="border">
-              <td className="border px-2 py-2 text-center text-xs text-gray-500">통합언어</td>
-              <td
-                colSpan={(hasReceptive ? 1 : 0) + (hasExpressive ? 1 : 0)}
-                className="border px-2 py-2 text-center"
-              >
-                {data.totalLangAgeText}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
 }
 
 // 공통 테이블 헤더 배경색
@@ -1069,8 +930,6 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
           <h4 className={`${TEXT_STYLES.sectionTitle} ${TEXT_STYLES.titleColor.green}`}>{title}</h4>
           <div>
             <p className={TEXT_STYLES.body}>{text}</p>
-            {toolId === 'revt' && data && <RevtTable data={data as unknown as RevtData} />}
-            {toolId === 'pres' && data && <PresTable data={data as unknown as PresData} />}
             {toolId === 'problem_solving' && data && (
               <ProblemSolvingTable data={data as unknown as ProblemSolvingData} />
             )}

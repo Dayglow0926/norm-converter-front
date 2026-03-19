@@ -38,6 +38,133 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 }
 
 // =========================================
+// 전사 데이터 파싱 로직
+// =========================================
+
+interface ParsedTranscript {
+  mluW: number;
+  mluMax: number;
+  longestUtterance: string;
+  formattedTranscript: string; // C:/S: 형식
+}
+
+function parseTranscript(raw: string): ParsedTranscript | null {
+  const lines = raw.split('\n');
+
+  const childUtterances: { wordCount: number; text: string }[] = [];
+  const formattedLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // 숫자로 시작하는 줄 = 아동 발화 (숫자 = 어절 수)
+    const childMatch = trimmed.match(/^(\d+)\s+(.+)$/);
+    if (childMatch) {
+      const wordCount = parseInt(childMatch[1], 10);
+      const text = childMatch[2].trim();
+      childUtterances.push({ wordCount, text });
+      formattedLines.push(`S: ${text}`);
+    } else {
+      // 치료사 발화
+      formattedLines.push(`C: ${trimmed}`);
+    }
+  }
+
+  if (childUtterances.length === 0) return null;
+
+  const totalWords = childUtterances.reduce((sum, u) => sum + u.wordCount, 0);
+  const mluW = Math.round((totalWords / childUtterances.length) * 100) / 100;
+  const mluMax = Math.max(...childUtterances.map((u) => u.wordCount));
+  const longest = childUtterances.reduce((max, u) => (u.wordCount > max.wordCount ? u : max));
+
+  return {
+    mluW,
+    mluMax,
+    longestUtterance: longest.text,
+    formattedTranscript: formattedLines.join('\n'),
+  };
+}
+
+// =========================================
+// 전사 데이터 입력 섹션
+// =========================================
+
+function TranscriptInputSection() {
+  const { setSpontaneousField } = useLanguageAnalysisStore();
+  const [transcriptText, setTranscriptText] = useState('');
+  const [parseResult, setParseResult] = useState<ParsedTranscript | null>(null);
+  const [parseError, setParseError] = useState(false);
+
+  const handleAnalyze = () => {
+    const result = parseTranscript(transcriptText);
+    if (!result) {
+      setParseError(true);
+      setParseResult(null);
+      return;
+    }
+
+    setParseError(false);
+    setParseResult(result);
+
+    // 섹션 1 필드 자동 채우기
+    setSpontaneousField('mluW', result.mluW);
+    setSpontaneousField('mluMax', result.mluMax);
+    setSpontaneousField('longestUtterance', result.longestUtterance);
+
+    // 섹션 7 상황별 관찰 첫 번째 항목에 전사 데이터 채우기
+    setSpontaneousField('situationalObservations', [
+      {
+        situation: '전사 데이터',
+        observation: '',
+        example: result.formattedTranscript,
+      },
+    ]);
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="전사 데이터 입력"
+        subtitle="전사 데이터를 붙여넣고 자동 분석 버튼을 누르세요 (숫자 = 아동 발화 어절 수)"
+      />
+      <Textarea
+        placeholder={`예시:\n    방학 동안 뭐 했어?\n2    식당 갔어.\n    어떤 식당?\n6    방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
+        value={transcriptText}
+        onChange={(e) => {
+          setTranscriptText(e.target.value);
+          setParseError(false);
+          setParseResult(null);
+        }}
+        rows={6}
+        className="text-sm"
+      />
+      <div className="mt-2 flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAnalyze}
+          disabled={!transcriptText.trim()}
+        >
+          자동 분석
+        </Button>
+        {parseResult && (
+          <span className="text-xs text-green-600 dark:text-green-400">
+            MLU-w {parseResult.mluW} · MLU-max {parseResult.mluMax}
+          </span>
+        )}
+        {parseError && (
+          <span className="text-destructive text-xs">
+            아동 발화를 찾을 수 없습니다. 숫자로 시작하는 줄이 있는지 확인하세요.
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =========================================
 // 섹션 1: 구문 측정치
 // =========================================
 
@@ -686,6 +813,8 @@ function JointAttentionSection() {
 export function SpontaneousSpeechForm() {
   return (
     <div className="space-y-6 py-2">
+      <TranscriptInputSection />
+      <hr />
       <SyntaxMeasuresSection />
       <hr />
       <CommunicationFunctionsSection />
