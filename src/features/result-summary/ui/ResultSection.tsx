@@ -43,32 +43,6 @@ interface ProblemSolvingData {
   isUntestable: boolean;
 }
 
-// REVT API 데이터 구조
-interface RevtData {
-  receptiveRawScore?: number;
-  receptiveEquivalentAge?: string;
-  receptiveEquivalentMonth?: string;
-  receptivePercentileDisplay?: string;
-  receptiveSdRange?: string;
-  expressiveRawScore?: number;
-  expressiveEquivalentAge?: string;
-  expressiveEquivalentMonth?: string;
-  expressivePercentileDisplay?: string;
-  expressiveSdRange?: string;
-}
-
-// PRES API 데이터 구조
-interface PresData {
-  receptiveRawScore?: number;
-  receptiveDevelopmentalAgeText?: string;
-  receptivePercentileDisplay?: string;
-  expressiveRawScore?: number;
-  expressiveDevelopmentalAgeText?: string;
-  expressivePercentileDisplay?: string;
-  totalLangAgeText?: string;
-  diagnosisLevel?: '정상발달' | '약간의 언어발달지체' | '언어장애' | null;
-}
-
 // CPLC API 데이터 구조
 interface CplcData {
   discourseScore: number;
@@ -271,45 +245,6 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
           `${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
         ].join('\n');
     }
-  }
-  if (toolId === 'revt' && result.data) {
-    const d = result.data as unknown as RevtData;
-    const rows: string[] = [`\t수용어휘\t표현어휘`];
-    if (d.receptiveEquivalentAge || d.expressiveEquivalentAge) {
-      rows.push(
-        `등가연령\t${d.receptiveEquivalentAge ?? '-'}\t${d.expressiveEquivalentAge ?? '-'}`
-      );
-    }
-    if (d.receptivePercentileDisplay || d.expressivePercentileDisplay) {
-      rows.push(
-        `백분위\t${d.receptivePercentileDisplay ?? '-'}\t${d.expressivePercentileDisplay ?? '-'}`
-      );
-    }
-    if (d.receptiveSdRange || d.expressiveSdRange) {
-      rows.push(`SD 범위\t${d.receptiveSdRange ?? '-'}\t${d.expressiveSdRange ?? '-'}`);
-    }
-    if (rows.length > 1) text += '\n\n' + rows.join('\n');
-  }
-  if (toolId === 'pres' && result.data) {
-    const d = result.data as unknown as PresData;
-    const rows: string[] = [`\t수용언어\t표현언어`];
-    if (d.receptiveDevelopmentalAgeText || d.expressiveDevelopmentalAgeText) {
-      rows.push(
-        `발달연령\t${d.receptiveDevelopmentalAgeText ?? '-'}\t${d.expressiveDevelopmentalAgeText ?? '-'}`
-      );
-    }
-    if (d.receptivePercentileDisplay || d.expressivePercentileDisplay) {
-      rows.push(
-        `백분위\t${d.receptivePercentileDisplay ?? '-'}\t${d.expressivePercentileDisplay ?? '-'}`
-      );
-    }
-    if (d.diagnosisLevel) {
-      rows.push(`진단\t${d.diagnosisLevel}\t${d.diagnosisLevel}`);
-    }
-    if (d.totalLangAgeText) {
-      rows.push(`통합언어 발달연령: ${d.totalLangAgeText}`);
-    }
-    if (rows.length > 1) text += '\n\n' + rows.join('\n');
   }
   if (toolId === 'cplc' && result.data) {
     const d = result.data as unknown as CplcData;
@@ -546,14 +481,6 @@ export function ResultSection({
       </CardContent>
     </Card>
   );
-}
-
-// 진단 결과 색상 클래스
-function diagnosisColorClass(level?: string | null): string {
-  if (level === '정상발달') return 'text-green-600 dark:text-green-400';
-  if (level === '약간의 언어발달지체') return 'text-amber-600 dark:text-amber-400';
-  if (level === '언어장애') return 'text-red-600 dark:text-red-400';
-  return 'text-gray-500';
 }
 
 // 공통 테이블 헤더 배경색
