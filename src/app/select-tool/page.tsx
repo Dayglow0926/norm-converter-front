@@ -7,13 +7,19 @@ import { TestSelectionGrid, useTestSelectionStore } from '@/features/test-select
 import { useChildInfoStore } from '@/features/child-info';
 import { formatAgeResult } from '@/features/child-info';
 import { useScoreEntryStore } from '@/features/score-entry';
+import {
+  ALL_TOOL_IDS,
+  isAgeInRange,
+  isToolActive,
+  type AssessmentToolId,
+} from '@/entities/assessment-tool';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function SelectToolPage() {
   const router = useRouter();
   const { childInfo, ageResult, _hasHydrated, clearChildInfo } = useChildInfoStore();
-  const { selectedTools, clearSelection } = useTestSelectionStore();
+  const { selectedTools, setSelectedTools, clearSelection } = useTestSelectionStore();
   const { clearAll } = useScoreEntryStore();
 
   // 라우팅 가드: hydration 완료 후 아동 정보가 없으면 홈으로 리다이렉트
@@ -22,6 +28,20 @@ export default function SelectToolPage() {
       router.replace('/');
     }
   }, [childInfo, ageResult, _hasHydrated, router]);
+
+  // 기본 선택: 저장된 선택이 없으면 연령에 맞는 도구를 자동 선택
+  useEffect(() => {
+    if (!_hasHydrated || !ageResult) return;
+    if (selectedTools.length > 0) return;
+
+    const defaultTools = ALL_TOOL_IDS.filter(
+      (toolId: AssessmentToolId) => isToolActive(toolId) && isAgeInRange(toolId, ageResult.totalMonths)
+    );
+
+    if (defaultTools.length > 0) {
+      setSelectedTools(defaultTools);
+    }
+  }, [_hasHydrated, ageResult, selectedTools.length, setSelectedTools]);
 
   // hydration 완료 전 또는 아동 정보가 없으면 로딩
   if (!_hasHydrated || !childInfo || !ageResult) {

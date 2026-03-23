@@ -12,6 +12,7 @@ interface TestSelectionState {
 
   // 액션
   toggleTool: (toolId: AssessmentToolId) => void;
+  setSelectedTools: (toolIds: AssessmentToolId[]) => void;
   clearSelection: () => void;
   isSelected: (toolId: AssessmentToolId) => boolean;
 }
@@ -30,6 +31,11 @@ export const useTestSelectionStore = create<TestSelectionState>()(
           // 선택 추가
           set({ selectedTools: [...current, toolId] });
         }
+      },
+
+      setSelectedTools: (toolIds: AssessmentToolId[]) => {
+        // 순서 유지 + 중복 제거
+        set({ selectedTools: Array.from(new Set(toolIds)) });
       },
 
       clearSelection: () => {
