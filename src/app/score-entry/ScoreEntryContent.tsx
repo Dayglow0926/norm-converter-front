@@ -172,7 +172,8 @@ export function ScoreEntryContent() {
       const imitationType = toolData.inputs.rawScore?.correctItems ?? '';
       if (imitationType === 'partial') return true;
       if (imitationType === 'total') return toolData.inputs.rawScore?.rawScore !== null;
-      return false; // 모방 유형 미선택
+      // 기본(직접 검사): rawScore 필수
+      return toolData.inputs.rawScore?.rawScore !== null;
     }
 
     return requiredSubtests.every((subtest) => {
@@ -183,6 +184,8 @@ export function ScoreEntryContent() {
 
   // 모든 선택된 도구의 입력이 완료되었는지
   const isAllComplete = activeSelectedTools.every(isToolComplete);
+  const completedSelectedTools = activeSelectedTools.filter(isToolComplete);
+  const hasAnyComplete = completedSelectedTools.length > 0;
 
   // 결과가 있는지
   const hasResults = activeSelectedTools.some((id) => tools[id]?.apiResult !== null);
@@ -205,11 +208,11 @@ export function ScoreEntryContent() {
 
   // 결과 요청: 통합 API 호출
   const handleRequestResult = async () => {
-    if (!isAllComplete || !childInfo || !ageResult) return;
+    if (!hasAnyComplete || !childInfo || !ageResult) return;
 
     // REVT 범위 검증 (결과 확인 클릭 시)
     const REVT_LIMITS = { min: 7, max: 175 };
-    if (activeSelectedTools.includes('revt')) {
+    if (completedSelectedTools.includes('revt')) {
       const revtData = tools.revt;
       const receptiveScore = revtData?.inputs.receptive?.rawScore ?? null;
       const expressiveScore = revtData?.inputs.expressive?.rawScore ?? null;
@@ -240,7 +243,7 @@ export function ScoreEntryContent() {
       // 선택된 도구별 요청 데이터 구성
       const toolsPayload: Record<string, Record<string, unknown>> = {};
 
-      for (const toolId of activeSelectedTools) {
+      for (const toolId of completedSelectedTools) {
         const toolData = tools[toolId];
         if (!toolData) continue;
 
@@ -369,6 +372,11 @@ export function ScoreEntryContent() {
           subtestPayload[subtest] = entry;
         }
         toolsPayload[toolId] = subtestPayload;
+      }
+
+      if (Object.keys(toolsPayload).length === 0) {
+        setApiError('입력 완료된 검사도구가 없습니다');
+        return;
       }
 
       const response = await normClient.convertUnified<UnifiedConvertResponse>({
@@ -506,15 +514,20 @@ export function ScoreEntryContent() {
           )}
           <Button
             onClick={handleRequestResult}
-            disabled={!isAllComplete || isLoading}
+            disabled={!hasAnyComplete || isLoading}
             size="lg"
             className="w-full"
           >
             {isLoading ? '변환 중...' : '결과 확인 →'}
           </Button>
-          {!isAllComplete && incompleteTools.length > 0 && (
+          {!hasAnyComplete && incompleteTools.length > 0 && (
             <p className="text-muted-foreground mt-2 text-center text-sm">
               {incompleteTools.join(', ')} 점수를 입력해주세요
+            </p>
+          )}
+          {hasAnyComplete && !isAllComplete && incompleteTools.length > 0 && (
+            <p className="text-muted-foreground mt-2 text-center text-sm">
+              미입력 도구({incompleteTools.join(', ')})는 결과에서 제외됩니다
             </p>
           )}
         </div>

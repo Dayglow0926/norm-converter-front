@@ -3,7 +3,7 @@
 /**
  * APAC 점수 입력 폼 컴포넌트
  * rawScore = 오류 개수 (0-70, 정수). 낮을수록 정확도 높음.
- * imitationType: 전체 모방(total) | 일부 모방(partial, 시행 불가)
+ * imitationType: 기본 직접검사(standard) | 전체 모방(total) | 일부 모방(partial, 시행 불가)
  */
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,10 +30,11 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   // imitationType: inputs.rawScore.correctItems ("total" | "partial" | "")
   const currentScore = apac?.inputs.rawScore?.rawScore ?? null;
   const imitationType = (apac?.inputs.rawScore?.correctItems ?? '') as ImitationType;
-  const isPartial = imitationType === 'partial';
+  const isDirect = imitationType === '';
   const isTotal = imitationType === 'total';
+  const isPartial = imitationType === 'partial';
 
-  const handleImitationChange = (value: 'total' | 'partial') => {
+  const handleImitationChange = (value: ImitationType) => {
     setInput('apac', 'rawScore', { correctItems: value });
     if (value === 'partial') {
       setScore('apac', 'rawScore', null);
@@ -54,7 +55,7 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   };
 
   const scoreInvalid =
-    isTotal && currentScore !== null && (currentScore < MIN_SCORE || currentScore > MAX_SCORE);
+    !isPartial && currentScore !== null && (currentScore < MIN_SCORE || currentScore > MAX_SCORE);
 
   const btnBase =
     'flex-1 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none';
@@ -64,10 +65,18 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   return (
     <Card className="w-full">
       <CardContent className="space-y-5 pt-4">
-        {/* 모방 유형 선택 */}
+        {/* 시행 유형 선택 */}
         <div>
-          <p className="mb-2 text-sm font-medium">모방 유형</p>
+          <p className="mb-2 text-sm font-medium">시행 유형</p>
           <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleImitationChange('')}
+              className={`${btnBase} ${isDirect ? btnActive : btnInactive}`}
+            >
+              직접 검사
+              <span className="ml-1 text-xs font-normal opacity-70">(기본)</span>
+            </button>
             <button
               type="button"
               onClick={() => handleImitationChange('total')}
@@ -95,8 +104,8 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
           </div>
         )}
 
-        {/* 원점수 입력 (전체 모방 선택 시) */}
-        {isTotal && (
+        {/* 원점수 입력 (직접 검사/전체 모방 선택 시) */}
+        {!isPartial && (
           <div>
             <p className="mb-2 text-sm font-medium">오류 개수 (원점수)</p>
             <div className="flex items-center gap-3">
@@ -123,6 +132,9 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
         <div className="space-y-1">
           <p className="text-muted-foreground text-xs">
             * 원점수 = 오류 개수 (낮을수록 정확도 높음, 0-70)
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * 기본은 직접 검사 점수 입력, 모방 유형은 특이 상황에서만 선택
           </p>
           <p className="text-muted-foreground text-xs">
             * 연령 범위: 30개월 이상 (78개월 이상은 최고 연령 규준 적용)
