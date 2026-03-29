@@ -294,10 +294,10 @@ export function ScoreEntryContent() {
     const requiredSubtests = TOOL_REQUIRED_SUBTESTS[toolId];
     if (!requiredSubtests) return false;
 
-    // problem_solving: 전부 입력 OR 전부 비움(isUntestable) 모두 완료로 처리
+    // problem_solving: 3개 하위검사 모두 입력된 경우에만 완료
     if (toolId === 'problem_solving') {
       const filled = requiredSubtests.filter((s) => toolData.inputs[s]?.rawScore !== null).length;
-      return filled === 0 || filled === requiredSubtests.length;
+      return filled === requiredSubtests.length;
     }
 
     // apac: 모방 유형 선택 필수. partial이면 rawScore 없어도 완료, total이면 rawScore 필요
@@ -378,6 +378,23 @@ export function ScoreEntryContent() {
             rawScore,
             ...(imitationType ? { imitationType } : {}),
           };
+          continue;
+        }
+
+        // problem_solving: 입력된 하위검사만 포함, 전부 비어 있으면 제외
+        if (toolId === 'problem_solving') {
+          const problemSolvingPayload: Record<string, unknown> = {};
+          for (const [subtest, input] of Object.entries(toolData.inputs)) {
+            if (input.rawScore === null) continue;
+
+            const entry: Record<string, unknown> = { rawScore: input.rawScore };
+            if (input.exampleItems) entry.exampleItems = input.exampleItems;
+            problemSolvingPayload[subtest] = entry;
+          }
+
+          if (Object.keys(problemSolvingPayload).length === 0) continue;
+
+          toolsPayload[toolId] = problemSolvingPayload;
           continue;
         }
 

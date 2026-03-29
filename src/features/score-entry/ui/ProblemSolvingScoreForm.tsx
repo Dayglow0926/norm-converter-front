@@ -130,14 +130,17 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
         {showPartialWarning && (
           <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-2">
             <p className="text-xs text-amber-700">
-              3개 하위검사를 모두 입력하거나 모두 비워야 합니다 ({filledCount}/3 입력됨)
+              3개 하위검사를 모두 입력해야 결과가 생성됩니다 ({filledCount}/3 입력됨)
             </p>
           </div>
         )}
 
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">
-            * 3개 모두 입력 시 결과 확인 가능. 모두 비우면 시행 불가로 처리됩니다
+            * 3개 하위검사를 모두 입력해야 결과가 생성됩니다
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * 미입력 상태는 결과에서 제외됩니다
           </p>
           <p className="text-muted-foreground text-xs">
             * 지시문 번호: 쉼표로 구분 (예: 1,2,3) — 선택 사항
