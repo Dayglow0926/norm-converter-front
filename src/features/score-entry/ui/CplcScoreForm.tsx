@@ -37,12 +37,13 @@ const CPLC_SUBTESTS: CplcSubtestMeta[] = [
 const CPLC_TOTAL_MAX = 141;
 
 /**
- * "1, 2, 3-6" 형식 문자열을 숫자 배열로 파싱
+ * "1, 2, 3-6" 또는 "1 2 3-6" 형식 문자열을 숫자 배열로 파싱
  */
 function parseNumberArray(str: string): number[] {
   if (!str.trim()) return [];
   const result: number[] = [];
-  for (const part of str.split(',')) {
+  const parts = str.match(/\d+\s*-\s*\d+|\d+/g) ?? [];
+  for (const part of parts) {
     const trimmed = part.trim();
     const range = trimmed.match(/^(\d+)-(\d+)$/);
     if (range) {
@@ -201,8 +202,8 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 4개 영역 모두 입력 후 결과 확인 가능</p>
           <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식 — 각 영역에 해당하는
-            번호만 입력 가능 (선택 사항)
+            * 정반응/오반응 번호: 쉼표 또는 공백으로 구분, 범위는 &quot;3-6&quot; 형식 — 각
+            영역에 해당하는 번호만 입력 가능 (선택 사항)
           </p>
           <p className="text-muted-foreground text-xs">* 연령 범위: 60-143개월 (5세~11세 11개월)</p>
         </div>

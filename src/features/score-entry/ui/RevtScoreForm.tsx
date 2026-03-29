@@ -146,8 +146,8 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">* 원점수 범위: 수용/표현 각 7-175점</p>
           <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표로 구분, 범위는 &quot;3-6&quot; 형식으로 입력 (예: 1, 2, 3-6,
-            10)
+            * 정반응/오반응 번호: 쉼표 또는 공백으로 구분, 범위는 &quot;3-6&quot; 형식으로 입력
+            (예: 1, 2, 3-6, 10 또는 1 2 3-6 10)
           </p>
           <p className="text-muted-foreground text-xs">
             * REVT는 성별 구분 없이 동일한 규준을 적용합니다
