@@ -13,6 +13,8 @@ import {
   type LanguageAnalysisType,
 } from '../model/languageAnalysisStore';
 import { SpontaneousSpeechForm } from './SpontaneousSpeechForm';
+import { ConversationAnalysisForm } from './ConversationAnalysisForm';
+import { BehavioralObservationForm } from './BehavioralObservationForm';
 
 const TYPE_ORDER: LanguageAnalysisType[] = [
   'spontaneous_speech',
@@ -54,17 +56,8 @@ export function LanguageAnalysisForm() {
       {/* 자발화: SpontaneousSpeechForm */}
       {selectedType === 'spontaneous_speech' && <SpontaneousSpeechForm />}
 
-      {/* 대화분석/행동관찰: 플레이스홀더 */}
-      {(selectedType === 'conversation' || selectedType === 'behavioral_observation') && (
-        <div className="bg-muted/50 rounded-md p-4 text-center">
-          <p className="text-muted-foreground text-sm">
-            {LANGUAGE_ANALYSIS_TYPE_LABELS[selectedType]} 입력 폼은 준비 중입니다.
-          </p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            유형 선택 후 결과 확인을 눌러 진행할 수 있습니다.
-          </p>
-        </div>
-      )}
+      {selectedType === 'conversation' && <ConversationAnalysisForm />}
+      {selectedType === 'behavioral_observation' && <BehavioralObservationForm />}
     </div>
   );
 }

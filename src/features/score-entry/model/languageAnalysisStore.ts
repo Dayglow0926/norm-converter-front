@@ -31,6 +31,7 @@ export interface SituationalObservation {
   observation: string;
   example: string;
   isCustom?: boolean;
+  isGenerated?: boolean;
 }
 
 // 문법형태소 태그
@@ -41,6 +42,9 @@ export interface MorphemeTags {
 }
 
 export interface SpontaneousInput {
+  sourceText: string;
+  extractionWarnings: string[];
+
   // 섹션 1: 구문 측정치
   mluW: number | null;
   mluMax: number | null;
@@ -74,6 +78,32 @@ export interface SpontaneousInput {
 
   // 섹션 8: 공동활동/호명
   jointAttention: ChecklistItem[];
+}
+
+export interface ConversationInput {
+  sourceText: string;
+  extractionWarnings: string[];
+  pragmatic: ChecklistItem[];
+  topicManagement: ChecklistItem[];
+  communicationIntents: string[];
+  situationalObservations: SituationalObservation[];
+  notes: string | null;
+}
+
+export interface BehavioralObservationInput {
+  sourceText: string;
+  extractionWarnings: string[];
+  communicationIntents: string[];
+  jointAttention: ChecklistItem[];
+  gestures: string[];
+  vocalSpontaneous: string | null;
+  vocalImitation: string | null;
+  pragmatic: ChecklistItem[];
+  namingResponse: 'consistent' | 'inconsistent' | 'none' | null;
+  followingInstructions: string | null;
+  symbolicBehavior: string | null;
+  situationalObservations: SituationalObservation[];
+  notes: string | null;
 }
 
 // 기본 화용/담화 항목
@@ -164,6 +194,8 @@ export const COMMUNICATION_FUNCTION_CATEGORIES: Array<{
 ];
 
 const DEFAULT_SPONTANEOUS_INPUT: SpontaneousInput = {
+  sourceText: '',
+  extractionWarnings: [],
   mluW: null,
   mluMax: null,
   longestUtterance: null,
@@ -178,6 +210,32 @@ const DEFAULT_SPONTANEOUS_INPUT: SpontaneousInput = {
   jointAttention: DEFAULT_JOINT_ATTENTION_ITEMS,
 };
 
+const DEFAULT_CONVERSATION_INPUT: ConversationInput = {
+  sourceText: '',
+  extractionWarnings: [],
+  pragmatic: DEFAULT_PRAGMATIC_ITEMS,
+  topicManagement: DEFAULT_TOPIC_MANAGEMENT_ITEMS,
+  communicationIntents: [],
+  situationalObservations: DEFAULT_SITUATIONS,
+  notes: null,
+};
+
+const DEFAULT_BEHAVIORAL_INPUT: BehavioralObservationInput = {
+  sourceText: '',
+  extractionWarnings: [],
+  communicationIntents: [],
+  jointAttention: DEFAULT_JOINT_ATTENTION_ITEMS,
+  gestures: [],
+  vocalSpontaneous: null,
+  vocalImitation: null,
+  pragmatic: DEFAULT_PRAGMATIC_ITEMS,
+  namingResponse: null,
+  followingInstructions: null,
+  symbolicBehavior: null,
+  situationalObservations: DEFAULT_SITUATIONS,
+  notes: null,
+};
+
 export interface LanguageAnalysisStep1Result {
   text: string;
   data: Record<string, unknown>;
@@ -190,6 +248,8 @@ export interface LanguageAnalysisStep1Result {
 interface LanguageAnalysisState {
   selectedType: LanguageAnalysisType | null;
   spontaneous: SpontaneousInput;
+  conversation: ConversationInput;
+  behavioral: BehavioralObservationInput;
   step1Result: LanguageAnalysisStep1Result | null;
   step2Text: string | null;
 
@@ -198,6 +258,16 @@ interface LanguageAnalysisState {
   setSpontaneousField: <K extends keyof SpontaneousInput>(
     field: K,
     value: SpontaneousInput[K]
+  ) => void;
+  setConversation: (input: Partial<ConversationInput>) => void;
+  setConversationField: <K extends keyof ConversationInput>(
+    field: K,
+    value: ConversationInput[K]
+  ) => void;
+  setBehavioral: (input: Partial<BehavioralObservationInput>) => void;
+  setBehavioralField: <K extends keyof BehavioralObservationInput>(
+    field: K,
+    value: BehavioralObservationInput[K]
   ) => void;
   setStep1Result: (result: LanguageAnalysisStep1Result | null) => void;
   setStep2Text: (text: string | null) => void;
@@ -210,6 +280,8 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
     (set) => ({
       selectedType: null,
       spontaneous: DEFAULT_SPONTANEOUS_INPUT,
+      conversation: DEFAULT_CONVERSATION_INPUT,
+      behavioral: DEFAULT_BEHAVIORAL_INPUT,
       step1Result: null,
       step2Text: null,
 
@@ -225,6 +297,26 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
           spontaneous: { ...state.spontaneous, [field]: value },
         })),
 
+      setConversation: (input) =>
+        set((state) => ({
+          conversation: { ...state.conversation, ...input },
+        })),
+
+      setConversationField: (field, value) =>
+        set((state) => ({
+          conversation: { ...state.conversation, [field]: value },
+        })),
+
+      setBehavioral: (input) =>
+        set((state) => ({
+          behavioral: { ...state.behavioral, ...input },
+        })),
+
+      setBehavioralField: (field, value) =>
+        set((state) => ({
+          behavioral: { ...state.behavioral, [field]: value },
+        })),
+
       setStep1Result: (result) => set({ step1Result: result }),
 
       setStep2Text: (text) => set({ step2Text: text }),
@@ -233,6 +325,8 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
         set({
           selectedType: null,
           spontaneous: DEFAULT_SPONTANEOUS_INPUT,
+          conversation: DEFAULT_CONVERSATION_INPUT,
+          behavioral: DEFAULT_BEHAVIORAL_INPUT,
           step1Result: null,
           step2Text: null,
         }),
@@ -241,10 +335,12 @@ export const useLanguageAnalysisStore = create<LanguageAnalysisState>()(
     }),
     {
       name: 'norm-converter-language-analysis-session',
-      version: 2, // SCRUM-110: longestUtteranceStructure 추가 → 이전 저장 상태 무효화
+      version: 4, // SCRUM-122: conversation / behavioral 상태 추가
       migrate: () => ({
         selectedType: null,
         spontaneous: DEFAULT_SPONTANEOUS_INPUT,
+        conversation: DEFAULT_CONVERSATION_INPUT,
+        behavioral: DEFAULT_BEHAVIORAL_INPUT,
         step1Result: null,
         step2Text: null,
       }),

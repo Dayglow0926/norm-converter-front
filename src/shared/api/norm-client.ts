@@ -11,6 +11,25 @@ interface RequestOptions {
   body?: unknown;
 }
 
+async function readErrorMessage(response: Response): Promise<string> {
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    const data = await response.json().catch(() => null);
+    if (typeof data?.message === 'string' && data.message.trim()) {
+      return data.message;
+    }
+    if (typeof data?.error === 'string' && data.error.trim()) {
+      return data.error;
+    }
+  } else {
+    const text = await response.text().catch(() => '');
+    if (text.trim()) return text;
+  }
+
+  return `API Error: ${response.status} ${response.statusText}`;
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body } = options;
   const apiKey = useAuthStore.getState().apiKey;
@@ -30,12 +49,13 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   });
 
   if (response.status === 401) {
+    const message = await readErrorMessage(response);
     useAuthStore.getState().clearApiKey();
-    throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    throw new Error(message || '인증이 만료되었습니다. 다시 로그인해주세요.');
   }
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();
@@ -80,6 +100,15 @@ export const normClient = {
     analysisResult: { text: string; data: Record<string, unknown> };
   }) =>
     request<{ text: string }>('/api/language-analysis/generate', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * 언어분석 입력 초안 추출
+   */
+  extractLanguageAnalysis: <T>(data: { type: string; sourceText: string }) =>
+    request<T>('/api/language-analysis/extract', {
       method: 'POST',
       body: data,
     }),

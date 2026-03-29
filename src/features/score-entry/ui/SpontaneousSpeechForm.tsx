@@ -16,125 +16,72 @@ import { useState, useRef, type KeyboardEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { normClient } from '@/shared/api/norm-client';
 import {
   useLanguageAnalysisStore,
   useLanguageAnalysisCustomItemsStore,
   COMMUNICATION_FUNCTION_CATEGORIES,
-  type ChecklistItem,
   type SituationalObservation,
 } from '../model/languageAnalysisStore';
-
-// =========================================
-// 섹션 공통 헤더 컴포넌트
-// =========================================
-
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
-  return (
-    <div className="mb-3">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>}
-    </div>
-  );
-}
-
-// =========================================
-// 전사 데이터 파싱 로직
-// =========================================
-
-interface ParsedTranscript {
-  mluW: number;
-  mluMax: number;
-  longestUtterance: string;
-  formattedTranscript: string; // C:/S: 형식
-}
-
-function parseTranscript(raw: string): ParsedTranscript | null {
-  const lines = raw.split('\n');
-
-  const childUtterances: { wordCount: number; text: string }[] = [];
-  const formattedLines: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    // 숫자로 시작하는 줄 = 아동 발화 (숫자 = 어절 수)
-    const childMatch = trimmed.match(/^(\d+)\s+(.+)$/);
-    if (childMatch) {
-      const wordCount = parseInt(childMatch[1], 10);
-      const text = childMatch[2].trim();
-      childUtterances.push({ wordCount, text });
-      formattedLines.push(`S: ${text}`);
-    } else {
-      // 치료사 발화
-      formattedLines.push(`C: ${trimmed}`);
-    }
-  }
-
-  if (childUtterances.length === 0) return null;
-
-  const totalWords = childUtterances.reduce((sum, u) => sum + u.wordCount, 0);
-  const mluW = Math.round((totalWords / childUtterances.length) * 100) / 100;
-  const mluMax = Math.max(...childUtterances.map((u) => u.wordCount));
-  const longest = childUtterances.reduce((max, u) => (u.wordCount > max.wordCount ? u : max));
-
-  return {
-    mluW,
-    mluMax,
-    longestUtterance: longest.text,
-    formattedTranscript: formattedLines.join('\n'),
-  };
-}
+import {
+  buildSpontaneousDraftUpdate,
+  type SpontaneousDraftResponse,
+} from '../lib/spontaneous-extract';
+import { ChecklistRow, SectionHeader } from './LanguageAnalysisCommon';
 
 // =========================================
 // 전사 데이터 입력 섹션
 // =========================================
 
 function TranscriptInputSection() {
-  const { setSpontaneousField } = useLanguageAnalysisStore();
-  const [transcriptText, setTranscriptText] = useState('');
-  const [parseResult, setParseResult] = useState<ParsedTranscript | null>(null);
-  const [parseError, setParseError] = useState(false);
+  const { spontaneous, setSpontaneous, setSpontaneousField } = useLanguageAnalysisStore();
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
 
-  const handleAnalyze = () => {
-    const result = parseTranscript(transcriptText);
-    if (!result) {
-      setParseError(true);
-      setParseResult(null);
-      return;
+  const handleAnalyze = async () => {
+    if (!spontaneous.sourceText.trim()) return;
+
+    setIsExtracting(true);
+    setExtractError(null);
+
+    try {
+      const response = await normClient.extractLanguageAnalysis<SpontaneousDraftResponse>({
+        type: 'spontaneous_speech',
+        sourceText: spontaneous.sourceText,
+      });
+
+      setSpontaneous(
+        buildSpontaneousDraftUpdate(
+          spontaneous,
+          response.draft.spontaneous,
+          spontaneous.sourceText,
+          response.warnings
+        )
+      );
+    } catch (error) {
+      setExtractError(
+        error instanceof Error
+          ? error.message
+          : '전사 텍스트 자동 채우기 중 오류가 발생했습니다.'
+      );
+    } finally {
+      setIsExtracting(false);
     }
-
-    setParseError(false);
-    setParseResult(result);
-
-    // 섹션 1 필드 자동 채우기
-    setSpontaneousField('mluW', result.mluW);
-    setSpontaneousField('mluMax', result.mluMax);
-    setSpontaneousField('longestUtterance', result.longestUtterance);
-
-    // 섹션 7 상황별 관찰 첫 번째 항목에 전사 데이터 채우기
-    setSpontaneousField('situationalObservations', [
-      {
-        situation: '전사 데이터',
-        observation: '',
-        example: result.formattedTranscript,
-      },
-    ]);
   };
 
   return (
     <div>
       <SectionHeader
         title="전사 데이터 입력"
-        subtitle="전사 데이터를 붙여넣고 자동 분석 버튼을 누르세요 (숫자 = 아동 발화 어절 수)"
+        subtitle="전사 데이터를 붙여넣고 자동 채우기를 누르세요. 기존 수기 입력은 유지하고 초안을 반영합니다."
       />
       <Textarea
         placeholder={`예시:\n    방학 동안 뭐 했어?\n2    식당 갔어.\n    어떤 식당?\n6    방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
-        value={transcriptText}
+        value={spontaneous.sourceText}
         onChange={(e) => {
-          setTranscriptText(e.target.value);
-          setParseError(false);
-          setParseResult(null);
+          setSpontaneousField('sourceText', e.target.value);
+          setSpontaneousField('extractionWarnings', []);
+          setExtractError(null);
         }}
         rows={6}
         className="text-sm"
@@ -145,21 +92,26 @@ function TranscriptInputSection() {
           variant="outline"
           size="sm"
           onClick={handleAnalyze}
-          disabled={!transcriptText.trim()}
+          disabled={!spontaneous.sourceText.trim() || isExtracting}
         >
-          자동 분석
+          {isExtracting ? '자동 채우는 중...' : '자동 채우기'}
         </Button>
-        {parseResult && (
+        {spontaneous.mluW !== null && spontaneous.mluMax !== null && (
           <span className="text-xs text-green-600 dark:text-green-400">
-            MLU-w {parseResult.mluW} · MLU-max {parseResult.mluMax}
-          </span>
-        )}
-        {parseError && (
-          <span className="text-destructive text-xs">
-            아동 발화를 찾을 수 없습니다. 숫자로 시작하는 줄이 있는지 확인하세요.
+            MLU-w {spontaneous.mluW} · MLU-max {spontaneous.mluMax}
           </span>
         )}
       </div>
+      {extractError && <p className="text-destructive mt-2 text-xs">{extractError}</p>}
+      {spontaneous.extractionWarnings.length > 0 && (
+        <div className="bg-muted/50 mt-2 rounded-md p-2">
+          {spontaneous.extractionWarnings.map((warning) => (
+            <p key={warning} className="text-muted-foreground text-xs">
+              {warning}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -562,50 +514,6 @@ function SemanticErrorsSection() {
 // =========================================
 // 체크리스트 컴포넌트 (섹션 5, 6, 8)
 // =========================================
-
-function ChecklistRow({
-  item,
-  onChange,
-  showNegative = true,
-}: {
-  item: ChecklistItem;
-  onChange: (value: 'positive' | 'negative' | null) => void;
-  showNegative?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between border-b py-1.5 last:border-0">
-      <span className="text-sm">{item.label}</span>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          onClick={() => onChange(item.value === 'positive' ? null : 'positive')}
-          className={[
-            'rounded px-2 py-0.5 text-xs font-medium transition-colors',
-            item.value === 'positive'
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-              : 'bg-muted hover:bg-muted/80',
-          ].join(' ')}
-        >
-          예
-        </button>
-        {showNegative && (
-          <button
-            type="button"
-            onClick={() => onChange(item.value === 'negative' ? null : 'negative')}
-            className={[
-              'rounded px-2 py-0.5 text-xs font-medium transition-colors',
-              item.value === 'negative'
-                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                : 'bg-muted hover:bg-muted/80',
-            ].join(' ')}
-          >
-            아니오
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // =========================================
 // 섹션 5: 화용/담화
