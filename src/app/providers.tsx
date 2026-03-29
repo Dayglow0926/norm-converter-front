@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { ApiKeyGate } from '@/features/auth';
+import { ApiWarmup } from '@/shared/api/ui/ApiWarmup';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -15,9 +16,12 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ApiKeyGate>
-      {children}
-      <Toaster position="bottom-center" richColors />
-    </ApiKeyGate>
+    <>
+      <ApiWarmup />
+      <ApiKeyGate>
+        {children}
+        <Toaster position="bottom-center" richColors />
+      </ApiKeyGate>
+    </>
   );
 }
