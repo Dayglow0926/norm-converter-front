@@ -64,6 +64,17 @@ interface CplcData {
   totalPercent: number;
 }
 
+const CPLC_RESULT_NOTE =
+  '* 각 영역의 괄호 안 점수는 총점이고, 점수에서 괄호 안의 퍼센트는 점수를 백분율로 환산한 것임(대상자 점수/총점*100)';
+
+const CPLC_HEADER_LABELS = {
+  discourse: '담화관리\n(33점)',
+  contextual: '상황에 따른 조절 및 적응\n(39점)',
+  communication: '의사소통 의도\n(45점)',
+  nonverbal: '비언어적 의사소통\n(24점)',
+  total: '총점\n(141점)',
+} as const;
+
 // K-CELF-5 PP API 데이터 구조
 interface Kcelf5PpData {
   conversationScore: number;
@@ -119,7 +130,7 @@ function htmlScoreTable(
     : '';
 
   const ths = cols
-    .map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`)
+    .map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label.replace(/\n/g, '<br>')}</p></th>`)
     .join('');
   const tds = cols
     .map(
@@ -197,23 +208,27 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
       textHtml +
       htmlScoreTable(
         [
-          { label: '담화관리 (33점)', score: d.discourseScore, percent: d.discoursePercent },
           {
-            label: '상황에 따른 조절 및 적응 (39점)',
+            label: CPLC_HEADER_LABELS.discourse,
+            score: d.discourseScore,
+            percent: d.discoursePercent,
+          },
+          {
+            label: CPLC_HEADER_LABELS.contextual,
             score: d.contextualScore,
             percent: d.contextualPercent,
           },
           {
-            label: '의사소통의도 (45점)',
+            label: CPLC_HEADER_LABELS.communication,
             score: d.communicationScore,
             percent: d.communicationPercent,
           },
           {
-            label: '비언어적 의사소통 (24점)',
+            label: CPLC_HEADER_LABELS.nonverbal,
             score: d.nonverbalScore,
             percent: d.nonverbalPercent,
           },
-          { label: '총점 (141점)', score: d.totalScore, percent: d.totalPercent },
+          { label: CPLC_HEADER_LABELS.total, score: d.totalScore, percent: d.totalPercent },
         ],
         { header: '영역', cell: '점수' }
       )
@@ -271,8 +286,15 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
     text +=
       '\n\n' +
       [
-        `담화관리\t상황조절\t의사소통의도\t비언어적\t총점`,
-        `${d.discourseScore}점\n(${d.discoursePercent}%)\t${d.contextualScore}점\n(${d.contextualPercent}%)\t${d.communicationScore}점\n(${d.communicationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
+        [
+          '영역',
+          CPLC_HEADER_LABELS.discourse,
+          CPLC_HEADER_LABELS.contextual,
+          CPLC_HEADER_LABELS.communication,
+          CPLC_HEADER_LABELS.nonverbal,
+          CPLC_HEADER_LABELS.total,
+        ].join('\t'),
+        `점수\t${d.discourseScore}점\n(${d.discoursePercent}%)\t${d.contextualScore}점\n(${d.contextualPercent}%)\t${d.communicationScore}점\n(${d.communicationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
       ].join('\n');
   }
   if (toolId === 'kcelf5_pp' && result.data) {
@@ -326,6 +348,17 @@ function formatAge(ageResult: AgeResult): string {
 function getToolName(toolId: string): string {
   const meta = TOOL_METADATA[toolId as AssessmentToolId];
   return meta?.name ?? toolId.toUpperCase();
+}
+
+function renderMultilineLabel(label: string) {
+  return label.split('\n').map((line, index) => (
+    <span
+      key={`${label}-${index}`}
+      className={index === 0 ? 'block' : 'mt-0.5 block text-xs font-medium'}
+    >
+      {line}
+    </span>
+  ));
 }
 
 function orderToolEntries(entries: Array<[string, ToolResult]>): Array<[string, ToolResult]> {
@@ -557,7 +590,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
                 className="px-2 py-2 text-center align-middle font-medium"
                 style={{ ...TH_BG, borderTop: B, borderBottom: B }}
               >
-                {col.label}
+                {renderMultilineLabel(col.label)}
               </th>
             ))}
           </tr>
@@ -606,11 +639,27 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
 // CPLC 결과 테이블 컴포넌트
 function CplcTable({ data }: { data: CplcData }) {
   const cols = [
-    { label: '담화관리', score: data.discourseScore, percent: data.discoursePercent },
-    { label: '상황조절', score: data.contextualScore, percent: data.contextualPercent },
-    { label: '의사소통의도', score: data.communicationScore, percent: data.communicationPercent },
-    { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
-    { label: '총점', score: data.totalScore, percent: data.totalPercent },
+    {
+      label: CPLC_HEADER_LABELS.discourse,
+      score: data.discourseScore,
+      percent: data.discoursePercent,
+    },
+    {
+      label: CPLC_HEADER_LABELS.contextual,
+      score: data.contextualScore,
+      percent: data.contextualPercent,
+    },
+    {
+      label: CPLC_HEADER_LABELS.communication,
+      score: data.communicationScore,
+      percent: data.communicationPercent,
+    },
+    {
+      label: CPLC_HEADER_LABELS.nonverbal,
+      score: data.nonverbalScore,
+      percent: data.nonverbalPercent,
+    },
+    { label: CPLC_HEADER_LABELS.total, score: data.totalScore, percent: data.totalPercent },
   ];
   const B = '2px solid black';
 
@@ -634,7 +683,7 @@ function CplcTable({ data }: { data: CplcData }) {
                 className="px-2 py-2 text-center align-middle font-medium"
                 style={{ ...TH_BG, borderTop: B, borderBottom: B }}
               >
-                {col.label}
+                {renderMultilineLabel(col.label)}
               </th>
             ))}
           </tr>
@@ -660,6 +709,7 @@ function CplcTable({ data }: { data: CplcData }) {
           </tr>
         </tbody>
       </table>
+      <p className="text-muted-foreground mt-2 text-xs">{CPLC_RESULT_NOTE}</p>
     </div>
   );
 }
