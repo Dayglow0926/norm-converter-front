@@ -15,7 +15,7 @@ interface SyntaxScoreFormProps {
 }
 
 const MIN_SCORE = 0;
-const MAX_SCORE = 63;
+const MAX_SCORE = 56;
 
 export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps) {
   void _ageMonths;
@@ -88,7 +88,7 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
         </div>
 
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-xs">* 원점수 범위: 0-63점</p>
+          <p className="text-muted-foreground text-xs">* 원점수 범위: 0-56점</p>
           <p className="text-muted-foreground text-xs">* 연령 범위: 48-119개월 (4세~9세 11개월)</p>
         </div>
       </CardContent>

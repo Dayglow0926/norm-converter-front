@@ -137,10 +137,13 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
 
         <div className="mt-4 space-y-1">
           <p className="text-muted-foreground text-xs">
-            * 3개 하위검사를 모두 입력해야 결과가 생성됩니다
+            * 3개 하위검사를 모두 입력하면 규준 결과가 생성됩니다
           </p>
           <p className="text-muted-foreground text-xs">
-            * 미입력 상태는 결과에서 제외됩니다
+            * 3개를 모두 비워두면 시행 불가 결과 문장이 생성됩니다
+          </p>
+          <p className="text-muted-foreground text-xs">
+            * 1~2개만 입력하면 결과를 생성할 수 없습니다
           </p>
           <p className="text-muted-foreground text-xs">
             * 지시문 번호: 쉼표로 구분 (예: 1,2,3) — 선택 사항

@@ -33,12 +33,19 @@ interface ToolResult {
 // 언어문제해결력 API 데이터 구조
 interface ProblemSolvingData {
   causeReasonRawScore: number;
+  causeReasonPercentile?: number | null;
   causeReasonPercentileText: string;
+  causeReasonExampleTexts?: string[];
   solutionInferenceRawScore: number;
+  solutionInferencePercentile?: number | null;
   solutionInferencePercentileText: string;
+  solutionInferenceExampleTexts?: string[];
   clueGuessingRawScore: number;
+  clueGuessingPercentile?: number | null;
   clueGuessingPercentileText: string;
+  clueGuessingExampleTexts?: string[];
   totalRawScore: number;
+  totalPercentile?: number | null;
   totalPercentileText: string;
   isUntestable: boolean;
 }
@@ -190,11 +197,23 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
       textHtml +
       htmlScoreTable(
         [
-          { label: '담화관리', score: d.discourseScore, percent: d.discoursePercent },
-          { label: '상황조절', score: d.contextualScore, percent: d.contextualPercent },
-          { label: '의사소통의도', score: d.communicationScore, percent: d.communicationPercent },
-          { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
-          { label: '총점', score: d.totalScore, percent: d.totalPercent },
+          { label: '담화관리 (33점)', score: d.discourseScore, percent: d.discoursePercent },
+          {
+            label: '상황에 따른 조절 및 적응 (39점)',
+            score: d.contextualScore,
+            percent: d.contextualPercent,
+          },
+          {
+            label: '의사소통의도 (45점)',
+            score: d.communicationScore,
+            percent: d.communicationPercent,
+          },
+          {
+            label: '비언어적 의사소통 (24점)',
+            score: d.nonverbalScore,
+            percent: d.nonverbalPercent,
+          },
+          { label: '총점 (141점)', score: d.totalScore, percent: d.totalPercent },
         ],
         { header: '영역', cell: '점수' }
       )
@@ -242,7 +261,8 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
         '\n\n' +
         [
           `\t원인이유\t해결추론\t단서추측\t총점`,
-          `${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
+          `원점수\t${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
+          `백분위수\t${d.causeReasonPercentileText}\t${d.solutionInferencePercentileText}\t${d.clueGuessingPercentileText}\t${d.totalPercentileText}`,
         ].join('\n');
     }
   }
@@ -306,6 +326,14 @@ function formatAge(ageResult: AgeResult): string {
 function getToolName(toolId: string): string {
   const meta = TOOL_METADATA[toolId as AssessmentToolId];
   return meta?.name ?? toolId.toUpperCase();
+}
+
+function orderToolEntries(entries: Array<[string, ToolResult]>): Array<[string, ToolResult]> {
+  return [...entries].sort(([a], [b]) => {
+    if (a === 'pres' && b !== 'pres') return -1;
+    if (a !== 'pres' && b === 'pres') return 1;
+    return 0;
+  });
 }
 
 // AI 요청용 프롬프트 생성 (LLM 시스템 프롬프트와 동일한 규칙 적용)
@@ -390,7 +418,7 @@ export function ResultSection({
     ];
 
     // 도구별 결과 순회
-    for (const [toolId, result] of Object.entries(results)) {
+    for (const [toolId, result] of orderToolEntries(Object.entries(results))) {
       const toolName = getToolName(toolId);
       lines.push(
         ``,
@@ -407,7 +435,7 @@ export function ResultSection({
     copyToClipboard(lines.join('\n'), '전체 복사 완료');
   };
 
-  const toolEntries = Object.entries(results);
+  const toolEntries = orderToolEntries(Object.entries(results));
 
   return (
     <Card className="mt-6 w-full border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20">

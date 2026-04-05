@@ -294,10 +294,10 @@ export function ScoreEntryContent() {
     const requiredSubtests = TOOL_REQUIRED_SUBTESTS[toolId];
     if (!requiredSubtests) return false;
 
-    // problem_solving: 3개 하위검사 모두 입력된 경우에만 완료
+    // problem_solving: 3개 모두 입력(정상 시행) 또는 0개 입력(시행 불가)만 허용
     if (toolId === 'problem_solving') {
       const filled = requiredSubtests.filter((s) => toolData.inputs[s]?.rawScore !== null).length;
-      return filled === requiredSubtests.length;
+      return filled === 0 || filled === requiredSubtests.length;
     }
 
     // apac: 모방 유형 선택 필수. partial이면 rawScore 없어도 완료, total이면 rawScore 필요
@@ -381,18 +381,20 @@ export function ScoreEntryContent() {
           continue;
         }
 
-        // problem_solving: 입력된 하위검사만 포함, 전부 비어 있으면 제외
+        // problem_solving: 입력된 하위검사 또는 예시문항이 있는 하위검사만 포함.
+        // 전부 비어 있더라도 시행 불가 처리를 위해 빈 객체를 보낸다.
         if (toolId === 'problem_solving') {
           const problemSolvingPayload: Record<string, unknown> = {};
           for (const [subtest, input] of Object.entries(toolData.inputs)) {
-            if (input.rawScore === null) continue;
+            const hasScore = input.rawScore !== null;
+            const hasExamples = Boolean(input.exampleItems?.trim());
+            if (!hasScore && !hasExamples) continue;
 
-            const entry: Record<string, unknown> = { rawScore: input.rawScore };
-            if (input.exampleItems) entry.exampleItems = input.exampleItems;
+            const entry: Record<string, unknown> = {};
+            if (hasScore) entry.rawScore = input.rawScore;
+            if (hasExamples) entry.exampleItems = input.exampleItems?.trim();
             problemSolvingPayload[subtest] = entry;
           }
-
-          if (Object.keys(problemSolvingPayload).length === 0) continue;
 
           toolsPayload[toolId] = problemSolvingPayload;
           continue;
