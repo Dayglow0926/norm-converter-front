@@ -76,7 +76,7 @@ function TranscriptInputSection() {
         subtitle="전사 데이터를 붙여넣고 자동 채우기를 누르세요. 기존 수기 입력은 유지하고 초안을 반영합니다."
       />
       <Textarea
-        placeholder={`예시:\n    방학 동안 뭐 했어?\n2    식당 갔어.\n    어떤 식당?\n6    방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
+        placeholder={`예시:\nC: 방학 동안 뭐 했어?\nS: 식당 갔어.\nC 어떤 식당?\nS 방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
         value={spontaneous.sourceText}
         onChange={(e) => {
           setSpontaneousField('sourceText', e.target.value);
@@ -123,15 +123,28 @@ function TranscriptInputSection() {
 function SyntaxMeasuresSection() {
   const { spontaneous, setSpontaneousField } = useLanguageAnalysisStore();
 
-  const handleMluInput = (field: 'mluW' | 'mluMax', value: string) => {
+  const handleMluWInput = (value: string) => {
     if (value === '') {
-      setSpontaneousField(field, null);
+      setSpontaneousField('mluW', null);
       return;
     }
+
     const num = parseFloat(value);
     if (!isNaN(num) && num >= 0) {
-      setSpontaneousField(field, num);
+      setSpontaneousField('mluW', num);
     }
+  };
+
+  const handleMluMaxInput = (value: string) => {
+    if (value === '') {
+      setSpontaneousField('mluMax', null);
+      return;
+    }
+
+    const digitsOnly = value.replace(/[^\d]/g, '');
+    if (digitsOnly === '') return;
+
+    setSpontaneousField('mluMax', Number.parseInt(digitsOnly, 10));
   };
 
   return (
@@ -156,7 +169,7 @@ function SyntaxMeasuresSection() {
                 step={0.01}
                 placeholder="예: 2.50"
                 value={spontaneous.mluW ?? ''}
-                onChange={(e) => handleMluInput('mluW', e.target.value)}
+                onChange={(e) => handleMluWInput(e.target.value)}
                 className="h-8 w-28 text-center"
               />
             </td>
@@ -167,12 +180,12 @@ function SyntaxMeasuresSection() {
             </td>
             <td className="py-2 text-center">
               <Input
-                type="number"
-                min={0}
-                step={0.01}
-                placeholder="예: 7.00"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="예: 7"
                 value={spontaneous.mluMax ?? ''}
-                onChange={(e) => handleMluInput('mluMax', e.target.value)}
+                onChange={(e) => handleMluMaxInput(e.target.value)}
                 className="h-8 w-28 text-center"
               />
             </td>

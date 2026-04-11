@@ -155,7 +155,7 @@ export function ScoreEntryContent() {
       const spontaneousData: Record<string, unknown> = {};
 
       if (sp.mluW !== null) spontaneousData.mluW = sp.mluW;
-      if (sp.mluMax !== null) spontaneousData.mluMax = sp.mluMax;
+      if (sp.mluMax !== null) spontaneousData.mluMax = Math.round(sp.mluMax);
       if (sp.longestUtterance) spontaneousData.longestUtterance = sp.longestUtterance;
       if (sp.longestUtteranceStructure)
         spontaneousData.longestUtteranceStructure = sp.longestUtteranceStructure;
