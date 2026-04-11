@@ -309,6 +309,11 @@ export function ScoreEntryContent() {
       return toolData.inputs.rawScore?.rawScore !== null;
     }
 
+    // kcelf5_pp: 미입력/부분 입력도 허용. 미입력 값은 BE에서 0점으로 처리
+    if (toolId === 'kcelf5_pp') {
+      return true;
+    }
+
     return requiredSubtests.every((subtest) => {
       const input = toolData.inputs[subtest];
       return input && input.rawScore !== null;

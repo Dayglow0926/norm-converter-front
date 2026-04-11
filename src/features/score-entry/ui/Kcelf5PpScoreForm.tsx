@@ -104,7 +104,9 @@ export function Kcelf5PpScoreForm() {
         </div>
 
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-xs">* 3개 영역 모두 입력 후 결과 확인 가능</p>
+          <p className="text-muted-foreground text-xs">
+            * 일부 또는 미입력 상태로도 결과 확인 가능 (미입력은 0점 처리)
+          </p>
           <p className="text-muted-foreground text-xs">* 보호자 보고 기반 화용 평가 (규준 변환 아님, 백분율 산출)</p>
         </div>
       </CardContent>
