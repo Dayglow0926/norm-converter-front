@@ -19,7 +19,20 @@ import { useLanguageAnalysisStore } from '@/features/score-entry/model/languageA
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
 import { useTestSelectionStore } from '@/features/test-selection';
-import { TOOL_METADATA, isToolActive, type AssessmentToolId } from '@/entities/assessment-tool';
+import {
+  APAC_SUBTEST_KEYS,
+  CPLC_SUBTEST_KEYS,
+  KCELF5_ORS_SUBTEST_KEYS,
+  KCELF5_PP_SUBTEST_KEYS,
+  PROBLEM_SOLVING_SUBTEST_KEYS,
+  PRES_SUBTEST_KEYS,
+  REVT_SUBTEST_KEYS,
+  SELSI_REQUIRED_SUBTEST_KEYS,
+  SYNTAX_SUBTEST_KEYS,
+  TOOL_METADATA,
+  isToolActive,
+  type AssessmentToolId,
+} from '@/entities/assessment-tool';
 import { normClient } from '@/shared/api/norm-client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,20 +58,15 @@ interface UnifiedConvertResponse {
 
 // 도구별 필수 하위검사 (입력 완료 판단용)
 const TOOL_REQUIRED_SUBTESTS: Partial<Record<AssessmentToolId, string[]>> = {
-  selsi: ['receptive', 'expressive'],
-  pres: ['receptive', 'expressive'],
-  syntax: ['total'],
-  problem_solving: ['cause_reason', 'clue_guessing', 'solution_inference'],
-  apac: ['rawScore'],
-  cplc: [
-    'discourse_management',
-    'contextual_variation',
-    'communication_intent',
-    'nonverbal_communication',
-  ],
-  kcelf5_pp: ['conversation_skills', 'information_group', 'nonverbal_skills'],
-  kcelf5_ors: ['listening', 'speaking', 'reading', 'writing'],
-  revt: ['receptive', 'expressive'],
+  selsi: SELSI_REQUIRED_SUBTEST_KEYS,
+  pres: PRES_SUBTEST_KEYS,
+  syntax: SYNTAX_SUBTEST_KEYS,
+  problem_solving: PROBLEM_SOLVING_SUBTEST_KEYS,
+  apac: APAC_SUBTEST_KEYS,
+  cplc: CPLC_SUBTEST_KEYS,
+  kcelf5_pp: KCELF5_PP_SUBTEST_KEYS,
+  kcelf5_ors: KCELF5_ORS_SUBTEST_KEYS,
+  revt: REVT_SUBTEST_KEYS,
   // language_analysis는 useLanguageAnalysisStore.selectedType 기반으로 별도 처리
 };
 

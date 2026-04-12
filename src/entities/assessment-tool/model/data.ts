@@ -4,6 +4,15 @@
  */
 
 import type { AssessmentToolId, ToolMetadata } from './types';
+import { APAC_SUBTEST_KEYS } from './apac';
+import { CPLC_SUBTEST_KEYS } from './cplc';
+import { KCELF5_ORS_SUBTEST_KEYS } from './kcelf5-ors';
+import { KCELF5_PP_SUBTEST_KEYS } from './kcelf5-pp';
+import { PROBLEM_SOLVING_SUBTEST_KEYS } from './problem-solving';
+import { PRES_SUBTEST_KEYS } from './pres';
+import { REVT_SUBTEST_KEYS } from './revt';
+import { SELSI_META_SUBTEST_KEYS } from './selsi';
+import { SYNTAX_SUBTEST_KEYS } from './syntax';
 
 export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
   selsi: {
@@ -12,7 +21,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '영유아',
     minAgeMonths: 4,
     maxAgeMonths: 35,
-    subtests: ['receptive', 'expressive', 'combined'],
+    subtests: SELSI_META_SUBTEST_KEYS,
     description: '영유아 언어발달 검사 (4-35개월)',
   },
   pres: {
@@ -21,7 +30,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 24,
     maxAgeMonths: 71,
-    subtests: ['receptive', 'expressive'],
+    subtests: PRES_SUBTEST_KEYS,
     description: '취학전 아동 수용·표현 언어척도 (2-5세)',
   },
   revt: {
@@ -30,7 +39,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 24,
     maxAgeMonths: 215,
-    subtests: ['receptive', 'expressive'],
+    subtests: REVT_SUBTEST_KEYS,
     description: '수용·표현 어휘력 검사 (2-16세)',
   },
   syntax: {
@@ -39,7 +48,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 48,
     maxAgeMonths: 119,
-    subtests: [],
+    subtests: SYNTAX_SUBTEST_KEYS,
     description: '구문의미이해력 검사 (4-9세)',
   },
   problem_solving: {
@@ -48,7 +57,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 60,
     maxAgeMonths: 143,
-    subtests: ['cause_reason', 'clue_guessing', 'solution_inference'],
+    subtests: PROBLEM_SOLVING_SUBTEST_KEYS,
     description: '언어문제해결력 검사 (5-11세)',
   },
   apac: {
@@ -57,7 +66,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 30,
     maxAgeMonths: 215,
-    subtests: ['rawScore'],
+    subtests: APAC_SUBTEST_KEYS,
     description: '아동용 발음 검사 (30개월 이상)',
   },
   cplc: {
@@ -66,7 +75,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '학령전기',
     minAgeMonths: 60,
     maxAgeMonths: 143,
-    subtests: ['discourse_management', 'contextual_variation', 'communication_intent', 'nonverbal_communication'],
+    subtests: CPLC_SUBTEST_KEYS,
     description: '아동 화용언어 체크리스트 (5-11세)',
   },
   kcelf5_pp: {
@@ -75,7 +84,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '전 연령',
     minAgeMonths: 0,
     maxAgeMonths: 9999,
-    subtests: ['conversation_skills', 'information_group', 'nonverbal_skills'],
+    subtests: KCELF5_PP_SUBTEST_KEYS,
     description: '화용프로파일 (보호자 보고)',
   },
   kcelf5_ors: {
@@ -84,7 +93,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     category: '전 연령',
     minAgeMonths: 0,
     maxAgeMonths: 9999,
-    subtests: ['listening', 'speaking', 'reading', 'writing'],
+    subtests: KCELF5_ORS_SUBTEST_KEYS,
     description: '관찰 평가척도',
   },
   language_analysis: {

@@ -6,16 +6,18 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  SYNTAX_LABELS,
+  SYNTAX_NOTES,
+  SYNTAX_SCORE_RANGE,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
 
 interface SyntaxScoreFormProps {
   ageMonths: number;
 }
-
-const MIN_SCORE = 0;
-const MAX_SCORE = 56;
 
 export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps) {
   void _ageMonths;
@@ -41,8 +43,8 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
       return;
     }
 
-    if (num < MIN_SCORE || num > MAX_SCORE) {
-      setInputError(`${MIN_SCORE}-${MAX_SCORE} 범위만 가능`);
+    if (num < SYNTAX_SCORE_RANGE.min || num > SYNTAX_SCORE_RANGE.max) {
+      setInputError(`${SYNTAX_SCORE_RANGE.min}-${SYNTAX_SCORE_RANGE.max} 범위만 가능`);
       setScore('syntax', 'total', null);
       return;
     }
@@ -58,20 +60,22 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="px-2 py-3 text-left font-medium">검사</th>
-                <th className="px-2 py-3 text-center font-medium">원점수</th>
+                <th className="px-2 py-3 text-left font-medium">{SYNTAX_LABELS.testHeader}</th>
+                <th className="px-2 py-3 text-center font-medium">
+                  {SYNTAX_LABELS.rawScoreHeader}
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="px-2 py-3 font-medium">구문의미이해력</td>
+                <td className="px-2 py-3 font-medium">{SYNTAX_LABELS.name}</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-col items-center">
                     <Input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      placeholder={`${MIN_SCORE}-${MAX_SCORE}`}
+                      placeholder={`${SYNTAX_SCORE_RANGE.min}-${SYNTAX_SCORE_RANGE.max}`}
                       className={`w-20 text-center ${inputError ? 'border-destructive' : ''}`}
                       value={currentScore ?? ''}
                       onChange={(e) => handleScoreChange(e.target.value)}
@@ -88,8 +92,11 @@ export function SyntaxScoreForm({ ageMonths: _ageMonths }: SyntaxScoreFormProps)
         </div>
 
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-xs">* 원점수 범위: 0-56점</p>
-          <p className="text-muted-foreground text-xs">* 연령 범위: 48-119개월 (4세~9세 11개월)</p>
+          {SYNTAX_NOTES.map((note) => (
+            <p key={note} className="text-muted-foreground text-xs">
+              {note}
+            </p>
+          ))}
         </div>
       </CardContent>
     </Card>

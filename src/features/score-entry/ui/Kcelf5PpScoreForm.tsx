@@ -7,29 +7,18 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  KCELF5_PP_SUBTESTS,
+  KCELF5_PP_TOTAL_MAX,
+  type Kcelf5PpSubtestKey,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
-
-type PpSubtest = 'conversation_skills' | 'information_group' | 'nonverbal_skills';
-
-interface PpSubtestMeta {
-  key: PpSubtest;
-  label: string;
-  maxScore: number;
-}
-
-const PP_SUBTESTS: PpSubtestMeta[] = [
-  { key: 'conversation_skills', label: '대화기술', maxScore: 72 },
-  { key: 'information_group', label: '정보요청,정보제공,정보에 응하기', maxScore: 80 },
-  { key: 'nonverbal_skills', label: '비언어적 대화기술', maxScore: 48 },
-];
-
-const PP_TOTAL_MAX = 200;
 
 export function Kcelf5PpScoreForm() {
   const pp = useScoreEntryStore((state) => state.tools.kcelf5_pp);
   const setScore = useScoreEntryStore((state) => state.setScore);
 
-  const handleScoreChange = (subtest: PpSubtest, maxScore: number, value: string) => {
+  const handleScoreChange = (subtest: Kcelf5PpSubtestKey, maxScore: number, value: string) => {
     if (value === '') {
       setScore('kcelf5_pp', subtest, null);
       return;
@@ -43,7 +32,7 @@ export function Kcelf5PpScoreForm() {
   };
 
   // 총점 자동 합산
-  const scores = PP_SUBTESTS.map((s) => pp?.inputs[s.key]?.rawScore ?? null);
+  const scores = KCELF5_PP_SUBTESTS.map((s) => pp?.inputs[s.key]?.rawScore ?? null);
   const totalScore = scores.every((s) => s !== null)
     ? scores.reduce((sum, s) => (sum ?? 0) + (s ?? 0), 0)
     : null;
@@ -61,7 +50,7 @@ export function Kcelf5PpScoreForm() {
               </tr>
             </thead>
             <tbody>
-              {PP_SUBTESTS.map(({ key, label, maxScore }) => {
+              {KCELF5_PP_SUBTESTS.map(({ key, label, maxScore }) => {
                 const currentScore = pp?.inputs[key]?.rawScore ?? null;
                 const isInvalid =
                   currentScore !== null && (currentScore < 0 || currentScore > maxScore);
@@ -94,7 +83,9 @@ export function Kcelf5PpScoreForm() {
               {/* 총점 자동 합산 */}
               <tr className="bg-muted/30">
                 <td className="px-2 py-3 font-medium">총점 (자동)</td>
-                <td className="text-muted-foreground px-2 py-3 text-center">{PP_TOTAL_MAX}점</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">
+                  {KCELF5_PP_TOTAL_MAX}점
+                </td>
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {totalScore ?? '-'}
                 </td>

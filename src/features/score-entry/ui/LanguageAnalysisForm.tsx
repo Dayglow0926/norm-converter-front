@@ -11,7 +11,8 @@ import {
   useLanguageAnalysisStore,
   LANGUAGE_ANALYSIS_TYPE_LABELS,
   type LanguageAnalysisType,
-} from '../model/languageAnalysisStore';
+} from '@/features/score-entry/model/languageAnalysisStore';
+import { LANGUAGE_ANALYSIS_UI } from '@/entities/assessment-tool';
 import { SpontaneousSpeechForm } from './SpontaneousSpeechForm';
 import { ConversationAnalysisForm } from './ConversationAnalysisForm';
 import { BehavioralObservationForm } from './BehavioralObservationForm';
@@ -33,7 +34,9 @@ export function LanguageAnalysisForm() {
     <div className="space-y-4 py-2">
       {/* 유형 선택 */}
       <div>
-        <p className="text-muted-foreground mb-2 text-sm">분석 유형을 선택하세요</p>
+        <p className="text-muted-foreground mb-2 text-sm">
+          {LANGUAGE_ANALYSIS_UI.selectTypePrompt}
+        </p>
         <div className="flex gap-2">
           {TYPE_ORDER.map((type) => (
             <button

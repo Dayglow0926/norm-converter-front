@@ -7,30 +7,18 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  KCELF5_ORS_SUBTESTS,
+  KCELF5_ORS_TOTAL_MAX,
+  type Kcelf5OrsSubtestKey,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
-
-type OrsSubtest = 'listening' | 'speaking' | 'reading' | 'writing';
-
-interface OrsSubtestMeta {
-  key: OrsSubtest;
-  label: string;
-  maxScore: number;
-}
-
-const ORS_SUBTESTS: OrsSubtestMeta[] = [
-  { key: 'listening', label: '듣기', maxScore: 36 },
-  { key: 'speaking', label: '말하기', maxScore: 76 },
-  { key: 'reading', label: '읽기', maxScore: 24 },
-  { key: 'writing', label: '쓰기', maxScore: 24 },
-];
-
-const ORS_TOTAL_MAX = 160;
 
 export function Kcelf5OrsScoreForm() {
   const ors = useScoreEntryStore((state) => state.tools.kcelf5_ors);
   const setScore = useScoreEntryStore((state) => state.setScore);
 
-  const handleScoreChange = (subtest: OrsSubtest, maxScore: number, value: string) => {
+  const handleScoreChange = (subtest: Kcelf5OrsSubtestKey, maxScore: number, value: string) => {
     if (value === '') {
       setScore('kcelf5_ors', subtest, null);
       return;
@@ -44,7 +32,7 @@ export function Kcelf5OrsScoreForm() {
   };
 
   // 총점 자동 합산
-  const scores = ORS_SUBTESTS.map((s) => ors?.inputs[s.key]?.rawScore ?? null);
+  const scores = KCELF5_ORS_SUBTESTS.map((s) => ors?.inputs[s.key]?.rawScore ?? null);
   const totalScore = scores.every((s) => s !== null)
     ? scores.reduce((sum, s) => (sum ?? 0) + (s ?? 0), 0)
     : null;
@@ -62,7 +50,7 @@ export function Kcelf5OrsScoreForm() {
               </tr>
             </thead>
             <tbody>
-              {ORS_SUBTESTS.map(({ key, label, maxScore }) => {
+              {KCELF5_ORS_SUBTESTS.map(({ key, label, maxScore }) => {
                 const currentScore = ors?.inputs[key]?.rawScore ?? null;
                 const isInvalid =
                   currentScore !== null && (currentScore < 0 || currentScore > maxScore);
@@ -95,7 +83,9 @@ export function Kcelf5OrsScoreForm() {
               {/* 총점 자동 합산 */}
               <tr className="bg-muted/30">
                 <td className="px-2 py-3 font-medium">총점 (자동)</td>
-                <td className="text-muted-foreground px-2 py-3 text-center">{ORS_TOTAL_MAX}점</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">
+                  {KCELF5_ORS_TOTAL_MAX}점
+                </td>
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {totalScore ?? '-'}
                 </td>

@@ -9,21 +9,15 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  PROBLEM_SOLVING_SUBTESTS,
+  type ProblemSolvingSubtestKey,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
 
 interface ProblemSolvingScoreFormProps {
   ageMonths: number;
 }
-
-type Subtest = 'cause_reason' | 'solution_inference' | 'clue_guessing';
-
-const SUBTEST_LABELS: Record<Subtest, string> = {
-  cause_reason: '원인이유',
-  solution_inference: '해결추론',
-  clue_guessing: '단서추측',
-};
-
-const SUBTESTS: Subtest[] = ['cause_reason', 'solution_inference', 'clue_guessing'];
 
 export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvingScoreFormProps) {
   void _ageMonths;
@@ -32,9 +26,11 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
   const setScore = useScoreEntryStore((state) => state.setScore);
   const setInput = useScoreEntryStore((state) => state.setInput);
 
-  const [scoreErrors, setScoreErrors] = useState<Partial<Record<Subtest, string>>>({});
+  const [scoreErrors, setScoreErrors] = useState<Partial<Record<ProblemSolvingSubtestKey, string>>>(
+    {}
+  );
 
-  const handleScoreChange = (subtest: Subtest, value: string) => {
+  const handleScoreChange = (subtest: ProblemSolvingSubtestKey, value: string) => {
     if (value === '') {
       setScore('problem_solving', subtest, null);
       setScoreErrors((prev) => ({ ...prev, [subtest]: undefined }));
@@ -51,12 +47,12 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
     setScore('problem_solving', subtest, num);
   };
 
-  const handleExampleItemsChange = (subtest: Subtest, value: string) => {
+  const handleExampleItemsChange = (subtest: ProblemSolvingSubtestKey, value: string) => {
     setInput('problem_solving', subtest, { exampleItems: value });
   };
 
   // 총점 자동 합산
-  const scores = SUBTESTS.map((s) => problemSolving?.inputs[s]?.rawScore ?? null);
+  const scores = PROBLEM_SOLVING_SUBTESTS.map((s) => problemSolving?.inputs[s.key]?.rawScore ?? null);
   const totalScore = scores.every((s) => s !== null)
     ? scores.reduce((sum, s) => sum! + s!, 0)
     : null;
@@ -78,14 +74,14 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
               </tr>
             </thead>
             <tbody>
-              {SUBTESTS.map((subtest) => {
-                const currentScore = problemSolving?.inputs[subtest]?.rawScore ?? null;
-                const currentExample = problemSolving?.inputs[subtest]?.exampleItems ?? '';
-                const error = scoreErrors[subtest];
+              {PROBLEM_SOLVING_SUBTESTS.map(({ key, label }) => {
+                const currentScore = problemSolving?.inputs[key]?.rawScore ?? null;
+                const currentExample = problemSolving?.inputs[key]?.exampleItems ?? '';
+                const error = scoreErrors[key];
 
                 return (
-                  <tr key={subtest} className="border-b">
-                    <td className="px-2 py-3 font-medium">{SUBTEST_LABELS[subtest]}</td>
+                  <tr key={key} className="border-b">
+                    <td className="px-2 py-3 font-medium">{label}</td>
                     <td className="px-2 py-3">
                       <div className="flex flex-col items-center">
                         <Input
@@ -95,7 +91,7 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
                           placeholder="0"
                           className={`w-20 text-center ${error ? 'border-destructive' : ''}`}
                           value={currentScore ?? ''}
-                          onChange={(e) => handleScoreChange(subtest, e.target.value)}
+                          onChange={(e) => handleScoreChange(key, e.target.value)}
                           aria-invalid={!!error}
                         />
                         {error && <span className="text-destructive mt-1 text-xs">{error}</span>}
@@ -107,7 +103,7 @@ export function ProblemSolvingScoreForm({ ageMonths: _ageMonths }: ProblemSolvin
                         placeholder="예: 1,2,3"
                         className="w-full text-center text-sm"
                         value={currentExample}
-                        onChange={(e) => handleExampleItemsChange(subtest, e.target.value)}
+                        onChange={(e) => handleExampleItemsChange(key, e.target.value)}
                       />
                     </td>
                   </tr>

@@ -8,16 +8,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  APAC_IMITATION_LABELS,
+  APAC_NOTES,
+  APAC_SCORE_RANGE,
+  type ApacImitationType,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
 
 interface ApacScoreFormProps {
   ageMonths: number;
 }
-
-const MIN_SCORE = 0;
-const MAX_SCORE = 70;
-
-type ImitationType = 'total' | 'partial' | '';
 
 export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   void _ageMonths;
@@ -29,12 +30,12 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   // rawScore: inputs.rawScore.rawScore
   // imitationType: inputs.rawScore.correctItems ("total" | "partial" | "")
   const currentScore = apac?.inputs.rawScore?.rawScore ?? null;
-  const imitationType = (apac?.inputs.rawScore?.correctItems ?? '') as ImitationType;
+  const imitationType = (apac?.inputs.rawScore?.correctItems ?? '') as ApacImitationType;
   const isDirect = imitationType === '';
   const isTotal = imitationType === 'total';
   const isPartial = imitationType === 'partial';
 
-  const handleImitationChange = (value: ImitationType) => {
+  const handleImitationChange = (value: ApacImitationType) => {
     setInput('apac', 'rawScore', { correctItems: value });
     if (value === 'partial') {
       setScore('apac', 'rawScore', null);
@@ -47,7 +48,7 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
       return;
     }
     const num = parseInt(value, 10);
-    if (isNaN(num) || num < MIN_SCORE || num > MAX_SCORE) {
+    if (isNaN(num) || num < APAC_SCORE_RANGE.min || num > APAC_SCORE_RANGE.max) {
       setScore('apac', 'rawScore', null);
       return;
     }
@@ -55,7 +56,9 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
   };
 
   const scoreInvalid =
-    !isPartial && currentScore !== null && (currentScore < MIN_SCORE || currentScore > MAX_SCORE);
+    !isPartial &&
+    currentScore !== null &&
+    (currentScore < APAC_SCORE_RANGE.min || currentScore > APAC_SCORE_RANGE.max);
 
   const btnBase =
     'flex-1 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none';
@@ -67,30 +70,34 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
       <CardContent className="space-y-5 pt-4">
         {/* 시행 유형 선택 */}
         <div>
-          <p className="mb-2 text-sm font-medium">시행 유형</p>
+          <p className="mb-2 text-sm font-medium">{APAC_IMITATION_LABELS.title}</p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handleImitationChange('')}
               className={`${btnBase} ${isDirect ? btnActive : btnInactive}`}
             >
-              직접 검사
-              <span className="ml-1 text-xs font-normal opacity-70">(기본)</span>
+              {APAC_IMITATION_LABELS.direct}
+              <span className="ml-1 text-xs font-normal opacity-70">
+                {APAC_IMITATION_LABELS.directHint}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => handleImitationChange('total')}
               className={`${btnBase} ${isTotal ? btnActive : btnInactive}`}
             >
-              전체 모방
+              {APAC_IMITATION_LABELS.total}
             </button>
             <button
               type="button"
               onClick={() => handleImitationChange('partial')}
               className={`${btnBase} ${isPartial ? btnActive : btnInactive}`}
             >
-              일부 모방
-              <span className="ml-1 text-xs font-normal opacity-70">(시행 불가)</span>
+              {APAC_IMITATION_LABELS.partial}
+              <span className="ml-1 text-xs font-normal opacity-70">
+                {APAC_IMITATION_LABELS.partialHint}
+              </span>
             </button>
           </div>
         </div>
@@ -99,7 +106,7 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
         {isPartial && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
             <p className="text-xs text-amber-700 dark:text-amber-400">
-              일부 모방으로 시행하여 결과 해석이 제한됩니다. 원점수 입력 불필요.
+              {APAC_IMITATION_LABELS.partialNotice}
             </p>
           </div>
         )}
@@ -107,38 +114,34 @@ export function ApacScoreForm({ ageMonths: _ageMonths }: ApacScoreFormProps) {
         {/* 원점수 입력 (직접 검사/전체 모방 선택 시) */}
         {!isPartial && (
           <div>
-            <p className="mb-2 text-sm font-medium">오류 개수 (원점수)</p>
+            <p className="mb-2 text-sm font-medium">{APAC_IMITATION_LABELS.scoreTitle}</p>
             <div className="flex items-center gap-3">
               <Input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                placeholder={`${MIN_SCORE}-${MAX_SCORE}`}
+                placeholder={`${APAC_SCORE_RANGE.min}-${APAC_SCORE_RANGE.max}`}
                 className={`w-24 text-center ${scoreInvalid ? 'border-destructive' : ''}`}
                 value={currentScore ?? ''}
                 onChange={(e) => handleScoreChange(e.target.value)}
                 aria-invalid={scoreInvalid}
               />
-              <span className="text-muted-foreground text-sm">/ 70점</span>
+              <span className="text-muted-foreground text-sm">{APAC_IMITATION_LABELS.scoreSuffix}</span>
             </div>
             {scoreInvalid && (
               <p className="text-destructive mt-1 text-xs">
-                {MIN_SCORE}-{MAX_SCORE} 범위만 가능
+                {APAC_SCORE_RANGE.min}-{APAC_SCORE_RANGE.max} 범위만 가능
               </p>
             )}
           </div>
         )}
 
         <div className="space-y-1">
-          <p className="text-muted-foreground text-xs">
-            * 원점수 = 오류 개수 (낮을수록 정확도 높음, 0-70)
-          </p>
-          <p className="text-muted-foreground text-xs">
-            * 기본은 직접 검사 점수 입력, 모방 유형은 특이 상황에서만 선택
-          </p>
-          <p className="text-muted-foreground text-xs">
-            * 연령 범위: 30개월 이상 (78개월 이상은 최고 연령 규준 적용)
-          </p>
+          {APAC_NOTES.map((note) => (
+            <p key={note} className="text-muted-foreground text-xs">
+              {note}
+            </p>
+          ))}
         </div>
       </CardContent>
     </Card>

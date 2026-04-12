@@ -9,7 +9,18 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TOOL_METADATA, type AssessmentToolId } from '@/entities/assessment-tool';
+import {
+  CPLC_RESULT_NOTE,
+  CPLC_SUBTESTS,
+  CPLC_TOTAL,
+  KCELF5_ORS_LABELS,
+  KCELF5_PP_LABELS,
+  LANGUAGE_ANALYSIS_UI,
+  PROBLEM_SOLVING_LABELS,
+  TOOL_METADATA,
+  buildLanguageAnalysisPrompt,
+  type AssessmentToolId,
+} from '@/entities/assessment-tool';
 import type { ChildInfo, AgeResult } from '@/entities/child';
 
 // =========================================
@@ -64,17 +75,6 @@ interface CplcData {
   totalPercent: number;
 }
 
-const CPLC_RESULT_NOTE =
-  '* 각 영역의 괄호 안 점수는 총점이고, 점수에서 괄호 안의 퍼센트는 점수를 백분율로 환산한 것임(대상자 점수/총점*100)';
-
-const CPLC_HEADER_LABELS = {
-  discourse: '담화관리\n(33점)',
-  contextual: '상황에 따른 조절 및 적응\n(39점)',
-  communication: '의사소통 의도\n(45점)',
-  nonverbal: '비언어적 의사소통\n(24점)',
-  total: '총점\n(141점)',
-} as const;
-
 // K-CELF-5 PP API 데이터 구조
 interface Kcelf5PpData {
   conversationScore: number;
@@ -99,6 +99,91 @@ interface Kcelf5OrsData {
   writingPercent: number;
   totalScore: number;
   totalPercent: number;
+}
+
+function getKcelf5PpScoreCols(data: Kcelf5PpData) {
+  return [
+    {
+      label: KCELF5_PP_LABELS.conversation,
+      score: data.conversationScore,
+      percent: data.conversationPercent,
+    },
+    {
+      label: KCELF5_PP_LABELS.information,
+      score: data.informationScore,
+      percent: data.informationPercent,
+    },
+    {
+      label: KCELF5_PP_LABELS.nonverbal,
+      score: data.nonverbalScore,
+      percent: data.nonverbalPercent,
+    },
+    {
+      label: KCELF5_PP_LABELS.total,
+      score: data.totalScore,
+      percent: data.totalPercent,
+    },
+  ];
+}
+
+function getKcelf5OrsScoreCols(data: Kcelf5OrsData) {
+  return [
+    {
+      label: KCELF5_ORS_LABELS.listening,
+      score: data.listeningScore,
+      percent: data.listeningPercent,
+    },
+    {
+      label: KCELF5_ORS_LABELS.speaking,
+      score: data.speakingScore,
+      percent: data.speakingPercent,
+    },
+    {
+      label: KCELF5_ORS_LABELS.reading,
+      score: data.readingScore,
+      percent: data.readingPercent,
+    },
+    {
+      label: KCELF5_ORS_LABELS.writing,
+      score: data.writingScore,
+      percent: data.writingPercent,
+    },
+    {
+      label: KCELF5_ORS_LABELS.total,
+      score: data.totalScore,
+      percent: data.totalPercent,
+    },
+  ];
+}
+
+function getCplcScoreCols(data: CplcData) {
+  return [
+    {
+      label: CPLC_SUBTESTS[0].headerLabel,
+      score: data.discourseScore,
+      percent: data.discoursePercent,
+    },
+    {
+      label: CPLC_SUBTESTS[1].headerLabel,
+      score: data.contextualScore,
+      percent: data.contextualPercent,
+    },
+    {
+      label: CPLC_SUBTESTS[2].headerLabel,
+      score: data.communicationScore,
+      percent: data.communicationPercent,
+    },
+    {
+      label: CPLC_SUBTESTS[3].headerLabel,
+      score: data.nonverbalScore,
+      percent: data.nonverbalPercent,
+    },
+    {
+      label: CPLC_TOTAL.headerLabel,
+      score: data.totalScore,
+      percent: data.totalPercent,
+    },
+  ];
 }
 
 // HTML 테이블 생성 헬퍼 (점수+백분율 열 구조)
@@ -148,18 +233,26 @@ function htmlScoreTable(
 // 언어문제해결력 전용 HTML 테이블 (원점수/백분위수 2행 구조)
 function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   const cols = [
-    { label: '원인이유', rawScore: d.causeReasonRawScore, percentile: d.causeReasonPercentileText },
     {
-      label: '해결추론',
+      label: PROBLEM_SOLVING_LABELS.causeReason,
+      rawScore: d.causeReasonRawScore,
+      percentile: d.causeReasonPercentileText,
+    },
+    {
+      label: PROBLEM_SOLVING_LABELS.solutionInference,
       rawScore: d.solutionInferenceRawScore,
       percentile: d.solutionInferencePercentileText,
     },
     {
-      label: '단서추측',
+      label: PROBLEM_SOLVING_LABELS.clueGuessing,
       rawScore: d.clueGuessingRawScore,
       percentile: d.clueGuessingPercentileText,
     },
-    { label: '총점', rawScore: d.totalRawScore, percentile: d.totalPercentileText },
+    {
+      label: PROBLEM_SOLVING_LABELS.total,
+      rawScore: d.totalRawScore,
+      percentile: d.totalPercentileText,
+    },
   ];
   const totalCols = cols.length + 1;
   const colWidth = `${(100 / totalCols).toFixed(4)}%`;
@@ -184,8 +277,8 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
 
   const P = `style="margin:0;padding:0;"`;
   const headerRow = `<tr><th valign="middle" style="${TH_STYLE}"><p ${P}></p></th>${cols.map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label}</p></th>`).join('')}</tr>`;
-  const rawRow = `<tr><td valign="middle" style="${ROW1_TH}"><p ${P}>원점수</p></td>${cols.map((c) => `<td valign="middle" style="${ROW1_TD}"><p ${P}>${c.rawScore}점</p></td>`).join('')}</tr>`;
-  const pctRow = `<tr><td valign="middle" style="${ROW2_TH}"><p ${P}>백분위수</p></td>${cols.map((c) => `<td valign="middle" style="${ROW2_TD}"><p ${P}>${c.percentile}</p></td>`).join('')}</tr>`;
+  const rawRow = `<tr><td valign="middle" style="${ROW1_TH}"><p ${P}>${PROBLEM_SOLVING_LABELS.rawScore}</p></td>${cols.map((c) => `<td valign="middle" style="${ROW1_TD}"><p ${P}>${c.rawScore}점</p></td>`).join('')}</tr>`;
+  const pctRow = `<tr><td valign="middle" style="${ROW2_TH}"><p ${P}>${PROBLEM_SOLVING_LABELS.percentile}</p></td>${cols.map((c) => `<td valign="middle" style="${ROW2_TD}"><p ${P}>${c.percentile}</p></td>`).join('')}</tr>`;
 
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead>${headerRow}</thead><tbody>${rawRow}${pctRow}</tbody></table>`;
 }
@@ -209,62 +302,16 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
     const d = result.data as unknown as CplcData;
     return (
       textHtml +
-      htmlScoreTable(
-        [
-          {
-            label: CPLC_HEADER_LABELS.discourse,
-            score: d.discourseScore,
-            percent: d.discoursePercent,
-          },
-          {
-            label: CPLC_HEADER_LABELS.contextual,
-            score: d.contextualScore,
-            percent: d.contextualPercent,
-          },
-          {
-            label: CPLC_HEADER_LABELS.communication,
-            score: d.communicationScore,
-            percent: d.communicationPercent,
-          },
-          {
-            label: CPLC_HEADER_LABELS.nonverbal,
-            score: d.nonverbalScore,
-            percent: d.nonverbalPercent,
-          },
-          { label: CPLC_HEADER_LABELS.total, score: d.totalScore, percent: d.totalPercent },
-        ],
-        { header: '영역', cell: '점수' }
-      )
+      htmlScoreTable(getCplcScoreCols(d), { header: '영역', cell: '점수' })
     );
   }
   if (toolId === 'kcelf5_pp') {
     const d = result.data as unknown as Kcelf5PpData;
-    return (
-      textHtml +
-      htmlScoreTable([
-        { label: '대화기술', score: d.conversationScore, percent: d.conversationPercent },
-        {
-          label: '정보요청,정보제공,정보에 응하기',
-          score: d.informationScore,
-          percent: d.informationPercent,
-        },
-        { label: '비언어적 대화기술', score: d.nonverbalScore, percent: d.nonverbalPercent },
-        { label: '총점', score: d.totalScore, percent: d.totalPercent },
-      ])
-    );
+    return textHtml + htmlScoreTable(getKcelf5PpScoreCols(d));
   }
   if (toolId === 'kcelf5_ors') {
     const d = result.data as unknown as Kcelf5OrsData;
-    return (
-      textHtml +
-      htmlScoreTable([
-        { label: '듣기', score: d.listeningScore, percent: d.listeningPercent },
-        { label: '말하기', score: d.speakingScore, percent: d.speakingPercent },
-        { label: '읽기', score: d.readingScore, percent: d.readingPercent },
-        { label: '쓰기', score: d.writingScore, percent: d.writingPercent },
-        { label: '총점', score: d.totalScore, percent: d.totalPercent },
-      ])
-    );
+    return textHtml + htmlScoreTable(getKcelf5OrsScoreCols(d));
   }
   return null;
 }
@@ -282,44 +329,38 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
       text +=
         '\n\n' +
         [
-          `\t원인이유\t해결추론\t단서추측\t총점`,
-          `원점수\t${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
-          `백분위수\t${d.causeReasonPercentileText}\t${d.solutionInferencePercentileText}\t${d.clueGuessingPercentileText}\t${d.totalPercentileText}`,
+          `\t${PROBLEM_SOLVING_LABELS.causeReason}\t${PROBLEM_SOLVING_LABELS.solutionInference}\t${PROBLEM_SOLVING_LABELS.clueGuessing}\t${PROBLEM_SOLVING_LABELS.total}`,
+          `${PROBLEM_SOLVING_LABELS.rawScore}\t${d.causeReasonRawScore}점\t${d.solutionInferenceRawScore}점\t${d.clueGuessingRawScore}점\t${d.totalRawScore}점`,
+          `${PROBLEM_SOLVING_LABELS.percentile}\t${d.causeReasonPercentileText}\t${d.solutionInferencePercentileText}\t${d.clueGuessingPercentileText}\t${d.totalPercentileText}`,
         ].join('\n');
     }
   }
   if (toolId === 'cplc' && result.data) {
     const d = result.data as unknown as CplcData;
+    const cols = getCplcScoreCols(d);
     text +=
       '\n\n' +
       [
-        [
-          '영역',
-          CPLC_HEADER_LABELS.discourse,
-          CPLC_HEADER_LABELS.contextual,
-          CPLC_HEADER_LABELS.communication,
-          CPLC_HEADER_LABELS.nonverbal,
-          CPLC_HEADER_LABELS.total,
-        ].join('\t'),
+        ['영역', ...cols.map((col) => col.label)].join('\t'),
         `점수\t${d.discourseScore}점\n(${d.discoursePercent}%)\t${d.contextualScore}점\n(${d.contextualPercent}%)\t${d.communicationScore}점\n(${d.communicationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
       ].join('\n');
   }
   if (toolId === 'kcelf5_pp' && result.data) {
-    const d = result.data as unknown as Kcelf5PpData;
+    const cols = getKcelf5PpScoreCols(result.data as unknown as Kcelf5PpData);
     text +=
       '\n\n' +
       [
-        `대화기술\t정보요청,정보제공,정보에 응하기\t비언어적 대화기술\t총점`,
-        `${d.conversationScore}점\n(${d.conversationPercent}%)\t${d.informationScore}점\n(${d.informationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
+        cols.map((col) => col.label).join('\t'),
+        cols.map((col) => `${col.score}점\n(${col.percent}%)`).join('\t'),
       ].join('\n');
   }
   if (toolId === 'kcelf5_ors' && result.data) {
-    const d = result.data as unknown as Kcelf5OrsData;
+    const cols = getKcelf5OrsScoreCols(result.data as unknown as Kcelf5OrsData);
     text +=
       '\n\n' +
       [
-        `듣기\t말하기\t읽기\t쓰기\t총점`,
-        `${d.listeningScore}점\n(${d.listeningPercent}%)\t${d.speakingScore}점\n(${d.speakingPercent}%)\t${d.readingScore}점\n(${d.readingPercent}%)\t${d.writingScore}점\n(${d.writingPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
+        cols.map((col) => col.label).join('\t'),
+        cols.map((col) => `${col.score}점\n(${col.percent}%)`).join('\t'),
       ].join('\n');
   }
   return text;
@@ -374,37 +415,6 @@ function orderToolEntries(entries: Array<[string, ToolResult]>): Array<[string, 
     if (a !== 'pres' && b === 'pres') return 1;
     return 0;
   });
-}
-
-// AI 요청용 프롬프트 생성 (LLM 시스템 프롬프트와 동일한 규칙 적용)
-function buildAIPrompt(childInfo: ChildInfo, ageResult: AgeResult, step1Text: string): string {
-  const gender = childInfo.gender === 'male' ? '남' : '여';
-  const age = formatAge(ageResult);
-
-  return `다음 자발화 분석 데이터를 바탕으로 규칙을 엄수하여 객관적인 단일 문단 임상 요약 텍스트를 작성해 줘. (주관적 해석 및 문단 나눔 절대 금지)
-
-[아동 정보]
-성별: ${gender} / 연령: 만 ${age}
-(주의: 아동의 이름은 요약에 포함하지 마시오)
-
-## ⚠️ 절대 엄수 규칙
-1. **구조 통일**: 들여쓰기, 줄바꿈, 번호 매기기 금지. 처음부터 끝까지 이어지는 단 하나의 문단(One Paragraph)으로만 작성. 마지막에 '종합적으로' 등의 요약 문장 절대 추가 금지.
-2. **환각 및 해석 금지**: 데이터에 없는 임상적 추측, 진단, 주관적 가치 판단("~능력을 보여줌", "~을 시사함", "~로 해석됨") 절대 금지. 단, 임상적 관찰 용어("관찰됨", "나타남", "~어려움을 보임", "~양상을 보임")는 사용 가능.
-3. **메타 서술 및 빈 항목 생략**: "데이터에 예시가 제공되지 않음", "관찰 항목이 있음" 등 입력받은 데이터의 유무를 설명하는 말투 절대 금지. 항목이 비어있거나 구체적 예시가 없다면 억지로 지어내지 말고 해당 내용 자체를 텍스트에서 완전히 누락시킬 것.
-4. **구문 길이 포맷(엄격 적용)**: 반드시 다음 형태의 단일 문장으로 병합하여 작성할 것. (두 문장 분리 금지) "평균어절길이가 X(연령 수준), 최장어절길이가 Y(연령 수준)로 또래 대비 [수준] 양상을 보임."
-
-## 📝 세부 작성 규칙
-5. **문체 및 표기**: 반드시 "~음 체"(비격식 서술체)만 사용. "~습니다", "~입니다" 금지. 아동의 이름은 "아동"으로만 표기.
-6. **유기적 서술**: 단순 나열을 피하고, 긍정적 결과와 한계점을 "그러나", "또한" 등의 접속사로 자연스럽게 연결할 것.
-7. **조건부 예시 삽입**: 데이터에 아동의 발화 예시(S:/C: 등)나 단어가 있다면 괄호 안에 적극 삽입할 것.
-
-## 💡 [모범 출력 예시]
-(⚠️ 주의: 아래 예시의 수치, 연령, 발화 내용 등의 '데이터'는 절대 베끼지 말 것. 오직 문장의 '구조'와 '서술 톤(Tone)'만 완벽하게 모방할 것.)
-
-자발화 분석 결과, 아동의 평균어절길이가 2.5(42~45개월 수준), 최장어절길이가 7(42개월 수준)로 나타나 또래 대비 구문의 길이가 짧은 양상을 보임. 가장 긴 구문은 "바다 갔다 왔고 호텔 6층 갔다 왔어요"로 경험을 이야기하는 상황에서 산출됨. 의사소통 기능 측면에서는 요구, 반응, 객관적 언급 등을 사용하는 것으로 확인됨. 문법형태소는 조사 '이/가', 연결어미 '-고'가 관찰됨. 화용 및 담화 능력에서는 기본적인 대화 주고받기가 가능하나, 빈번하게 선행 발화와 관련 없는 주제를 개시함(예: "선생님 1월이 지나면 뭐가 돼요?"). 상황별로 경험 이야기 시 이전 경험을 단편적으로 나열하였고, 보드게임 시 세부 내용을 충분히 포함하지 않은 채 발화하여 조리 있게 설명하는 데 어려움을 보임. 공동주의에서는 눈 맞춤은 유지되나, 호명반응은 관찰되지 않음.
-
-[분석 데이터]
-${step1Text}`;
 }
 
 export function ResultSection({
@@ -518,8 +528,12 @@ export function ResultSection({
                 onGenerateLLM={onGenerateLLM}
                 onCopyPrompt={() =>
                   copyToClipboard(
-                    buildAIPrompt(childInfo, ageResult, result.text),
-                    'AI 프롬프트 복사 완료'
+                    buildLanguageAnalysisPrompt({
+                      gender: childInfo.gender,
+                      ageText: formatAge(ageResult),
+                      step1Text: result.text,
+                    }),
+                    LANGUAGE_ANALYSIS_UI.copyPromptToast
                   )
                 }
                 onCopy={(text) => copyToClipboard(text, `${toolName} 결과 복사 완료`)}
@@ -560,21 +574,25 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
 
   const cols = [
     {
-      label: '원인이유',
+      label: PROBLEM_SOLVING_LABELS.causeReason,
       rawScore: data.causeReasonRawScore,
       percentile: data.causeReasonPercentileText,
     },
     {
-      label: '해결추론',
+      label: PROBLEM_SOLVING_LABELS.solutionInference,
       rawScore: data.solutionInferenceRawScore,
       percentile: data.solutionInferencePercentileText,
     },
     {
-      label: '단서추측',
+      label: PROBLEM_SOLVING_LABELS.clueGuessing,
       rawScore: data.clueGuessingRawScore,
       percentile: data.clueGuessingPercentileText,
     },
-    { label: '총점', rawScore: data.totalRawScore, percentile: data.totalPercentileText },
+    {
+      label: PROBLEM_SOLVING_LABELS.total,
+      rawScore: data.totalRawScore,
+      percentile: data.totalPercentileText,
+    },
   ];
 
   const B = '2px solid black';
@@ -608,7 +626,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
               className="px-2 pt-2 pb-0 text-center align-middle font-bold"
               style={{ ...TH_BG, borderTop: B }}
             >
-              원점수
+              {PROBLEM_SOLVING_LABELS.rawScore}
             </td>
             {cols.map((col) => (
               <td
@@ -625,7 +643,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
               className="px-2 pt-0 pb-2 text-center align-middle font-bold"
               style={{ ...TH_BG, borderBottom: B }}
             >
-              백분위수
+              {PROBLEM_SOLVING_LABELS.percentile}
             </td>
             {cols.map((col) => (
               <td
@@ -645,29 +663,7 @@ function ProblemSolvingTable({ data }: { data: ProblemSolvingData }) {
 
 // CPLC 결과 테이블 컴포넌트
 function CplcTable({ data }: { data: CplcData }) {
-  const cols = [
-    {
-      label: CPLC_HEADER_LABELS.discourse,
-      score: data.discourseScore,
-      percent: data.discoursePercent,
-    },
-    {
-      label: CPLC_HEADER_LABELS.contextual,
-      score: data.contextualScore,
-      percent: data.contextualPercent,
-    },
-    {
-      label: CPLC_HEADER_LABELS.communication,
-      score: data.communicationScore,
-      percent: data.communicationPercent,
-    },
-    {
-      label: CPLC_HEADER_LABELS.nonverbal,
-      score: data.nonverbalScore,
-      percent: data.nonverbalPercent,
-    },
-    { label: CPLC_HEADER_LABELS.total, score: data.totalScore, percent: data.totalPercent },
-  ];
+  const cols = getCplcScoreCols(data);
   const B = '2px solid black';
 
   return (
@@ -723,16 +719,7 @@ function CplcTable({ data }: { data: CplcData }) {
 
 // K-CELF-5 PP 결과 테이블 컴포넌트
 function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
-  const cols = [
-    { label: '대화기술', score: data.conversationScore, percent: data.conversationPercent },
-    {
-      label: '정보요청,정보제공,정보에 응하기',
-      score: data.informationScore,
-      percent: data.informationPercent,
-    },
-    { label: '비언어적 대화기술', score: data.nonverbalScore, percent: data.nonverbalPercent },
-    { label: '총점', score: data.totalScore, percent: data.totalPercent },
-  ];
+  const cols = getKcelf5PpScoreCols(data);
   const B = '2px solid black';
 
   return (
@@ -775,13 +762,7 @@ function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
 
 // K-CELF-5 ORS 결과 테이블 컴포넌트
 function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
-  const cols = [
-    { label: '듣기', score: data.listeningScore, percent: data.listeningPercent },
-    { label: '말하기', score: data.speakingScore, percent: data.speakingPercent },
-    { label: '읽기', score: data.readingScore, percent: data.readingPercent },
-    { label: '쓰기', score: data.writingScore, percent: data.writingPercent },
-    { label: '총점', score: data.totalScore, percent: data.totalPercent },
-  ];
+  const cols = getKcelf5OrsScoreCols(data);
 
   const B = '2px solid black';
 
@@ -867,7 +848,7 @@ function LanguageAnalysisResultCard({
               className="h-7 border-purple-300 px-2 text-xs text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950/30"
               onClick={onCopyPrompt}
             >
-              AI 요청 복사
+              {LANGUAGE_ANALYSIS_UI.copyPromptButton}
             </Button>
           )}
           {onGenerateLLM && (
@@ -878,7 +859,11 @@ function LanguageAnalysisResultCard({
               onClick={handleGenerate}
               disabled={isGenerating}
             >
-              {isGenerating ? '생성 중...' : step2Text ? '재생성' : '보고서 생성'}
+              {isGenerating
+                ? LANGUAGE_ANALYSIS_UI.generatingButton
+                : step2Text
+                  ? LANGUAGE_ANALYSIS_UI.regenerateButton
+                  : LANGUAGE_ANALYSIS_UI.generateReportButton}
             </Button>
           )}
           <Button
@@ -888,7 +873,7 @@ function LanguageAnalysisResultCard({
             onClick={() => onCopy(step2Text ?? step1Text)}
             disabled={isGenerating}
           >
-            복사
+            {LANGUAGE_ANALYSIS_UI.copyButton}
           </Button>
         </div>
       </div>
@@ -910,7 +895,9 @@ function LanguageAnalysisResultCard({
             onClick={() => setShowStep1((v) => !v)}
             className="text-muted-foreground text-xs hover:underline"
           >
-            {showStep1 ? '▲ 구조화 데이터 숨기기' : '▼ 구조화 데이터 보기'}
+            {showStep1
+              ? LANGUAGE_ANALYSIS_UI.hideStructuredData
+              : LANGUAGE_ANALYSIS_UI.showStructuredData}
           </button>
           {showStep1 && <p className={`mt-2 ${TEXT_STYLES.body} text-xs`}>{step1Text}</p>}
         </div>

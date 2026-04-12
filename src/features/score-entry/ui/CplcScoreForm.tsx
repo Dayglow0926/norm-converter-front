@@ -7,34 +7,12 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CPLC_SUBTESTS, CPLC_TOTAL, type CplcSubtestKey } from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
 
 interface CplcScoreFormProps {
   ageMonths: number;
 }
-
-type CplcSubtest =
-  | 'discourse_management'
-  | 'contextual_variation'
-  | 'communication_intent'
-  | 'nonverbal_communication';
-
-interface CplcSubtestMeta {
-  key: CplcSubtest;
-  label: string;
-  maxScore: number;
-  itemMin: number;
-  itemMax: number;
-}
-
-const CPLC_SUBTESTS: CplcSubtestMeta[] = [
-  { key: 'discourse_management', label: '담화관리', maxScore: 33, itemMin: 1, itemMax: 11 },
-  { key: 'contextual_variation', label: '상황에 따른 조절 및 적응', maxScore: 39, itemMin: 12, itemMax: 24 },
-  { key: 'communication_intent', label: '의사소통 의도 사용', maxScore: 45, itemMin: 25, itemMax: 39 },
-  { key: 'nonverbal_communication', label: '비언어적 의사소통', maxScore: 24, itemMin: 40, itemMax: 47 },
-];
-
-const CPLC_TOTAL_MAX = 141;
 
 /**
  * "1, 2, 3-6" 또는 "1 2 3-6" 형식 문자열을 숫자 배열로 파싱
@@ -75,7 +53,7 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
   const setScore = useScoreEntryStore((state) => state.setScore);
   const setInput = useScoreEntryStore((state) => state.setInput);
 
-  const handleScoreChange = (subtest: CplcSubtest, maxScore: number, value: string) => {
+  const handleScoreChange = (subtest: CplcSubtestKey, maxScore: number, value: string) => {
     if (value === '') {
       setScore('cplc', subtest, null);
       return;
@@ -89,7 +67,7 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
   };
 
   const handleItemsChange = (
-    subtest: CplcSubtest,
+    subtest: CplcSubtestKey,
     field: 'correctItems' | 'wrongItems',
     value: string
   ) => {
@@ -117,7 +95,7 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
               </tr>
             </thead>
             <tbody>
-              {CPLC_SUBTESTS.map(({ key, label, maxScore, itemMin, itemMax }) => {
+              {CPLC_SUBTESTS.map(({ key, formLabel, maxScore, itemMin, itemMax }) => {
                 const currentScore = cplc?.inputs[key]?.rawScore ?? null;
                 const isInvalid =
                   currentScore !== null && (currentScore < 0 || currentScore > maxScore);
@@ -128,7 +106,7 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
 
                 return (
                   <tr key={key} className="border-b">
-                    <td className="px-2 py-3 font-medium">{label}</td>
+                    <td className="px-2 py-3 font-medium">{formLabel}</td>
                     <td className="text-muted-foreground px-2 py-3 text-center">{maxScore}점</td>
                     <td className="px-2 py-3">
                       <div className="flex flex-col items-center">
@@ -188,7 +166,9 @@ export function CplcScoreForm({ ageMonths: _ageMonths }: CplcScoreFormProps) {
               {/* 총점 자동 합산 */}
               <tr className="bg-muted/30">
                 <td className="px-2 py-3 font-medium">총점 (자동)</td>
-                <td className="text-muted-foreground px-2 py-3 text-center">{CPLC_TOTAL_MAX}점</td>
+                <td className="text-muted-foreground px-2 py-3 text-center">
+                  {CPLC_TOTAL.maxScore}점
+                </td>
                 <td className="text-muted-foreground px-2 py-3 text-center font-semibold">
                   {totalScore ?? '-'}
                 </td>

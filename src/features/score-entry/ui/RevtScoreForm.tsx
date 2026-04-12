@@ -7,17 +7,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  REVT_ITEM_PLACEHOLDERS,
+  REVT_LABELS,
+  REVT_NOTES,
+  REVT_SCORE_RANGE,
+} from '@/entities/assessment-tool';
 import { useScoreEntryStore } from '../model/store';
 
 interface RevtScoreFormProps {
   ageMonths: number;
 }
-
-// 하위검사 라벨
-const SUBTEST_LABELS = {
-  receptive: '수용어휘',
-  expressive: '표현어휘',
-} as const;
 
 export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
   void _ageMonths;
@@ -58,23 +58,27 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="px-2 py-3 text-left font-medium">하위검사</th>
-                <th className="px-2 py-3 text-center font-medium">원점수</th>
-                <th className="px-2 py-3 text-center font-medium">정반응 번호</th>
-                <th className="px-2 py-3 text-center font-medium">오반응 번호</th>
+                <th className="px-2 py-3 text-left font-medium">{REVT_LABELS.subtestHeader}</th>
+                <th className="px-2 py-3 text-center font-medium">{REVT_LABELS.rawScoreHeader}</th>
+                <th className="px-2 py-3 text-center font-medium">
+                  {REVT_LABELS.correctItemsHeader}
+                </th>
+                <th className="px-2 py-3 text-center font-medium">
+                  {REVT_LABELS.wrongItemsHeader}
+                </th>
               </tr>
             </thead>
             <tbody>
               {/* 수용어휘 */}
               <tr className="border-b">
-                <td className="px-2 py-3 font-medium">{SUBTEST_LABELS.receptive}</td>
+                <td className="px-2 py-3 font-medium">{REVT_LABELS.receptive}</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-col items-center">
                     <Input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      placeholder="7-175"
+                      placeholder={`${REVT_SCORE_RANGE.min}-${REVT_SCORE_RANGE.max}`}
                       className="w-20 text-center"
                       value={receptiveScore ?? ''}
                       onChange={(e) => handleScoreChange('receptive', e.target.value)}
@@ -84,7 +88,7 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                 <td className="px-2 py-3">
                   <Input
                     type="text"
-                    placeholder="1, 2, 3-6"
+                    placeholder={REVT_ITEM_PLACEHOLDERS.correct}
                     className="w-full text-center text-sm"
                     value={revt?.inputs.receptive?.correctItems ?? ''}
                     onChange={(e) => handleItemsChange('receptive', 'correctItems', e.target.value)}
@@ -93,7 +97,7 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                 <td className="px-2 py-3">
                   <Input
                     type="text"
-                    placeholder="7, 8, 9-12"
+                    placeholder={REVT_ITEM_PLACEHOLDERS.wrong}
                     className="w-full text-center text-sm"
                     value={revt?.inputs.receptive?.wrongItems ?? ''}
                     onChange={(e) => handleItemsChange('receptive', 'wrongItems', e.target.value)}
@@ -103,14 +107,14 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
 
               {/* 표현어휘 */}
               <tr className="border-b">
-                <td className="px-2 py-3 font-medium">{SUBTEST_LABELS.expressive}</td>
+                <td className="px-2 py-3 font-medium">{REVT_LABELS.expressive}</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-col items-center">
                     <Input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      placeholder="7-175"
+                      placeholder={`${REVT_SCORE_RANGE.min}-${REVT_SCORE_RANGE.max}`}
                       className="w-20 text-center"
                       value={expressiveScore ?? ''}
                       onChange={(e) => handleScoreChange('expressive', e.target.value)}
@@ -120,7 +124,7 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                 <td className="px-2 py-3">
                   <Input
                     type="text"
-                    placeholder="1, 2, 3-6"
+                    placeholder={REVT_ITEM_PLACEHOLDERS.correct}
                     className="w-full text-center text-sm"
                     value={revt?.inputs.expressive?.correctItems ?? ''}
                     onChange={(e) =>
@@ -131,7 +135,7 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
                 <td className="px-2 py-3">
                   <Input
                     type="text"
-                    placeholder="7, 8, 9-12"
+                    placeholder={REVT_ITEM_PLACEHOLDERS.wrong}
                     className="w-full text-center text-sm"
                     value={revt?.inputs.expressive?.wrongItems ?? ''}
                     onChange={(e) => handleItemsChange('expressive', 'wrongItems', e.target.value)}
@@ -144,14 +148,11 @@ export function RevtScoreForm({ ageMonths: _ageMonths }: RevtScoreFormProps) {
 
         {/* 안내 문구 */}
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-xs">* 원점수 범위: 수용/표현 각 7-175점</p>
-          <p className="text-muted-foreground text-xs">
-            * 정반응/오반응 번호: 쉼표 또는 공백으로 구분, 범위는 &quot;3-6&quot; 형식으로 입력
-            (예: 1, 2, 3-6, 10 또는 1 2 3-6 10)
-          </p>
-          <p className="text-muted-foreground text-xs">
-            * REVT는 성별 구분 없이 동일한 규준을 적용합니다
-          </p>
+          {REVT_NOTES.map((note) => (
+            <p key={note} className="text-muted-foreground text-xs">
+              {note}
+            </p>
+          ))}
         </div>
       </CardContent>
     </Card>
