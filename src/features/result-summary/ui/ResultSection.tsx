@@ -130,7 +130,10 @@ function htmlScoreTable(
     : '';
 
   const ths = cols
-    .map((c) => `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label.replace(/\n/g, '<br>')}</p></th>`)
+    .map(
+      (c) =>
+        `<th valign="middle" style="${TH_STYLE}"><p ${P}>${c.label.replace(/\n/g, '<br>')}</p></th>`
+    )
     .join('');
   const tds = cols
     .map(
@@ -240,8 +243,12 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
       textHtml +
       htmlScoreTable([
         { label: '대화기술', score: d.conversationScore, percent: d.conversationPercent },
-        { label: '정보요청+제공+응하기', score: d.informationScore, percent: d.informationPercent },
-        { label: '비언어적', score: d.nonverbalScore, percent: d.nonverbalPercent },
+        {
+          label: '정보요청,정보제공,정보에 응하기',
+          score: d.informationScore,
+          percent: d.informationPercent,
+        },
+        { label: '비언어적 대화기술', score: d.nonverbalScore, percent: d.nonverbalPercent },
         { label: '총점', score: d.totalScore, percent: d.totalPercent },
       ])
     );
@@ -302,7 +309,7 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
     text +=
       '\n\n' +
       [
-        `대화기술\t정보요청+제공+응하기\t비언어적\t총점`,
+        `대화기술\t정보요청,정보제공,정보에 응하기\t비언어적 대화기술\t총점`,
         `${d.conversationScore}점\n(${d.conversationPercent}%)\t${d.informationScore}점\n(${d.informationPercent}%)\t${d.nonverbalScore}점\n(${d.nonverbalPercent}%)\t${d.totalScore}점\n(${d.totalPercent}%)`,
       ].join('\n');
   }
@@ -719,11 +726,11 @@ function Kcelf5PpTable({ data }: { data: Kcelf5PpData }) {
   const cols = [
     { label: '대화기술', score: data.conversationScore, percent: data.conversationPercent },
     {
-      label: '정보요청+제공+응하기',
+      label: '정보요청,정보제공,정보에 응하기',
       score: data.informationScore,
       percent: data.informationPercent,
     },
-    { label: '비언어적', score: data.nonverbalScore, percent: data.nonverbalPercent },
+    { label: '비언어적 대화기술', score: data.nonverbalScore, percent: data.nonverbalPercent },
     { label: '총점', score: data.totalScore, percent: data.totalPercent },
   ];
   const B = '2px solid black';

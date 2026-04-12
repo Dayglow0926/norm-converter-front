@@ -19,7 +19,7 @@ interface PpSubtestMeta {
 
 const PP_SUBTESTS: PpSubtestMeta[] = [
   { key: 'conversation_skills', label: '대화기술', maxScore: 72 },
-  { key: 'information_group', label: '정보요청 + 정보제공 + 정보에 응하기', maxScore: 80 },
+  { key: 'information_group', label: '정보요청,정보제공,정보에 응하기', maxScore: 80 },
   { key: 'nonverbal_skills', label: '비언어적 대화기술', maxScore: 48 },
 ];
 
@@ -107,7 +107,9 @@ export function Kcelf5PpScoreForm() {
           <p className="text-muted-foreground text-xs">
             * 일부 또는 미입력 상태로도 결과 확인 가능 (미입력은 0점 처리)
           </p>
-          <p className="text-muted-foreground text-xs">* 보호자 보고 기반 화용 평가 (규준 변환 아님, 백분율 산출)</p>
+          <p className="text-muted-foreground text-xs">
+            * 보호자 보고 기반 화용 평가 (규준 변환 아님, 백분율 산출)
+          </p>
         </div>
       </CardContent>
     </Card>
