@@ -19,6 +19,15 @@ export const ASSESSMENT_TOOLS: ToolMetadata[] = [
     description: '영유아 언어발달검사',
   },
   {
+    id: 'kmb_cdi',
+    name: 'K M-B CDI',
+    category: '영유아',
+    minAgeMonths: 18,
+    maxAgeMonths: 36,
+    subtests: ['어휘', '문장과 문법'],
+    description: '유아용 어휘/문장과 문법 체크리스트',
+  },
+  {
     id: 'pres',
     name: 'PRES',
     category: '학령전기',

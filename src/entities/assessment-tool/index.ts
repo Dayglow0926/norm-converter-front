@@ -18,6 +18,27 @@ export type { SelsiSubtestKey, SelsiMetaSubtestKey } from './model/selsi';
 export type { PresSubtestKey } from './model/pres';
 export type { RevtSubtestKey } from './model/revt';
 export type { SyntaxSubtestKey } from './model/syntax';
+export type {
+  KmbCdiVocabCategoryKey,
+  KmbCdiVocabularyScore,
+  KmbCdiVocabularyPayload,
+  KmbCdiGrammarFeatureKey,
+  KmbCdiGrammarFeatureStatus,
+  KmbCdiGrammarFeaturesPayload,
+  KmbCdiToolInput,
+  KmbCdiToolData,
+  KmbCdiToolResult,
+} from './model/kmb-cdi';
+
+export {
+  KMB_CDI_LABELS,
+  KMB_CDI_NOTES,
+  KMB_CDI_VOCAB_CATEGORIES,
+  KMB_CDI_VOCAB_TOTALS,
+  KMB_CDI_EXPRESSIVE_P50,
+  KMB_CDI_GRAMMAR_P50,
+  KMB_CDI_GRAMMAR_FEATURES,
+} from './model/kmb-cdi';
 
 export {
   TOOL_METADATA,

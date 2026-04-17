@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { Header } from '@/widgets/header';
 import { SelsiScoreForm } from '@/features/score-entry/ui/SelsiScoreForm';
+import { KmbCdiScoreForm } from '@/features/score-entry/ui/KmbCdiScoreForm';
 import { PresScoreForm } from '@/features/score-entry/ui/PresScoreForm';
 import { RevtScoreForm } from '@/features/score-entry/ui/RevtScoreForm';
 import { SyntaxScoreForm } from '@/features/score-entry/ui/SyntaxScoreForm';
@@ -15,7 +16,12 @@ import { Kcelf5PpScoreForm } from '@/features/score-entry/ui/Kcelf5PpScoreForm';
 import { Kcelf5OrsScoreForm } from '@/features/score-entry/ui/Kcelf5OrsScoreForm';
 import { LanguageAnalysisForm } from '@/features/score-entry/ui/LanguageAnalysisForm';
 import { useScoreEntryStore } from '@/features/score-entry';
+import { useKmbCdiStore } from '@/features/score-entry/model/kmbCdiStore';
 import { useLanguageAnalysisStore } from '@/features/score-entry/model/languageAnalysisStore';
+import {
+  buildKmbCdiToolInput,
+  isKmbCdiComplete,
+} from '@/features/score-entry/lib/kmb-cdi-preview';
 import { ResultSection } from '@/features/result-summary';
 import { useChildInfoStore, formatAgeResult } from '@/features/child-info';
 import { useTestSelectionStore } from '@/features/test-selection';
@@ -98,6 +104,13 @@ export function ScoreEntryContent() {
     clearAll: laClearAll,
     clearResult: laClearResult,
   } = useLanguageAnalysisStore();
+  const {
+    vocabulary: kmbCdiVocabulary,
+    grammarRawScore: kmbCdiGrammarRawScore,
+    grammarFeatures: kmbCdiGrammarFeatures,
+    longestUtterance: kmbCdiLongestUtterance,
+    clearAll: clearKmbCdi,
+  } = useKmbCdiStore();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -291,6 +304,14 @@ export function ScoreEntryContent() {
 
   // 도구별 입력 완료 여부 확인
   const isToolComplete = (toolId: AssessmentToolId): boolean => {
+    if (toolId === 'kmb_cdi') {
+      return isKmbCdiComplete({
+        vocabulary: kmbCdiVocabulary,
+        grammarRawScore: kmbCdiGrammarRawScore,
+        longestUtterance: kmbCdiLongestUtterance,
+      });
+    }
+
     // 언어분석: 실제 입력 데이터가 있을 때만 완료로 판단
     if (toolId === 'language_analysis') {
       return buildLanguageAnalysisPayload() !== null;
@@ -339,6 +360,7 @@ export function ScoreEntryContent() {
   // 도구 변경: 점수만 초기화
   const handleToolChange = () => {
     clearAll();
+    clearKmbCdi();
     laClearAll();
     router.push('/select-tool');
   };
@@ -346,6 +368,7 @@ export function ScoreEntryContent() {
   // 처음으로: 모든 정보 초기화
   const handleGoHome = () => {
     clearAll();
+    clearKmbCdi();
     laClearAll();
     clearSelection();
     clearChildInfo();
@@ -366,6 +389,20 @@ export function ScoreEntryContent() {
       const toolsPayload: Record<string, Record<string, unknown>> = {};
 
       for (const toolId of completedSelectedTools) {
+        if (toolId === 'kmb_cdi') {
+          if (kmbCdiGrammarRawScore === null) continue;
+
+          const kmbCdiToolInput = buildKmbCdiToolInput({
+            vocabulary: kmbCdiVocabulary,
+            grammarRawScore: kmbCdiGrammarRawScore,
+            grammarFeatures: kmbCdiGrammarFeatures,
+            longestUtterance: kmbCdiLongestUtterance,
+          });
+
+          toolsPayload[toolId] = kmbCdiToolInput as unknown as Record<string, unknown>;
+          continue;
+        }
+
         const toolData = tools[toolId];
         if (!toolData) continue;
 
@@ -485,7 +522,14 @@ export function ScoreEntryContent() {
           setApiResult(toolId as AssessmentToolId, apiResult);
         }
       }
-      setIntegratedSummary(response.integratedSummary);
+
+      const resultToolIds = Object.keys(response.results).filter(
+        (toolId) => response.results[toolId] !== undefined
+      );
+      const shouldHideIntegratedSummary =
+        resultToolIds.length === 1 && resultToolIds[0] === 'kmb_cdi';
+
+      setIntegratedSummary(shouldHideIntegratedSummary ? null : response.integratedSummary);
     } catch (err) {
       console.error('API 호출 실패:', err);
       setApiError(err instanceof Error ? err.message : 'API 호출 중 오류가 발생했습니다');
@@ -499,6 +543,8 @@ export function ScoreEntryContent() {
     switch (toolId) {
       case 'selsi':
         return <SelsiScoreForm ageMonths={ageMonths} gender={childInfo.gender} />;
+      case 'kmb_cdi':
+        return <KmbCdiScoreForm gender={childInfo.gender} />;
       case 'pres':
         return <PresScoreForm ageMonths={ageMonths} />;
       case 'revt':

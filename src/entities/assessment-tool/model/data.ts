@@ -8,6 +8,7 @@ import { APAC_SUBTEST_KEYS } from './apac';
 import { CPLC_SUBTEST_KEYS } from './cplc';
 import { KCELF5_ORS_SUBTEST_KEYS } from './kcelf5-ors';
 import { KCELF5_PP_SUBTEST_KEYS } from './kcelf5-pp';
+import { KMB_CDI_LABELS } from './kmb-cdi';
 import { PROBLEM_SOLVING_SUBTEST_KEYS } from './problem-solving';
 import { PRES_SUBTEST_KEYS } from './pres';
 import { REVT_SUBTEST_KEYS } from './revt';
@@ -23,6 +24,15 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 35,
     subtests: SELSI_META_SUBTEST_KEYS,
     description: '영유아 언어발달 검사 (4-35개월)',
+  },
+  kmb_cdi: {
+    id: 'kmb_cdi',
+    name: KMB_CDI_LABELS.name,
+    category: '영유아',
+    minAgeMonths: 18,
+    maxAgeMonths: 36,
+    subtests: [],
+    description: '유아용 어휘/문장과 문법 체크리스트 (18-36개월)',
   },
   pres: {
     id: 'pres',
@@ -110,13 +120,14 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
 /**
  * 현재 활성화된 평가도구 ID 목록
  */
-export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'pres', 'revt', 'syntax', 'problem_solving', 'apac', 'cplc', 'kcelf5_pp', 'kcelf5_ors', 'language_analysis'];
+export const ACTIVE_TOOLS: AssessmentToolId[] = ['selsi', 'kmb_cdi', 'pres', 'revt', 'syntax', 'problem_solving', 'apac', 'cplc', 'kcelf5_pp', 'kcelf5_ors', 'language_analysis'];
 
 /**
  * 전체 평가도구 ID 목록 (표시 순서)
  */
 export const ALL_TOOL_IDS: AssessmentToolId[] = [
   'selsi',
+  'kmb_cdi',
   'pres',
   'revt',
   'syntax',

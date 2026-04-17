@@ -4,6 +4,7 @@
 
 export type AssessmentToolId =
   | 'selsi'
+  | 'kmb_cdi'
   | 'pres'
   | 'revt'
   | 'syntax'
