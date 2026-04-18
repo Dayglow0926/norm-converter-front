@@ -41,6 +41,7 @@ import {
   getApacBackendPendingReason,
   isApacBackendCompatible,
   isToolActive,
+  type ApacErrorPatternExampleInput,
   type AssessmentToolId,
 } from '@/entities/assessment-tool';
 import { normClient } from '@/shared/api/norm-client';
@@ -64,6 +65,29 @@ interface UnifiedConvertResponse {
     }
   >;
   integratedSummary: string;
+}
+
+function buildApacErrorPatternExamplesPayload(
+  errorPatternExamples: Record<string, ApacErrorPatternExampleInput>
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(errorPatternExamples)
+      .map(([key, exampleInput]) => {
+        const target = exampleInput.target.trim();
+        const production = exampleInput.production.trim();
+
+        if (target && production) {
+          return [key, `${target}→${production}`] as const;
+        }
+
+        if (target || production) {
+          return [key, target || production] as const;
+        }
+
+        return null;
+      })
+      .filter((entry): entry is readonly [string, string] => entry !== null)
+  );
 }
 
 // 도구별 필수 하위검사 (입력 완료 판단용)
@@ -455,7 +479,7 @@ export function ScoreEntryContent() {
             scoreVersion: apacScoreVersion,
             administrationMode: apacAdministrationMode,
             errorPatternKeys: apacErrorPatternKeys,
-            errorPatternExamples: apacErrorPatternExamples,
+            errorPatternExamples: buildApacErrorPatternExamplesPayload(apacErrorPatternExamples),
             ...(apacScoreVersion === 'untestable' ? { isUntestable: true } : {}),
             ...(imitationType ? { imitationType } : {}),
           };

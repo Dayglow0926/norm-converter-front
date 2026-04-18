@@ -17,6 +17,7 @@ export type {
   ApacSubtestKey,
   ApacScoreVersion,
   ApacAdministrationMode,
+  ApacErrorPatternExampleInput,
   ApacErrorPatternSectionId,
   ApacErrorPatternSection,
   ApacErrorPatternOption,

@@ -3,6 +3,11 @@ export type ApacScoreVersion = 'standard' | 'revised' | 'untestable';
 export type ApacAdministrationMode = 'direct' | 'partial_imitation' | 'total_imitation';
 export type ApacErrorPatternSectionId = 'whole_word_process' | 'phoneme_change_3plus';
 
+export interface ApacErrorPatternExampleInput {
+  target: string;
+  production: string;
+}
+
 export interface ApacErrorPatternSection {
   id: ApacErrorPatternSectionId;
   title: string;
@@ -47,8 +52,12 @@ export const APAC_INPUT_LABELS = {
   errorPatternsTitle: '오류패턴',
   errorPatternsHint: '해당되는 오류패턴만 선택',
   errorPatternExampleTitle: '결과문 예시',
-  errorPatternExampleHint: '선택한 오류패턴의 예시를 직접 입력하면 결과문에 함께 반영됩니다.',
-  errorPatternExamplePlaceholder: '예시를 직접 입력',
+  errorPatternExampleHint:
+    '예시 단어와 산출을 각각 입력하면 결과문에 `예: 단어→산출` 형식으로 반영됩니다.',
+  errorPatternExampleTargetLabel: '예시 단어',
+  errorPatternExampleTargetPlaceholder: '예: 침대',
+  errorPatternExampleProductionLabel: '산출',
+  errorPatternExampleProductionPlaceholder: '예: [친대]',
 } as const;
 
 export const APAC_ERROR_PATTERN_SECTIONS: ApacErrorPatternSection[] = [

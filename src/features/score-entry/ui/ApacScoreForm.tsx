@@ -10,6 +10,7 @@ import {
   APAC_NOTES,
   APAC_SCORE_RANGE,
   APAC_SCORE_VERSION_LABELS,
+  type ApacErrorPatternExampleInput,
   type ApacAdministrationMode,
   type ApacScoreVersion,
 } from '@/entities/assessment-tool';
@@ -22,6 +23,11 @@ interface ApacScoreFormProps {
 export function ApacScoreForm({ ageMonths }: ApacScoreFormProps) {
   void ageMonths;
 
+  const emptyExampleInput: ApacErrorPatternExampleInput = {
+    target: '',
+    production: '',
+  };
+
   const scoreVersion = useApacStore((state) => state.scoreVersion);
   const administrationMode = useApacStore((state) => state.administrationMode);
   const rawScore = useApacStore((state) => state.rawScore);
@@ -31,7 +37,7 @@ export function ApacScoreForm({ ageMonths }: ApacScoreFormProps) {
   const setAdministrationMode = useApacStore((state) => state.setAdministrationMode);
   const setRawScore = useApacStore((state) => state.setRawScore);
   const toggleErrorPattern = useApacStore((state) => state.toggleErrorPattern);
-  const setErrorPatternExample = useApacStore((state) => state.setErrorPatternExample);
+  const setErrorPatternExampleField = useApacStore((state) => state.setErrorPatternExampleField);
 
   const isUntestable = scoreVersion === 'untestable';
   const scoreInvalid =
@@ -190,7 +196,7 @@ export function ApacScoreForm({ ageMonths }: ApacScoreFormProps) {
                     <div className="grid gap-2 md:grid-cols-2">
                       {options.map((option) => {
                         const checked = errorPatternKeys.includes(option.key);
-                        const exampleValue = errorPatternExamples[option.key] ?? '';
+                        const exampleValue = errorPatternExamples[option.key] ?? emptyExampleInput;
 
                         return (
                           <div
@@ -220,14 +226,46 @@ export function ApacScoreForm({ ageMonths }: ApacScoreFormProps) {
                                 <p className="text-muted-foreground mb-1 text-xs">
                                   {APAC_INPUT_LABELS.errorPatternExampleTitle}
                                 </p>
-                                <Input
-                                  type="text"
-                                  value={exampleValue}
-                                  placeholder={APAC_INPUT_LABELS.errorPatternExamplePlaceholder}
-                                  onChange={(e) =>
-                                    setErrorPatternExample(option.key, e.target.value)
-                                  }
-                                />
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">
+                                      {APAC_INPUT_LABELS.errorPatternExampleTargetLabel}
+                                    </p>
+                                    <Input
+                                      type="text"
+                                      value={exampleValue.target}
+                                      placeholder={
+                                        APAC_INPUT_LABELS.errorPatternExampleTargetPlaceholder
+                                      }
+                                      onChange={(e) =>
+                                        setErrorPatternExampleField(
+                                          option.key,
+                                          'target',
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">
+                                      {APAC_INPUT_LABELS.errorPatternExampleProductionLabel}
+                                    </p>
+                                    <Input
+                                      type="text"
+                                      value={exampleValue.production}
+                                      placeholder={
+                                        APAC_INPUT_LABELS.errorPatternExampleProductionPlaceholder
+                                      }
+                                      onChange={(e) =>
+                                        setErrorPatternExampleField(
+                                          option.key,
+                                          'production',
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>

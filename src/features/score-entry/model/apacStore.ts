@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type {
   ApacAdministrationMode,
+  ApacErrorPatternExampleInput,
   ApacScoreVersion,
 } from '@/entities/assessment-tool';
 
@@ -10,7 +11,7 @@ export interface ApacInputState {
   administrationMode: ApacAdministrationMode;
   rawScore: number | null;
   errorPatternKeys: string[];
-  errorPatternExamples: Record<string, string>;
+  errorPatternExamples: Record<string, ApacErrorPatternExampleInput>;
 }
 
 interface ApacState extends ApacInputState {
@@ -18,8 +19,68 @@ interface ApacState extends ApacInputState {
   setAdministrationMode: (value: ApacAdministrationMode) => void;
   setRawScore: (value: number | null) => void;
   toggleErrorPattern: (key: string) => void;
-  setErrorPatternExample: (key: string, value: string) => void;
+  setErrorPatternExampleField: (
+    key: string,
+    field: keyof ApacErrorPatternExampleInput,
+    value: string
+  ) => void;
   clearAll: () => void;
+}
+
+function createEmptyExampleInput(): ApacErrorPatternExampleInput {
+  return {
+    target: '',
+    production: '',
+  };
+}
+
+function parseLegacyExampleInput(value: string): ApacErrorPatternExampleInput {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return createEmptyExampleInput();
+  }
+
+  const match = trimmedValue.match(/^(.*?)\s*(?:→|->|=>|➡︎|➡)\s*(.*)$/u);
+  if (!match) {
+    return {
+      target: trimmedValue,
+      production: '',
+    };
+  }
+
+  return {
+    target: match[1]?.trim() ?? '',
+    production: match[2]?.trim() ?? '',
+  };
+}
+
+function normalizeErrorPatternExamples(
+  value: unknown
+): Record<string, ApacErrorPatternExampleInput> {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, rawValue]) => {
+      if (typeof rawValue === 'string') {
+        return [key, parseLegacyExampleInput(rawValue)];
+      }
+
+      if (rawValue && typeof rawValue === 'object') {
+        const normalizedValue = rawValue as Partial<ApacErrorPatternExampleInput>;
+        return [
+          key,
+          {
+            target: normalizedValue.target?.trim() ?? '',
+            production: normalizedValue.production?.trim() ?? '',
+          },
+        ];
+      }
+
+      return [key, createEmptyExampleInput()];
+    })
+  );
 }
 
 const DEFAULT_STATE: ApacInputState = {
@@ -60,11 +121,14 @@ export const useApacStore = create<ApacState>()(
         }));
       },
 
-      setErrorPatternExample: (key, value) => {
+      setErrorPatternExampleField: (key, field, value) => {
         set((state) => ({
           errorPatternExamples: {
             ...state.errorPatternExamples,
-            [key]: value,
+            [key]: {
+              ...(state.errorPatternExamples[key] ?? createEmptyExampleInput()),
+              [field]: value,
+            },
           },
         }));
       },
@@ -76,6 +140,17 @@ export const useApacStore = create<ApacState>()(
     {
       name: 'norm-converter-apac',
       storage: createJSONStorage(() => sessionStorage),
+      merge: (persistedState, currentState) => {
+        const typedPersistedState = persistedState as Partial<ApacInputState> | undefined;
+
+        return {
+          ...currentState,
+          ...typedPersistedState,
+          errorPatternExamples: normalizeErrorPatternExamples(
+            typedPersistedState?.errorPatternExamples
+          ),
+        };
+      },
     }
   )
 );
