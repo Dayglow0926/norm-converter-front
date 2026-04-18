@@ -39,9 +39,9 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     name: 'PRES',
     category: '학령전기',
     minAgeMonths: 24,
-    maxAgeMonths: 71,
+    maxAgeMonths: 77,
     subtests: PRES_SUBTEST_KEYS,
-    description: '취학전 아동 수용·표현 언어척도 (2-5세)',
+    description: '취학전 아동 수용·표현 언어척도 (24-77개월)',
   },
   revt: {
     id: 'revt',
