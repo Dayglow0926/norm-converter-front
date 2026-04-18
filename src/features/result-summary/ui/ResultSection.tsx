@@ -19,6 +19,7 @@ import {
   PROBLEM_SOLVING_LABELS,
   TOOL_METADATA,
   buildLanguageAnalysisPrompt,
+  type KmbCdiToolData,
   type AssessmentToolId,
 } from '@/entities/assessment-tool';
 import type { ChildInfo, AgeResult } from '@/entities/child';
@@ -283,6 +284,102 @@ function htmlProblemSolvingTable(d: ProblemSolvingData): string {
   return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead>${headerRow}</thead><tbody>${rawRow}${pctRow}</tbody></table>`;
 }
 
+function buildKmbCdiCopyRows(data: KmbCdiToolData) {
+  const leftRows = data.vocabularyRows.filter((row) => row.id <= 13);
+  const rightRows = data.vocabularyRows.filter((row) => row.id >= 14);
+
+  return leftRows.map((leftRow, index) => {
+    const rightRow = rightRows[index];
+    const isSummaryStart = index === rightRows.length;
+
+    return {
+      left: leftRow,
+      right: rightRow ?? null,
+      summary:
+        isSummaryStart
+          ? {
+              label: '합계',
+              expressiveText: `${data.expressiveTotal}점`,
+              receptiveText: `${data.receptiveTotal}점`,
+            }
+          : null,
+    };
+  });
+}
+
+function htmlKmbCdiTable(data: KmbCdiToolData): string {
+  const rows = buildKmbCdiCopyRows(data);
+  const summaryRowIndex = rows.findIndex((row) => row.summary !== null);
+  const summaryRowSpan = summaryRowIndex >= 0 ? rows.length - summaryRowIndex : 1;
+  const P = `style="margin:0;padding:0;"`;
+  const borderStrong = '2px solid black';
+  const borderSoft = '1px solid rgb(226,232,240)';
+  const divider = '2px solid black';
+  const headerStyle =
+    `${BASE}${HEADER_BG}border-top:${borderStrong};border-bottom:${borderStrong};font-weight:500;`;
+  const bodyStyle = `${BASE}border-bottom:${borderSoft};`;
+  const summaryStyle = `${BASE}border-top:${borderSoft};border-bottom:${borderSoft};font-weight:500;`;
+  const colTags = [
+    '<col style="width:6%;">',
+    '<col style="width:19%;">',
+    '<col style="width:12.5%;">',
+    '<col style="width:12.5%;">',
+    '<col style="width:6%;">',
+    '<col style="width:19%;">',
+    '<col style="width:12.5%;">',
+    '<col style="width:12.5%;">',
+  ].join('');
+
+  const headerCells = ['번호', '범주', '표현', '수용', '번호', '범주', '표현', '수용']
+    .map((label) => `<th valign="middle" style="${headerStyle}"><p ${P}>${label}</p></th>`)
+    .join('');
+
+  const bodyRows = rows
+    .map(({ left, right, summary }, index) => {
+      const leftCells = [
+        left.id,
+        left.label,
+        `${left.expressiveScore}점`,
+        `${left.receptiveScore}점`,
+      ]
+        .map((value, cellIndex) => {
+          const dividerStyle = cellIndex === 3 ? `border-right:${divider};` : '';
+          return `<td valign="middle" style="${bodyStyle}${dividerStyle}"><p ${P}>${value}</p></td>`;
+        })
+        .join('');
+
+      if (right) {
+        const rightCells = [
+          right.id,
+          right.label,
+          `${right.expressiveScore}점`,
+          `${right.receptiveScore}점`,
+        ]
+          .map((value) => `<td valign="middle" style="${bodyStyle}"><p ${P}>${value}</p></td>`)
+          .join('');
+        return `<tr>${leftCells}${rightCells}</tr>`;
+      }
+
+      if (summary) {
+        const summaryLabelCell = `<td colspan="2" valign="middle" style="${summaryStyle}" rowspan="${summaryRowSpan}"><p ${P}>${summary.label}</p></td>`;
+        const summaryValueCells = [summary.expressiveText, summary.receptiveText]
+          .map((value) => `<td valign="middle" style="${summaryStyle}" rowspan="${summaryRowSpan}"><p ${P}>${value}</p></td>`)
+          .join('');
+        return `<tr>${leftCells}${summaryLabelCell}${summaryValueCells}</tr>`;
+      }
+
+      if (summaryRowIndex >= 0 && index > summaryRowIndex) {
+        return `<tr>${leftCells}</tr>`;
+      }
+
+      const emptyCells = Array.from({ length: 4 }, () => `<td valign="middle" style="${bodyStyle}"><p ${P}></p></td>`).join('');
+      return `<tr>${leftCells}${emptyCells}</tr>`;
+    })
+    .join('');
+
+  return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;"><colgroup>${colTags}</colgroup><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+}
+
 // 도구별 HTML 복사 내용 생성 (표가 있는 도구만, 없으면 null)
 function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
   if (!result.data) return null;
@@ -312,6 +409,10 @@ function buildToolCopyHtml(toolId: string, result: ToolResult): string | null {
   if (toolId === 'kcelf5_ors') {
     const d = result.data as unknown as Kcelf5OrsData;
     return textHtml + htmlScoreTable(getKcelf5OrsScoreCols(d));
+  }
+  if (toolId === 'kmb_cdi') {
+    const d = result.data as unknown as KmbCdiToolData;
+    return textHtml + htmlKmbCdiTable(d);
   }
   return null;
 }
@@ -363,6 +464,29 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
         cols.map((col) => `${col.score}점\n(${col.percent}%)`).join('\t'),
       ].join('\n');
   }
+  if (toolId === 'kmb_cdi' && result.data) {
+    const d = result.data as unknown as KmbCdiToolData;
+    const rows = buildKmbCdiCopyRows(d);
+
+    text +=
+      '\n\n' +
+      [
+        ['번호', '범주', '표현', '수용', '번호', '범주', '표현', '수용'].join('\t'),
+        ...rows.map(({ left, right, summary }) =>
+          [
+            left.id,
+            left.label,
+            `${left.expressiveScore}점`,
+            `${left.receptiveScore}점`,
+            ...(right
+              ? [right.id, right.label, `${right.expressiveScore}점`, `${right.receptiveScore}점`]
+              : summary
+                ? ['', summary.label, summary.expressiveText, summary.receptiveText]
+                : ['', '', '', '']),
+          ].join('\t')
+        ),
+      ].join('\n');
+  }
   return text;
 }
 
@@ -410,10 +534,25 @@ function renderMultilineLabel(label: string) {
 }
 
 function orderToolEntries(entries: Array<[string, ToolResult]>): Array<[string, ToolResult]> {
+  const TOOL_ORDER: Record<string, number> = {
+    pres: 2,
+    selsi: 3,
+    kmb_cdi: 4,
+    revt: 6,
+    kcelf5_pp: 7,
+    kcelf5_ors: 8,
+    syntax: 9,
+    problem_solving: 10,
+    cplc: 13,
+    language_analysis: 14,
+    apac: 15,
+  };
+
   return [...entries].sort(([a], [b]) => {
-    if (a === 'pres' && b !== 'pres') return -1;
-    if (a !== 'pres' && b === 'pres') return 1;
-    return 0;
+    const aOrder = TOOL_ORDER[a] ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = TOOL_ORDER[b] ?? Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return a.localeCompare(b);
   });
 }
 
@@ -804,6 +943,167 @@ function Kcelf5OrsTable({ data }: { data: Kcelf5OrsData }) {
   );
 }
 
+function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
+  const leftRows = data.vocabularyRows.filter((row) => row.id <= 13);
+  const rightRows = data.vocabularyRows.filter((row) => row.id >= 14);
+  const B = '2px solid black';
+  const ROW_BORDER = '1px solid rgb(226,232,240)';
+  const DIVIDER_BORDER = '2px solid black';
+  const summaryRowIndex = rightRows.length;
+  const summaryRowSpan = leftRows.length - rightRows.length;
+
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table
+        className="w-full text-sm"
+        style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}
+      >
+        <thead>
+          <tr>
+            <th
+              className="w-12 px-2 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              번호
+            </th>
+            <th
+              className="px-2 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              범주
+            </th>
+            <th
+              className="w-16 px-1 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              표현
+            </th>
+            <th
+              className="w-16 px-1 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B, borderRight: DIVIDER_BORDER }}
+            >
+              수용
+            </th>
+            <th
+              className="w-12 px-2 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              번호
+            </th>
+            <th
+              className="px-2 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              범주
+            </th>
+            <th
+              className="w-16 px-1 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              표현
+            </th>
+            <th
+              className="w-16 px-1 py-2 text-center align-middle font-medium"
+              style={{ ...TH_BG, borderTop: B, borderBottom: B }}
+            >
+              수용
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {leftRows.map((row, index) => {
+            const rightRow = rightRows[index];
+            const isSummaryStart = index === summaryRowIndex;
+
+            return (
+              <tr key={row.id}>
+                <td
+                  className="px-2 py-2 text-center align-middle"
+                  style={{ borderBottom: ROW_BORDER }}
+                >
+                  {row.id}
+                </td>
+                <td
+                  className="px-2 py-2 text-center align-middle"
+                  style={{ borderBottom: ROW_BORDER }}
+                >
+                  {row.label}
+                </td>
+                <td
+                  className="px-1 py-2 text-center align-middle"
+                  style={{ borderBottom: ROW_BORDER }}
+                >
+                  {row.expressiveScore}점
+                </td>
+                <td
+                  className="px-1 py-2 text-center align-middle"
+                  style={{ borderBottom: ROW_BORDER, borderRight: DIVIDER_BORDER }}
+                >
+                  {row.receptiveScore}점
+                </td>
+                {rightRow ? (
+                  <>
+                    <td
+                      className="px-2 py-2 text-center align-middle"
+                      style={{ borderBottom: ROW_BORDER }}
+                    >
+                      {rightRow.id}
+                    </td>
+                    <td
+                      className="px-2 py-2 text-center align-middle"
+                      style={{ borderBottom: ROW_BORDER }}
+                    >
+                      {rightRow.label}
+                    </td>
+                    <td
+                      className="px-1 py-2 text-center align-middle"
+                      style={{ borderBottom: ROW_BORDER }}
+                    >
+                      {rightRow.expressiveScore}점
+                    </td>
+                    <td
+                      className="px-1 py-2 text-center align-middle"
+                      style={{ borderBottom: ROW_BORDER }}
+                    >
+                      {rightRow.receptiveScore}점
+                    </td>
+                  </>
+                ) : null}
+                {isSummaryStart ? (
+                  <>
+                    <td
+                      colSpan={2}
+                      rowSpan={summaryRowSpan}
+                      className="px-2 py-2 text-center align-middle font-medium"
+                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                    >
+                      합계
+                    </td>
+                    <td
+                      rowSpan={summaryRowSpan}
+                      className="px-1 py-2 text-center align-middle font-medium"
+                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                    >
+                      {data.expressiveTotal}점
+                    </td>
+                    <td
+                      rowSpan={summaryRowSpan}
+                      className="px-1 py-2 text-center align-middle font-medium"
+                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                    >
+                      {data.receptiveTotal}점
+                    </td>
+                  </>
+                ) : null}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // 언어분석 전용 결과 카드 (Step 1 구조화 텍스트 + Step 2 LLM 보고서 + AI 프롬프트 복사)
 interface LanguageAnalysisResultCardProps {
   title: string;
@@ -939,6 +1239,7 @@ function ToolResultCard({ toolId, title, text, data, onCopy }: ToolResultCardPro
             {toolId === 'kcelf5_ors' && data && (
               <Kcelf5OrsTable data={data as unknown as Kcelf5OrsData} />
             )}
+            {toolId === 'kmb_cdi' && data && <KmbCdiTable data={data as unknown as KmbCdiToolData} />}
           </div>
         </div>
         <Button

@@ -80,7 +80,6 @@ export function getKmbCdiVocabularyAgeText(score: number, gender: Gender): strin
 }
 
 export function getKmbCdiGrammarAgeText(rawScore: number): string {
-  const CLOSE_GRAMMAR_BAND_GAP = 3;
   const first = KMB_CDI_GRAMMAR_P50[0];
   const last = KMB_CDI_GRAMMAR_P50[KMB_CDI_GRAMMAR_P50.length - 1];
 
@@ -91,21 +90,13 @@ export function getKmbCdiGrammarAgeText(rawScore: number): string {
   for (let index = 0; index < KMB_CDI_GRAMMAR_P50.length; index += 1) {
     const current = KMB_CDI_GRAMMAR_P50[index];
     const next = KMB_CDI_GRAMMAR_P50[index + 1];
-    const following = KMB_CDI_GRAMMAR_P50[index + 2];
 
     if (rawScore === current.rawScore) {
       return `${current.ageFrom}~${current.ageTo}개월 평균 수준`;
     }
 
     if (next && rawScore > current.rawScore && rawScore < next.rawScore) {
-      const shouldMergeNextBands =
-        following && following.rawScore - next.rawScore <= CLOSE_GRAMMAR_BAND_GAP;
-
-      if (shouldMergeNextBands) {
-        return `${next.ageFrom}~${following.ageTo}개월 평균 수준`;
-      }
-
-      return `${next.ageFrom}~${next.ageTo}개월 평균 수준`;
+      return `${current.ageFrom}~${next.ageTo}개월 평균 수준`;
     }
   }
 
