@@ -299,8 +299,8 @@ function buildKmbCdiCopyRows(data: KmbCdiToolData) {
         isSummaryStart
           ? {
               label: '합계',
-              expressiveText: `${data.expressiveTotal}점`,
-              receptiveText: `${data.receptiveTotal}점`,
+              expressiveText: `${data.expressiveTotal}/${data.expressiveMax}`,
+              receptiveText: `${data.receptiveTotal}/${data.receptiveMax}`,
             }
           : null,
     };
@@ -318,7 +318,8 @@ function htmlKmbCdiTable(data: KmbCdiToolData): string {
   const headerStyle =
     `${BASE}${HEADER_BG}border-top:${borderStrong};border-bottom:${borderStrong};font-weight:500;`;
   const bodyStyle = `${BASE}border-bottom:${borderSoft};`;
-  const summaryStyle = `${BASE}border-top:${borderSoft};border-bottom:${borderSoft};font-weight:500;`;
+  const summaryStyle =
+    `${BASE}border:2px solid black;font-weight:500;`;
   const colTags = [
     '<col style="width:6%;">',
     '<col style="width:19%;">',
@@ -330,7 +331,16 @@ function htmlKmbCdiTable(data: KmbCdiToolData): string {
     '<col style="width:12.5%;">',
   ].join('');
 
-  const headerCells = ['번호', '범주', '표현', '수용', '번호', '범주', '표현', '수용']
+  const headerCells = [
+    '번호',
+    '범주',
+    '표현(개)',
+    '수용(개)',
+    '번호',
+    '범주',
+    '표현(개)',
+    '수용(개)',
+  ]
     .map((label) => `<th valign="middle" style="${headerStyle}"><p ${P}>${label}</p></th>`)
     .join('');
 
@@ -339,8 +349,8 @@ function htmlKmbCdiTable(data: KmbCdiToolData): string {
       const leftCells = [
         left.id,
         left.label,
-        `${left.expressiveScore}점`,
-        `${left.receptiveScore}점`,
+        `${left.expressiveScore}/${left.expressiveMax}`,
+        `${left.receptiveScore}/${left.receptiveMax}`,
       ]
         .map((value, cellIndex) => {
           const dividerStyle = cellIndex === 3 ? `border-right:${divider};` : '';
@@ -352,8 +362,8 @@ function htmlKmbCdiTable(data: KmbCdiToolData): string {
         const rightCells = [
           right.id,
           right.label,
-          `${right.expressiveScore}점`,
-          `${right.receptiveScore}점`,
+          `${right.expressiveScore}/${right.expressiveMax}`,
+          `${right.receptiveScore}/${right.receptiveMax}`,
         ]
           .map((value) => `<td valign="middle" style="${bodyStyle}"><p ${P}>${value}</p></td>`)
           .join('');
@@ -471,15 +481,29 @@ function buildToolCopyText(toolId: string, result: ToolResult, step2Text?: strin
     text +=
       '\n\n' +
       [
-        ['번호', '범주', '표현', '수용', '번호', '범주', '표현', '수용'].join('\t'),
+        [
+          '번호',
+          '범주',
+          '표현(개)',
+          '수용(개)',
+          '번호',
+          '범주',
+          '표현(개)',
+          '수용(개)',
+        ].join('\t'),
         ...rows.map(({ left, right, summary }) =>
           [
             left.id,
             left.label,
-            `${left.expressiveScore}점`,
-            `${left.receptiveScore}점`,
+            `${left.expressiveScore}/${left.expressiveMax}`,
+            `${left.receptiveScore}/${left.receptiveMax}`,
             ...(right
-              ? [right.id, right.label, `${right.expressiveScore}점`, `${right.receptiveScore}점`]
+              ? [
+                  right.id,
+                  right.label,
+                  `${right.expressiveScore}/${right.expressiveMax}`,
+                  `${right.receptiveScore}/${right.receptiveMax}`,
+                ]
               : summary
                 ? ['', summary.label, summary.expressiveText, summary.receptiveText]
                 : ['', '', '', '']),
@@ -976,13 +1000,13 @@ function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
               className="w-16 px-1 py-2 text-center align-middle font-medium"
               style={{ ...TH_BG, borderTop: B, borderBottom: B }}
             >
-              표현
+              표현(개)
             </th>
             <th
               className="w-16 px-1 py-2 text-center align-middle font-medium"
               style={{ ...TH_BG, borderTop: B, borderBottom: B, borderRight: DIVIDER_BORDER }}
             >
-              수용
+              수용(개)
             </th>
             <th
               className="w-12 px-2 py-2 text-center align-middle font-medium"
@@ -1000,13 +1024,13 @@ function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
               className="w-16 px-1 py-2 text-center align-middle font-medium"
               style={{ ...TH_BG, borderTop: B, borderBottom: B }}
             >
-              표현
+              표현(개)
             </th>
             <th
               className="w-16 px-1 py-2 text-center align-middle font-medium"
               style={{ ...TH_BG, borderTop: B, borderBottom: B }}
             >
-              수용
+              수용(개)
             </th>
           </tr>
         </thead>
@@ -1033,13 +1057,13 @@ function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
                   className="px-1 py-2 text-center align-middle"
                   style={{ borderBottom: ROW_BORDER }}
                 >
-                  {row.expressiveScore}점
+                  {row.expressiveScore}/{row.expressiveMax}
                 </td>
                 <td
                   className="px-1 py-2 text-center align-middle"
                   style={{ borderBottom: ROW_BORDER, borderRight: DIVIDER_BORDER }}
                 >
-                  {row.receptiveScore}점
+                  {row.receptiveScore}/{row.receptiveMax}
                 </td>
                 {rightRow ? (
                   <>
@@ -1059,13 +1083,13 @@ function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
                       className="px-1 py-2 text-center align-middle"
                       style={{ borderBottom: ROW_BORDER }}
                     >
-                      {rightRow.expressiveScore}점
+                      {rightRow.expressiveScore}/{rightRow.expressiveMax}
                     </td>
                     <td
                       className="px-1 py-2 text-center align-middle"
                       style={{ borderBottom: ROW_BORDER }}
                     >
-                      {rightRow.receptiveScore}점
+                      {rightRow.receptiveScore}/{rightRow.receptiveMax}
                     </td>
                   </>
                 ) : null}
@@ -1075,23 +1099,23 @@ function KmbCdiTable({ data }: { data: KmbCdiToolData }) {
                       colSpan={2}
                       rowSpan={summaryRowSpan}
                       className="px-2 py-2 text-center align-middle font-medium"
-                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                      style={{ border: B }}
                     >
                       합계
                     </td>
                     <td
                       rowSpan={summaryRowSpan}
                       className="px-1 py-2 text-center align-middle font-medium"
-                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                      style={{ border: B }}
                     >
-                      {data.expressiveTotal}점
+                      {data.expressiveTotal}/{data.expressiveMax}
                     </td>
                     <td
                       rowSpan={summaryRowSpan}
                       className="px-1 py-2 text-center align-middle font-medium"
-                      style={{ borderTop: ROW_BORDER, borderBottom: ROW_BORDER }}
+                      style={{ border: B }}
                     >
-                      {data.receptiveTotal}점
+                      {data.receptiveTotal}/{data.receptiveMax}
                     </td>
                   </>
                 ) : null}
