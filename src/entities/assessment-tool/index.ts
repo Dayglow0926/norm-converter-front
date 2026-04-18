@@ -13,7 +13,14 @@ export type {
   ProblemSolvingSubtestKey,
   ProblemSolvingSubtestMeta,
 } from './model/problem-solving';
-export type { ApacSubtestKey, ApacImitationType } from './model/apac';
+export type {
+  ApacSubtestKey,
+  ApacScoreVersion,
+  ApacAdministrationMode,
+  ApacErrorPatternSectionId,
+  ApacErrorPatternSection,
+  ApacErrorPatternOption,
+} from './model/apac';
 export type { SelsiSubtestKey, SelsiMetaSubtestKey } from './model/selsi';
 export type { PresSubtestKey } from './model/pres';
 export type { RevtSubtestKey } from './model/revt';
@@ -58,8 +65,14 @@ export {
 export {
   APAC_SUBTEST_KEYS,
   APAC_SCORE_RANGE,
-  APAC_IMITATION_LABELS,
+  APAC_SCORE_VERSION_LABELS,
+  APAC_ADMINISTRATION_LABELS,
+  APAC_INPUT_LABELS,
+  APAC_ERROR_PATTERN_SECTIONS,
+  APAC_ERROR_PATTERNS,
   APAC_NOTES,
+  isApacBackendCompatible,
+  getApacBackendPendingReason,
 } from './model/apac';
 
 export {

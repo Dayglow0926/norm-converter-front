@@ -13,6 +13,8 @@ export { LanguageAnalysisForm } from './ui/LanguageAnalysisForm';
 export { SpontaneousSpeechForm } from './ui/SpontaneousSpeechForm';
 export { useScoreEntryStore } from './model/store';
 export type { SubtestInput, ToolApiResult, ToolScoreData } from './model/store';
+export { useApacStore } from './model/apacStore';
+export type { ApacInputState } from './model/apacStore';
 export { useKmbCdiStore } from './model/kmbCdiStore';
 export type {
   KmbCdiVocabularyInput,

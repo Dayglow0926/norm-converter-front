@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
+import { toast } from 'sonner';
 import { Header } from '@/widgets/header';
 import { SelsiScoreForm } from '@/features/score-entry/ui/SelsiScoreForm';
 import { KmbCdiScoreForm } from '@/features/score-entry/ui/KmbCdiScoreForm';
@@ -16,6 +17,7 @@ import { Kcelf5PpScoreForm } from '@/features/score-entry/ui/Kcelf5PpScoreForm';
 import { Kcelf5OrsScoreForm } from '@/features/score-entry/ui/Kcelf5OrsScoreForm';
 import { LanguageAnalysisForm } from '@/features/score-entry/ui/LanguageAnalysisForm';
 import { useScoreEntryStore } from '@/features/score-entry';
+import { useApacStore } from '@/features/score-entry/model/apacStore';
 import { useKmbCdiStore } from '@/features/score-entry/model/kmbCdiStore';
 import { useLanguageAnalysisStore } from '@/features/score-entry/model/languageAnalysisStore';
 import {
@@ -36,6 +38,8 @@ import {
   SELSI_REQUIRED_SUBTEST_KEYS,
   SYNTAX_SUBTEST_KEYS,
   TOOL_METADATA,
+  getApacBackendPendingReason,
+  isApacBackendCompatible,
   isToolActive,
   type AssessmentToolId,
 } from '@/entities/assessment-tool';
@@ -111,6 +115,12 @@ export function ScoreEntryContent() {
     longestUtterance: kmbCdiLongestUtterance,
     clearAll: clearKmbCdi,
   } = useKmbCdiStore();
+  const apacScoreVersion = useApacStore((state) => state.scoreVersion);
+  const apacAdministrationMode = useApacStore((state) => state.administrationMode);
+  const apacRawScore = useApacStore((state) => state.rawScore);
+  const apacErrorPatternKeys = useApacStore((state) => state.errorPatternKeys);
+  const apacErrorPatternExamples = useApacStore((state) => state.errorPatternExamples);
+  const clearApac = useApacStore((state) => state.clearAll);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -329,13 +339,10 @@ export function ScoreEntryContent() {
       return filled === 0 || filled === requiredSubtests.length;
     }
 
-    // apac: 모방 유형 선택 필수. partial이면 rawScore 없어도 완료, total이면 rawScore 필요
+    // apac: 시행불가면 완료, 그 외에는 오류 개수 입력 시 완료
     if (toolId === 'apac') {
-      const imitationType = toolData.inputs.rawScore?.correctItems ?? '';
-      if (imitationType === 'partial') return true;
-      if (imitationType === 'total') return toolData.inputs.rawScore?.rawScore !== null;
-      // 기본(직접 검사): rawScore 필수
-      return toolData.inputs.rawScore?.rawScore !== null;
+      if (apacScoreVersion === 'untestable') return true;
+      return apacRawScore !== null;
     }
 
     // kcelf5_pp: 미입력/부분 입력도 허용. 미입력 값은 BE에서 0점으로 처리
@@ -360,6 +367,7 @@ export function ScoreEntryContent() {
   // 도구 변경: 점수만 초기화
   const handleToolChange = () => {
     clearAll();
+    clearApac();
     clearKmbCdi();
     laClearAll();
     router.push('/select-tool');
@@ -368,6 +376,7 @@ export function ScoreEntryContent() {
   // 처음으로: 모든 정보 초기화
   const handleGoHome = () => {
     clearAll();
+    clearApac();
     clearKmbCdi();
     laClearAll();
     clearSelection();
@@ -387,6 +396,7 @@ export function ScoreEntryContent() {
     try {
       // 선택된 도구별 요청 데이터 구성
       const toolsPayload: Record<string, Record<string, unknown>> = {};
+      let apacPendingReason: string | null = null;
 
       for (const toolId of completedSelectedTools) {
         if (toolId === 'kmb_cdi') {
@@ -420,12 +430,33 @@ export function ScoreEntryContent() {
           continue;
         }
 
-        // apac: { rawScore, imitationType? } 직접 기대
+        // apac: 일반/개정 규준, 일반/일부 모방/전체 모방, 시행불가를 모두 명시적으로 전달
         if (toolId === 'apac') {
-          const rawScore = toolData.inputs.rawScore?.rawScore ?? 0;
-          const imitationType = toolData.inputs.rawScore?.correctItems || undefined;
+          const pendingReason = getApacBackendPendingReason(
+            apacScoreVersion,
+            apacAdministrationMode
+          );
+
+          if (!isApacBackendCompatible(apacScoreVersion, apacAdministrationMode)) {
+            apacPendingReason = pendingReason;
+            continue;
+          }
+
+          const rawScore = apacScoreVersion === 'untestable' ? 0 : (apacRawScore ?? 0);
+          const imitationType =
+            apacScoreVersion === 'untestable'
+              ? 'partial'
+              : apacAdministrationMode === 'total_imitation'
+                ? 'total'
+                : undefined;
+
           toolsPayload[toolId] = {
             rawScore,
+            scoreVersion: apacScoreVersion,
+            administrationMode: apacAdministrationMode,
+            errorPatternKeys: apacErrorPatternKeys,
+            errorPatternExamples: apacErrorPatternExamples,
+            ...(apacScoreVersion === 'untestable' ? { isUntestable: true } : {}),
             ...(imitationType ? { imitationType } : {}),
           };
           continue;
@@ -497,7 +528,7 @@ export function ScoreEntryContent() {
       }
 
       if (Object.keys(toolsPayload).length === 0) {
-        setApiError('입력 완료된 검사도구가 없습니다');
+        setApiError(apacPendingReason ?? '입력 완료된 검사도구가 없습니다');
         return;
       }
 
@@ -530,6 +561,10 @@ export function ScoreEntryContent() {
         resultToolIds.length === 1 && resultToolIds[0] === 'kmb_cdi';
 
       setIntegratedSummary(shouldHideIntegratedSummary ? null : response.integratedSummary);
+
+      if (apacPendingReason) {
+        toast(apacPendingReason);
+      }
     } catch (err) {
       console.error('API 호출 실패:', err);
       setApiError(err instanceof Error ? err.message : 'API 호출 중 오류가 발생했습니다');
