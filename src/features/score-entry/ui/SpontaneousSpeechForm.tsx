@@ -76,7 +76,7 @@ function TranscriptInputSection() {
         subtitle="전사 데이터를 붙여넣고 자동 채우기를 누르세요. 기존 수기 입력은 유지하고 초안을 반영합니다."
       />
       <Textarea
-        placeholder={`예시:\nC: 방학 동안 뭐 했어?\nS: 식당 갔어.\nC 어떤 식당?\nS 방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
+        placeholder={`예시:\nS: 방학 동안 뭐 했어?\nC: 식당 갔어.\nS 어떤 식당?\nC 방학 지낸 이야기에 밥을 먹었어. 여름방학에.`}
         value={spontaneous.sourceText}
         onChange={(e) => {
           setSpontaneousField('sourceText', e.target.value);
@@ -661,7 +661,7 @@ function SituationalObservationsSection() {
                 className="text-sm"
               />
               <Textarea
-                placeholder={`발화 예시 (S:/C: 형식 가능)\n예) C: 이거 뭐야?\nS: 강아지야.`}
+                placeholder={`발화 예시 (S:/C: 형식 가능)\n예) S: 이거 뭐야?\nC: 강아지야.`}
                 value={obs.example}
                 onChange={(e) => updateObservation(index, 'example', e.target.value)}
                 rows={3}
