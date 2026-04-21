@@ -70,11 +70,24 @@ interface UnifiedConvertResponse {
 function buildApacErrorPatternExamplesPayload(
   errorPatternExamples: Record<string, ApacErrorPatternExampleInput>
 ): Record<string, string> {
+  const normalizeProduction = (value: string): string => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+      return '';
+    }
+
+    if (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) {
+      return trimmedValue;
+    }
+
+    return `[${trimmedValue}]`;
+  };
+
   return Object.fromEntries(
     Object.entries(errorPatternExamples)
       .map(([key, exampleInput]) => {
         const target = exampleInput.target.trim();
-        const production = exampleInput.production.trim();
+        const production = normalizeProduction(exampleInput.production);
 
         if (target && production) {
           return [key, `${target}→${production}`] as const;
