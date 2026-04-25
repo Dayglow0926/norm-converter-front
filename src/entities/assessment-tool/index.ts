@@ -106,6 +106,7 @@ export {
   SYNTAX_SCORE_RANGE,
   SYNTAX_SUBTEST_KEYS,
   SYNTAX_NOTES,
+  getSyntaxApplicableAgeMonths,
 } from './model/syntax';
 
 export {

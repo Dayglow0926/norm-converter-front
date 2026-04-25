@@ -17,3 +17,7 @@ export const SYNTAX_NOTES = [
   '* 원점수 범위: 0-56점',
   '* 연령 범위: 48-119개월 (4세~9세 11개월)',
 ] as const;
+
+export function getSyntaxApplicableAgeMonths(age: { years: number; months: number }): number {
+  return age.years * 12 + age.months;
+}

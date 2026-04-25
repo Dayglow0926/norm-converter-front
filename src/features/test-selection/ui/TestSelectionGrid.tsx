@@ -10,10 +10,10 @@ import { useTestSelectionStore } from '../model/store';
 import { AssessmentToolCard } from './AssessmentToolCard';
 
 interface TestSelectionGridProps {
-  ageMonths: number | null;
+  getAgeMonths: (toolId: AssessmentToolId) => number | null;
 }
 
-export function TestSelectionGrid({ ageMonths }: TestSelectionGridProps) {
+export function TestSelectionGrid({ getAgeMonths }: TestSelectionGridProps) {
   const { selectedTools, toggleTool } = useTestSelectionStore();
 
   const handleSelect = (toolId: AssessmentToolId) => {
@@ -31,7 +31,7 @@ export function TestSelectionGrid({ ageMonths }: TestSelectionGridProps) {
           <AssessmentToolCard
             key={toolId}
             toolId={toolId}
-            ageMonths={ageMonths}
+            ageMonths={getAgeMonths(toolId)}
             selected={selectedTools.includes(toolId)}
             onSelect={handleSelect}
           />
