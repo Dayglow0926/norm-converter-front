@@ -25,6 +25,7 @@ export interface ToolMetadata {
   maxAgeMonths: number;
   subtests: string[];
   description?: string;
+  supportedAgeText?: string;
 }
 
 export interface ConvertRequest {

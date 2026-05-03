@@ -24,6 +24,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 35,
     subtests: SELSI_META_SUBTEST_KEYS,
     description: '영유아 언어발달 검사 (4-35개월)',
+    supportedAgeText: '4~35개월',
   },
   kmb_cdi: {
     id: 'kmb_cdi',
@@ -33,6 +34,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 36,
     subtests: [],
     description: '유아용 어휘/문장과 문법 체크리스트 (18-36개월)',
+    supportedAgeText: '18~36개월',
   },
   pres: {
     id: 'pres',
@@ -42,6 +44,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 77,
     subtests: PRES_SUBTEST_KEYS,
     description: '취학전 아동 수용·표현 언어척도 (24-77개월)',
+    supportedAgeText: '2~7세',
   },
   revt: {
     id: 'revt',
@@ -51,6 +54,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 215,
     subtests: REVT_SUBTEST_KEYS,
     description: '수용·표현 어휘력 검사 (2-16세)',
+    supportedAgeText: '2~16세',
   },
   syntax: {
     id: 'syntax',
@@ -60,6 +64,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 119,
     subtests: SYNTAX_SUBTEST_KEYS,
     description: '구문의미이해력 검사 (4-9세)',
+    supportedAgeText: '4~10세',
   },
   problem_solving: {
     id: 'problem_solving',
@@ -69,6 +74,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 143,
     subtests: PROBLEM_SOLVING_SUBTEST_KEYS,
     description: '언어문제해결력 검사 (5-11세)',
+    supportedAgeText: '5~12세',
   },
   apac: {
     id: 'apac',
@@ -78,6 +84,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 215,
     subtests: APAC_SUBTEST_KEYS,
     description: '아동용 발음 검사 (30개월 이상)',
+    supportedAgeText: '30개월 이상',
   },
   cplc: {
     id: 'cplc',
@@ -87,6 +94,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 143,
     subtests: CPLC_SUBTEST_KEYS,
     description: '아동 화용언어 체크리스트 (5-11세)',
+    supportedAgeText: '5~12세',
   },
   kcelf5_pp: {
     id: 'kcelf5_pp',
@@ -96,6 +104,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 9999,
     subtests: KCELF5_PP_SUBTEST_KEYS,
     description: '화용프로파일 (보호자 보고)',
+    supportedAgeText: '전 연령',
   },
   kcelf5_ors: {
     id: 'kcelf5_ors',
@@ -105,6 +114,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 9999,
     subtests: KCELF5_ORS_SUBTEST_KEYS,
     description: '관찰 평가척도',
+    supportedAgeText: '전 연령',
   },
   language_analysis: {
     id: 'language_analysis',
@@ -114,6 +124,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     maxAgeMonths: 9999,
     subtests: [],
     description: '행동관찰 / 자발화 / 대화분석',
+    supportedAgeText: '전 연령',
   },
 };
 
@@ -147,20 +158,13 @@ export function isToolActive(toolId: AssessmentToolId): boolean {
 }
 
 /**
- * 아동 연령이 평가도구 범위 내인지 확인
- */
-export function isAgeInRange(toolId: AssessmentToolId, ageMonths: number): boolean {
-  const meta = TOOL_METADATA[toolId];
-  return ageMonths >= meta.minAgeMonths && ageMonths <= meta.maxAgeMonths;
-}
-
-/**
  * 평가도구 비활성화 사유 반환 (준비 중인 도구만 차단)
  */
 export function getDisabledReason(
   toolId: AssessmentToolId,
   _ageMonths: number | null
 ): string | null {
+  void _ageMonths;
   if (!isToolActive(toolId)) {
     return '준비 중';
   }
@@ -168,20 +172,13 @@ export function getDisabledReason(
 }
 
 /**
- * 연령 범위 벗어남 안내 텍스트 반환 (선택 차단 없음, 표시만)
+ * 연령 경고 문구는 사용하지 않음
  */
 export function getAgeWarning(
-  toolId: AssessmentToolId,
-  ageMonths: number | null
+  _toolId: AssessmentToolId,
+  _ageMonths: number | null
 ): string | null {
-  if (ageMonths === null) return null;
-  const meta = TOOL_METADATA[toolId];
-  if (meta.maxAgeMonths >= 9999) return null;
-  if (ageMonths < meta.minAgeMonths) {
-    return `${meta.minAgeMonths}개월 이상 적용 가능`;
-  }
-  if (ageMonths > meta.maxAgeMonths) {
-    return `${meta.maxAgeMonths}개월 이하 적용 가능`;
-  }
+  void _toolId;
+  void _ageMonths;
   return null;
 }
