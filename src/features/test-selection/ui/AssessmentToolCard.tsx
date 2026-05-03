@@ -66,7 +66,7 @@ export function AssessmentToolCard({
       <CardContent className="px-6">
         <p className="text-muted-foreground mb-2 text-sm">{meta.description}</p>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground text-xs">권장 연령: {ageRange}</span>
+          <span className="text-muted-foreground text-xs">적용 연령: {ageRange}</span>
           {disabledReason && (
             <span className="text-destructive text-xs font-medium">{disabledReason}</span>
           )}

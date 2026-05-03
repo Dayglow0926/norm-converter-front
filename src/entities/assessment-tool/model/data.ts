@@ -23,7 +23,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 4,
     maxAgeMonths: 35,
     subtests: SELSI_META_SUBTEST_KEYS,
-    description: '영유아 언어발달 검사 (4-35개월)',
+    description: '영유아 언어발달 검사',
     supportedAgeText: '4~35개월',
   },
   kmb_cdi: {
@@ -33,7 +33,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 18,
     maxAgeMonths: 36,
     subtests: [],
-    description: '유아용 어휘/문장과 문법 체크리스트 (18-36개월)',
+    description: '유아용 어휘/문장과 문법 체크리스트',
     supportedAgeText: '18~36개월',
   },
   pres: {
@@ -43,7 +43,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 24,
     maxAgeMonths: 77,
     subtests: PRES_SUBTEST_KEYS,
-    description: '취학전 아동 수용·표현 언어척도 (24-77개월)',
+    description: '취학전 아동 수용·표현 언어척도',
     supportedAgeText: '2~7세',
   },
   revt: {
@@ -53,7 +53,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 24,
     maxAgeMonths: 215,
     subtests: REVT_SUBTEST_KEYS,
-    description: '수용·표현 어휘력 검사 (2-16세)',
+    description: '수용·표현 어휘력 검사',
     supportedAgeText: '2~16세',
   },
   syntax: {
@@ -63,7 +63,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 48,
     maxAgeMonths: 119,
     subtests: SYNTAX_SUBTEST_KEYS,
-    description: '구문의미이해력 검사 (4-9세)',
+    description: '구문의미이해력 검사',
     supportedAgeText: '4~10세',
   },
   problem_solving: {
@@ -73,7 +73,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 60,
     maxAgeMonths: 143,
     subtests: PROBLEM_SOLVING_SUBTEST_KEYS,
-    description: '언어문제해결력 검사 (5-11세)',
+    description: '언어문제해결력 검사',
     supportedAgeText: '5~12세',
   },
   apac: {
@@ -83,7 +83,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 30,
     maxAgeMonths: 215,
     subtests: APAC_SUBTEST_KEYS,
-    description: '아동용 발음 검사 (30개월 이상)',
+    description: '아동용 발음 검사',
     supportedAgeText: '30개월 이상',
   },
   cplc: {
@@ -93,7 +93,7 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
     minAgeMonths: 60,
     maxAgeMonths: 143,
     subtests: CPLC_SUBTEST_KEYS,
-    description: '아동 화용언어 체크리스트 (5-11세)',
+    description: '아동 화용언어 체크리스트',
     supportedAgeText: '5~12세',
   },
   kcelf5_pp: {
