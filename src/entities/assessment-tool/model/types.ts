@@ -15,7 +15,7 @@ export type AssessmentToolId =
   | 'kcelf5_ors'
   | 'language_analysis';
 
-export type AssessmentCategory = '영유아' | '학령전기' | '전 연령';
+export type AssessmentCategory = '영유아' | '학령전기' | '학령기' | '전 연령';
 
 export interface ToolMetadata {
   id: AssessmentToolId;

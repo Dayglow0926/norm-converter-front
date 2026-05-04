@@ -53,8 +53,8 @@ export {
   ACTIVE_TOOLS,
   ALL_TOOL_IDS,
   isToolActive,
+  isAgeInRange,
   getDisabledReason,
-  getAgeWarning,
 } from './model/data';
 
 export {

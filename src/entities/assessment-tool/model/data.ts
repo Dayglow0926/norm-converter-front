@@ -99,22 +99,22 @@ export const TOOL_METADATA: Record<AssessmentToolId, ToolMetadata> = {
   kcelf5_pp: {
     id: 'kcelf5_pp',
     name: 'K-CELF-5 PP',
-    category: '전 연령',
-    minAgeMonths: 0,
-    maxAgeMonths: 9999,
+    category: '학령기',
+    minAgeMonths: 84,
+    maxAgeMonths: 263,
     subtests: KCELF5_PP_SUBTEST_KEYS,
     description: '화용프로파일 (보호자 보고)',
-    supportedAgeText: '전 연령',
+    supportedAgeText: '만 7세 이상',
   },
   kcelf5_ors: {
     id: 'kcelf5_ors',
     name: 'K-CELF-5 ORS',
-    category: '전 연령',
-    minAgeMonths: 0,
-    maxAgeMonths: 9999,
+    category: '학령기',
+    minAgeMonths: 84,
+    maxAgeMonths: 263,
     subtests: KCELF5_ORS_SUBTEST_KEYS,
     description: '관찰 평가척도',
-    supportedAgeText: '전 연령',
+    supportedAgeText: '만 7세 이상',
   },
   language_analysis: {
     id: 'language_analysis',
@@ -158,6 +158,14 @@ export function isToolActive(toolId: AssessmentToolId): boolean {
 }
 
 /**
+ * 아동 연령이 평가도구 범위 내인지 확인
+ */
+export function isAgeInRange(toolId: AssessmentToolId, ageMonths: number): boolean {
+  const meta = TOOL_METADATA[toolId];
+  return ageMonths >= meta.minAgeMonths && ageMonths <= meta.maxAgeMonths;
+}
+
+/**
  * 평가도구 비활성화 사유 반환 (준비 중인 도구만 차단)
  */
 export function getDisabledReason(
@@ -168,17 +176,5 @@ export function getDisabledReason(
   if (!isToolActive(toolId)) {
     return '준비 중';
   }
-  return null;
-}
-
-/**
- * 연령 경고 문구는 사용하지 않음
- */
-export function getAgeWarning(
-  _toolId: AssessmentToolId,
-  _ageMonths: number | null
-): string | null {
-  void _toolId;
-  void _ageMonths;
   return null;
 }

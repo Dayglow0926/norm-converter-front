@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useChildInfoStore } from '../model/store';
+import { useTestSelectionStore } from '@/features/test-selection';
 import { childInfoSchema, type ChildInfoFormData } from '../model/schema';
 import { formatAgeResult } from '../lib/calculate-age';
 
@@ -81,6 +82,7 @@ function GenderButton({
 export function ChildInfoForm() {
   const router = useRouter();
   const { setChildInfo, ageResult, childInfo } = useChildInfoStore();
+  const clearSelection = useTestSelectionStore((state) => state.clearSelection);
 
   // 6자리 숫자 입력 상태 (YYMMDD)
   const [birthDateStr, setBirthDateStr] = useState(() => formatToYYMMDD(childInfo?.birthDate));
@@ -120,6 +122,17 @@ export function ChildInfoForm() {
   };
 
   const onSubmit = (data: ChildInfoFormData) => {
+    const hasChildInfoChanged =
+      !childInfo ||
+      childInfo.name !== data.name ||
+      childInfo.gender !== data.gender ||
+      childInfo.birthDate.getTime() !== data.birthDate.getTime() ||
+      childInfo.testDate.getTime() !== data.testDate.getTime();
+
+    if (hasChildInfoChanged) {
+      clearSelection();
+    }
+
     setChildInfo({
       name: data.name,
       gender: data.gender,

@@ -7,7 +7,13 @@ import { TestSelectionGrid, useTestSelectionStore } from '@/features/test-select
 import { useChildInfoStore } from '@/features/child-info';
 import { formatAgeResult } from '@/features/child-info';
 import { useScoreEntryStore } from '@/features/score-entry';
-import { getSyntaxApplicableAgeMonths, type AssessmentToolId } from '@/entities/assessment-tool';
+import {
+  ALL_TOOL_IDS,
+  getSyntaxApplicableAgeMonths,
+  isAgeInRange,
+  isToolActive,
+  type AssessmentToolId,
+} from '@/entities/assessment-tool';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -16,7 +22,9 @@ export default function SelectToolPage() {
   const { childInfo, ageResult, _hasHydrated, clearChildInfo } = useChildInfoStore();
   const {
     selectedTools,
+    setSelectedTools,
     clearSelection,
+    hasInitializedSelection,
     _hasHydrated: hasSelectionHydrated,
   } = useTestSelectionStore();
   const { clearAll } = useScoreEntryStore();
@@ -32,6 +40,30 @@ export default function SelectToolPage() {
     if (!ageResult) return null;
     return toolId === 'syntax' ? getSyntaxApplicableAgeMonths(ageResult) : ageResult.totalMonths;
   };
+
+  useEffect(() => {
+    if (!_hasHydrated || !hasSelectionHydrated || !ageResult) return;
+    if (hasInitializedSelection) return;
+
+    const defaultTools = ALL_TOOL_IDS.filter(
+      (toolId: AssessmentToolId) => {
+        const applicableAgeMonths =
+          toolId === 'syntax' ? getSyntaxApplicableAgeMonths(ageResult) : ageResult.totalMonths;
+
+        return isToolActive(toolId) && isAgeInRange(toolId, applicableAgeMonths);
+      }
+    );
+
+    if (defaultTools.length > 0) {
+      setSelectedTools(defaultTools);
+    }
+  }, [
+    _hasHydrated,
+    hasSelectionHydrated,
+    ageResult,
+    hasInitializedSelection,
+    setSelectedTools,
+  ]);
 
   // hydration 완료 전 또는 아동 정보가 없으면 로딩
   if (!_hasHydrated || !hasSelectionHydrated || !childInfo || !ageResult) {

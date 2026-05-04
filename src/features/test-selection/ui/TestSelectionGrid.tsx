@@ -24,7 +24,7 @@ export function TestSelectionGrid({ getAgeMonths }: TestSelectionGridProps) {
     <section className="w-full">
       <h2 className="mb-2 text-xl font-semibold">평가도구 선택</h2>
       <p className="text-muted-foreground mb-4 text-sm">
-        실시할 평가도구를 선택하세요 (복수 선택 가능, 연령 정보는 참고용)
+        연령에 맞는 도구가 기본 선택됩니다. 필요하면 직접 변경하세요.
       </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ALL_TOOL_IDS.map((toolId) => (
