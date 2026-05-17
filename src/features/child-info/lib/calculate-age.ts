@@ -60,9 +60,28 @@ export function calculateAge(birthDate: Date, testDate: Date): AgeResult {
  * 연령 결과를 한국어 문자열로 포맷합니다.
  *
  * @param ageResult - 연령 계산 결과
- * @returns 포맷된 문자열 (예: "3세 6개월 (총 42개월)")
+ * @returns 포맷된 문자열 (예: "3세 6개월 12일")
  */
 export function formatAgeResult(ageResult: AgeResult): string {
-  const { years, months, totalMonths } = ageResult;
-  return `${years}세 ${months}개월 (총 ${totalMonths}개월)`;
+  const { years, months, days } = ageResult;
+
+  const parts: string[] = [];
+
+  if (years > 0) {
+    parts.push(`${years}세`);
+  }
+
+  if (years > 0 || months > 0) {
+    parts.push(`${months}개월`);
+  }
+
+  if (days > 0) {
+    parts.push(`${days}일`);
+  }
+
+  if (parts.length === 0) {
+    return '0개월';
+  }
+
+  return parts.join(' ');
 }
